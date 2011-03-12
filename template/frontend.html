@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Apollo</title>
+
+        <link type="text/css" rel="stylesheet" href="static/assets/style.css" />
+
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/resources/dojo.css"> 
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/claro/claro.css">
+
+        <script src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <canvas tabindex="0" id="surface" width="640" height="640">
+            
+        </canvas>
+        <script type="text/javascript">
+            dojo.baseUrl = "static/lib/dojo/"; // dojo WOULD be here
+
+            dojo.registerModulePath("apollo.client.dylib", "../../../dylib"); // for dynamic libraries
+            dojo.require("apollo.client.Core");
+
+            dojo.addOnLoad(function()
+            {
+                (core = new apollo.client.Core()).go();
+            });
+        </script>
+    </body>
+</html>
