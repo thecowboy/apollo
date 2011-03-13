@@ -20,10 +20,18 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.protocol.packet.packetheartbeat import PacketHeartbeat
+# packet type autodiscovery
+from apollo.server.util.importlib import import_module
+import os
 
-packet_list = [
-    PacketHeartbeat
-]
+packetlist = {}
 
-packet_types = dict((packet_type.name, packet_type) for packet_type in packet_list)
+for filename in os.listdir(os.path.dirname(__file__)):
+    if filename[:6] == "packet" and filename[-3:] == ".py":
+        # assume this is a packet
+        module_name = filename.rsplit(".", 1)[0]
+        module = import_module(".%s" % module_name, "apollo.server.protocol.packet")
+        for member_name in dir(module):
+            if member_name != "Packet" and member_name[:6] == "Packet":
+                packet_type = getattr(module, member_name)
+                packetlist[packet_type.name] = packet_type

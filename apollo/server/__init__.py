@@ -29,7 +29,7 @@ from tornado.web import Application
 
 from couchdb.client import Database
 
-from apollo.server.web import FrontendHandler, ActionHandler, EventsHandler, DylibHandler
+from apollo.server.web import FrontendHandler, SessionHandler, ActionHandler, EventsHandler, DylibHandler
 from apollo.server.dylib.dispatch import DylibDispatcher
 
 def setup_options():
@@ -61,6 +61,7 @@ class Core(Application):
             self,
             [
                 (r"/",                  FrontendHandler),
+                (r"/session",           SessionHandler),
                 (r"/action",            ActionHandler),
                 (r"/events",            EventsHandler),
                 (r"/dylib/(.*)\.js",    DylibHandler)

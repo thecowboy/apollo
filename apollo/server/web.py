@@ -23,17 +23,27 @@
 from tornado.options import options
 from tornado.web import RequestHandler, asynchronous
 
+from apollo.server.models.session import Session
+
 class FrontendHandler(RequestHandler):
     def get(self):
         self.set_header("Content-Type", "text/html; charset=utf8")
         self.write(self.application.loader.load("frontend.html").generate())
 
+class SessionHandler(RequestHandler):
+    SUPPORTED_METHODS = ("GET",)
+
+    def get(self, *args, **kwargs):
+        self.set_header("Content-Type", "application/json")
+        session = Session()
+        session.store(self.application.couchdb)
+        self.write(session.id)
+
 class ActionHandler(RequestHandler):
     SUPPORTED_METHODS = ("POST",)
 
     def post(self, *args, **kwargs):
-        self.set_header("Content-Type", "application/json")
-        self.write("Hello, world!")
+        self.finish()
 
 class EventsHandler(RequestHandler):
     SUPPORTED_METHODS = ("GET",)
@@ -41,7 +51,6 @@ class EventsHandler(RequestHandler):
     @asynchronous
     def get(self, *args, **kwargs):
         self.set_header("Content-Type", "application/json")
-        self.finish("{ 'a' : 'b' }")
 
 class DylibHandler(RequestHandler):
     SUPPORTED_METHODS = ("GET",)

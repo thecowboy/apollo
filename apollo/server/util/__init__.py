@@ -19,12 +19,3 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-
-class Packet(object):
-    name = "packet"
-
-    def __init__(self, payload):
-        self.__dict__.update(payload)
-
-    def dispatch(self):
-        pass

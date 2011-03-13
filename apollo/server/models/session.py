@@ -20,11 +20,10 @@
 # THE SOFTWARE.
 #
 
-class Packet(object):
-    name = "packet"
+from datetime import datetime
 
-    def __init__(self, payload):
-        self.__dict__.update(payload)
+from couchdb.mapping import Document, TextField, DateTimeField
 
-    def dispatch(self):
-        pass
+class Session(Document):
+    added = DateTimeField(default=datetime.now)
+    user = TextField()

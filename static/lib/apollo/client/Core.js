@@ -22,21 +22,31 @@
 
 dojo.provide("apollo.client.Core");
 
-dojo.require("apollo.client.ui.UIRoot");
-dojo.require("apollo.client.ui.elements.LoginDialog");
-
+dojo.require("apollo.client.UIRoot");
 dojo.require("apollo.client.protocol.Transport");
+
+// packets
+dojo.require("apollo.client.protocol.packet.PacketAuthenticate");
 
 dojo.declare("apollo.client.Core", null, {
     constructor : function()
     {
-        this.uiroot = new apollo.client.ui.UIRoot(this);
+        this.uiroot = new apollo.client.UIRoot(this);
         this.transport = new apollo.client.protocol.Transport(this);
+    },
+
+    login : function(username, password)
+    {
+        this.transport.sendAction(new apollo.client.protocol.packet.PacketAuthenticate({
+            username    : username,
+            password    : password
+        }));
     },
 
     go : function()
     {
+        this.transport.go();
         dojo.addClass(dojo.body(), "claro");
-        this.uiroot.add(apollo.client.ui.elements.LoginDialog).show();
+        this.uiroot.add("logindialog", { title : "Login" }).show();
     }
 });

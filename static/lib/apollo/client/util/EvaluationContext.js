@@ -18,53 +18,13 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
-*/
+ */
 
-dojo.provide("apollo.client.ui.UIRoot");
+dojo.provide("apollo.client.util.EvaluationContext");
 
-dojo.require("apollo.client.Component");
-
-dojo.declare("apollo.client.ui.UIRoot", apollo.client.Component, {
-    constructor : function(core)
+dojo.declare("apollo.client.util.EvaluationContext", null, {
+    eval : function(code)
     {
-        this.uiElements = {};
-    },
-
-    hideAll : function()
-    {
-        for(var key in this.uiElements)
-        {
-            this.uiElements[key].hide();
-        }
-    },
-
-    showAll : function()
-    {
-        for(var key in this.uiElements)
-        {
-            this.uiElements[key].show();
-        }
-    },
-
-    clear : function()
-    {
-        for(var key in this.uiElements)
-        {
-            this.uiElements[key].destroy();
-        }
-        this.uiElements = {};
-    },
-
-    add : function(type)
-    {
-        var element = new type(this, this.core);
-        this.uiElements[element.id] = element;
-        return element;
-    },
-
-    remove : function(id)
-    {
-        this.uiElements[id].destroy();
-        delete this.uiElements[id];
+        eval(code);
     }
 });

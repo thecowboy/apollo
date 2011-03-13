@@ -27,9 +27,9 @@ class Dylib(Component):
     depends = []
 
     def generate(self):
-        output = "dojo.provide(\"apollo.client.dylib.%s\");" % self.name
+        output = "dojo.provide(\"apollo.client.dylib.%s\");\n\n" % self.name
 
         for depend in self.depends:
-            output += "dojo.depend(\"%s\");" % depend
+            output += "dojo.require(\"%s\");\n" % depend
 
         return output

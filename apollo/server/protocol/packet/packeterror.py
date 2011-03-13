@@ -20,11 +20,7 @@
 # THE SOFTWARE.
 #
 
-class Packet(object):
-    name = "packet"
+from apollo.server.protocol import Packet
 
-    def __init__(self, payload):
-        self.__dict__.update(payload)
-
-    def dispatch(self):
-        pass
+class PacketError(Packet):
+    name = "error"

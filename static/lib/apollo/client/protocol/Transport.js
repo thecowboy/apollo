@@ -27,22 +27,12 @@ dojo.require("apollo.client.dylib.packetlist");
 dojo.require("apollo.client.protocol.packet.PacketError");
 
 dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
-    constructor : function(core)
+    eventComet : function(sessionId)
     {
         var that = this;
 
-        this.actionAjax = {
-            url         : "action",
-            handleAs    : "json",
-            load        : function(packet)
-            {
-                // do stuff
-                that.processActionResult(packet);
-            }
-        };
-
-        this.eventComet = {
-            url         : "events",
+        dojo.xhrGet({
+            url         : "events?session_id=" + escape(sessionId),
             handleAs    : "json",
             load        : function(packet)
             {
@@ -50,18 +40,9 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
                 that.processEvent(packet);
 
                 // start the comet loop again
-                that.eventComet();
+                that.eventComet(sessionId);
             }
-        };
-    },
-
-    eventComet : function()
-    {
-        dojo.xhrGet(this.cometArgs);
-    },
-
-    processActionResult : function(packet)
-    {
+        });
     },
 
     processEvent : function(packet)
@@ -70,9 +51,7 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
 
         if(packetType)
         {
-            dojo.safeMixin(new packetType(this, this.core), packet.payload).dispatch();
-        } else {
-            this.sendAction(new apollo.client.protocol.packet.PacketError(this, this.core));
+            (new packetType(packet.payload)).dispatch(this, this.core);
         }
     },
 
@@ -82,12 +61,25 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
             name        : packet.name,
             payload     : packet
         };
-        dojo.xhrPost(dojo.safeMixin(this.actionAjax, {
-            postdata : "p=" + escape(JSON.stringify(encapsulatedPacket))
-        }));
+
+        dojo.xhrPost({
+            url         : "action",
+            handleAs    : "text",
+            postdata    : "p=" + escape(JSON.stringify(encapsulatedPacket))
+        });
     },
 
     go : function()
     {
+        var that = this;
+
+        dojo.xhrGet({
+            url         : "session",
+            handleAs    : "text",
+            load        : function(sessionId)
+            {
+                that.eventComet(sessionId);
+            }
+        });
     },
 });

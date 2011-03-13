@@ -22,15 +22,14 @@
 
 from apollo.server.dylib import Dylib
 
-from apollo.server.protocol.packet import packet_types
+from apollo.server.protocol.packet import packetlist
 
 class PacketList(Dylib):
     name = "packetlist"
+    depends = [ ("apollo.client.protocol.packet.%s" % packet_type.__name__) for packet_type in packetlist.values() ]
 
-    def generate(self):
-        output = super(PacketList, self).generate()
-        for packet_name, packet_type in packet_types.iteritems():
-            output += "dojo.require(\"apollo.client.protocol.packet.%s\");" % packet_type.__name__
-        for packet_name, packet_type in packet_types.iteritems():
-            output += "apollo.client.dylib.packetlist.%s=apollo.client.protocol.packet.%s;" % (packet_name, packet_type.__name__)
+    def generate(self): 
+        output = super(PacketList, self).generate() + "\n";
+        for packet_name, packet_type in packetlist.iteritems():
+            output += "apollo.client.dylib.packetlist.%s = apollo.client.protocol.packet.%s;\n" % (packet_name, packet_type.__name__)
         return output

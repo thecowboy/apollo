@@ -20,12 +20,14 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.ui.elements.Element");
+dojo.provide("apollo.client.protocol.packet.PacketAuthenticate");
 
-dojo.declare("apollo.client.ui.elements.Element", null, {
-    constructor : function(uiroot, core)
+dojo.require("apollo.client.protocol.packet.Packet");
+
+dojo.declare("apollo.client.protocol.packet.PacketAuthenticate", apollo.client.protocol.packet.Packet, {
+    name    : "auth",
+
+    dispatch : function(transport, core)
     {
-        this.uiroot = uiroot;
-        this.core = core;
     }
 });
