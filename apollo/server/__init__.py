@@ -36,18 +36,18 @@ from apollo.server.dylib.dispatch import DylibDispatcher
 from apollo.server.models.meta import bind_session
 
 def setup_options():
-    define("address", default="127.0.0.1", help="bind to the given address")
-    define("port", default=8081, help="run on the given port", type=int)
+    define("address", default="127.0.0.1", help="bind to the given address", metavar="ADDRESS")
+    define("port", default=8081, help="run on the given port", type=int, metavar="PORT")
 
-    define("cron_interval", default=3600, help="run cron every specified seconds", type=int)
+    define("cron_interval", default=3600, help="run cron every specified seconds", type=int, metavar="INTERVAL")
 
-    define("session_expiry", default=3600, help="expire inactive sessions after specified seconds", type=int)
+    define("session_expiry", default=3600, help="expire inactive sessions after specified seconds", type=int, metavar="EXPIRY")
 
-    define("mongodb_host", default="localhost", help="mongodb server host")
-    define("mongodb_port", default=27017, help="mongodb server port", type=int)
-    define("mongodb_username", default="", help="mongodb server username")
-    define("mongodb_password", default="", help="mongodb server password")
-    define("mongodb_database", default="apollo", help="mongodb database name")
+    define("mongodb_host", default="localhost", help="mongodb server host", metavar="HOST")
+    define("mongodb_port", default=27017, help="mongodb server port", type=int, metavar="PORT")
+    define("mongodb_username", default="", help="mongodb server username", metavar="USERNAME")
+    define("mongodb_password", default="", help="mongodb server password (put in apollod.conf)", metavar="PASSWORD")
+    define("mongodb_database", default="apollo", help="mongodb database name", metavar="DATABASE")
 
 class Core(Application):
     def __init__(self):
