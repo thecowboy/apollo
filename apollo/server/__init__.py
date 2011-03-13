@@ -27,35 +27,32 @@ from tornado.options import define, options
 from tornado.template import Loader
 from tornado.web import Application
 
-from couchdb.client import Database
+from ming.datastore import DataStore
 
 from apollo.server.web import FrontendHandler, SessionHandler, ActionHandler, EventsHandler, DylibHandler
+from apollo.server.cron import CronScheduler
 from apollo.server.dylib.dispatch import DylibDispatcher
+
+from apollo.server.models.meta import bind_session
 
 def setup_options():
     define("address", default="127.0.0.1", help="bind to the given address")
     define("port", default=8081, help="run on the given port", type=int)
 
-    define("couchdb_host", default="localhost", help="couchdb server host")
-    define("couchdb_port", default=5984, help="couchdb server port", type=int)
-    define("couchdb_username", default="", help="couchdb server username")
-    define("couchdb_password", default="", help="couchdb server password")
-    define("couchdb_database", default="apollo", help="couchdb database name")
+    define("cron_interval", default=3600, help="run cron every specified seconds", type=int)
+
+    define("session_expiry", default=3600, help="expire inactive sessions after specified seconds", type=int)
+
+    define("mongodb_host", default="localhost", help="mongodb server host")
+    define("mongodb_port", default=27017, help="mongodb server port", type=int)
+    define("mongodb_username", default="", help="mongodb server username")
+    define("mongodb_password", default="", help="mongodb server password")
+    define("mongodb_database", default="apollo", help="mongodb database name")
 
 class Core(Application):
     def __init__(self):
         # apollo distribution root
         dist_root = os.path.join(os.path.dirname(__file__), "..", "..")
-
-        # netloc for couchdb
-        couchdb_netloc = options.couchdb_host
-        if options.couchdb_port:
-            couchdb_netloc += ":%d" % options.couchdb_port
-        if options.couchdb_username:
-            couchdb_auth = options.couchdb_username
-            if options.couchdb_password:
-                couchdb_auth += ":%s" % options.couchdb_password
-            couchdb_netloc = couchdb_auth + "@" + couchdb_netloc
 
         Application.__init__(
             self,
@@ -71,11 +68,26 @@ class Core(Application):
         )
 
         self.loader = Loader(os.path.join(dist_root, "template"))
-        self.couchdb = Database(urlparse.urlunsplit((
-            "http",
-            couchdb_netloc,
-            options.couchdb_database,
+
+        # netloc for mongodb
+        mongodb_netloc = options.mongodb_host
+        if options.mongodb_port:
+            mongodb_netloc += ":%d" % options.mongodb_port
+        if options.mongodb_username:
+            mongodb_auth = options.mongodb_username
+            if options.mongodb_password:
+                mongodb_auth += ":%s" % options.mongodb_password
+            mongodb_netloc = mongodb_auth + "@" + mongodb_netloc
+
+        bind_session(DataStore(urlparse.urlunsplit((
+            "mongodb",
+            mongodb_netloc,
+            "",
             "",
             ""
-        )))
+        )), database=options.mongodb_database))
+
         self.dylib_dispatcher = DylibDispatcher(self)
+
+        self.cron = CronScheduler(self)
+        self.cron.go()

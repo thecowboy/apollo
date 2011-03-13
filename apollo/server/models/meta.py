@@ -20,24 +20,13 @@
 # THE SOFTWARE.
 #
 
-from datetime import datetime
+# I stole this idea from Pylons
 
-from ming import schema
-from ming.orm import MappedClass
-from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
+from ming import Session
+from ming.orm import ThreadLocalORMSession
 
-from apollo.server.models import meta
+doc_session = Session()
+session = ThreadLocalORMSession(doc_session=doc_session)
 
-class Session(MappedClass):
-    class __mongometa__:
-        name = "session"
-        session = meta.session
-
-    _id = FieldProperty(schema.ObjectId)
-
-    last_active = FieldProperty(datetime, if_missing=datetime.utcnow)
-    user_id = ForeignIdProperty("User")
-
-from apollo.server.models.user import User
-
-MappedClass.compile_all()
+def bind_session(bind):
+    doc_session.bind = bind

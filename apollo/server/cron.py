@@ -20,24 +20,40 @@
 # THE SOFTWARE.
 #
 
-from datetime import datetime
+import logging
 
-from ming import schema
-from ming.orm import MappedClass
-from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
+from datetime import datetime, timedelta
+
+from tornado.options import options
+from tornado.ioloop import PeriodicCallback
+
+from ming.orm import Query
+
+from apollo.server.component import Component
 
 from apollo.server.models import meta
+from apollo.server.models.session import Session
 
-class Session(MappedClass):
-    class __mongometa__:
-        name = "session"
-        session = meta.session
+class CronScheduler(Component):
+    def __init__(self, core):
+        super(CronScheduler, self).__init__(core)
+        self.callback = PeriodicCallback(self.run, options.cron_interval * 1000)
 
-    _id = FieldProperty(schema.ObjectId)
+    def run(self):
+        logging.info("Running cron...")
 
-    last_active = FieldProperty(datetime, if_missing=datetime.utcnow)
-    user_id = ForeignIdProperty("User")
+        now = datetime.utcnow()
+        query = {
+            "last_active" :
+            {
+                "$lte" : now - timedelta(seconds=options.session_expiry)
+            }
+        }
 
-from apollo.server.models.user import User
+        num_rows = meta.session.find(Session, query).count()
+        meta.session.remove(Session, query)
 
-MappedClass.compile_all()
+        logging.info("Purged %d expired session(s)." % num_rows)
+
+    def go(self):
+        self.callback.start()

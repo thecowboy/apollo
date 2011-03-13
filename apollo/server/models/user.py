@@ -24,11 +24,21 @@ import os
 from hashlib import sha256
 from datetime import datetime
 
-from couchdb.mapping import Document, TextField, DateTimeField
+from ming import schema
+from ming.orm import MappedClass
+from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
-class User(Document):
-    name = TextField()
-    pwhash = TextField()
+from apollo.server.models import meta
+
+class User(MappedClass):
+    class __mongometa__:
+        name = "user"
+        session = meta.session
+
+    _id = FieldProperty(schema.ObjectId)
+
+    name = FieldProperty(str)
+    pwhash = FieldProperty(str)
 
     def _set_password(self, value):
         salt = sha256(os.urandom(64)).hexdigest()[:16]
@@ -40,4 +50,11 @@ class User(Document):
         salt = self.pwhash[64:]
         return sha256(salt + value).hexdigest() + salt == self.pwhash
 
-    added = DateTimeField(default=datetime.now)
+    last_active = FieldProperty(datetime, if_missing=datetime.utcnow)
+    registered = FieldProperty(datetime, if_missing=datetime.utcnow)
+
+    sessions = RelationProperty("Session")
+
+from apollo.server.models.session import Session
+
+MappedClass.compile_all()

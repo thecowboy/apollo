@@ -23,6 +23,7 @@
 from tornado.options import options
 from tornado.web import RequestHandler, asynchronous
 
+from apollo.server.models import meta
 from apollo.server.models.session import Session
 
 class FrontendHandler(RequestHandler):
@@ -36,8 +37,8 @@ class SessionHandler(RequestHandler):
     def get(self, *args, **kwargs):
         self.set_header("Content-Type", "application/json")
         session = Session()
-        session.store(self.application.couchdb)
-        self.write(session.id)
+        meta.session.flush_all()
+        self.write(str(session._id))
 
 class ActionHandler(RequestHandler):
     SUPPORTED_METHODS = ("POST",)
@@ -50,6 +51,7 @@ class EventsHandler(RequestHandler):
 
     @asynchronous
     def get(self, *args, **kwargs):
+        session_id = self.get_argument("s")
         self.set_header("Content-Type", "application/json")
 
 class DylibHandler(RequestHandler):
