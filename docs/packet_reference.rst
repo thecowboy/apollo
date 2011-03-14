@@ -40,7 +40,7 @@ Client to server only.
 Data Members
 ------------
  * ``username``
-    Username to authenticate for.
+   Username to authenticate for.
 
  * ``password``
    Password for authentication.
