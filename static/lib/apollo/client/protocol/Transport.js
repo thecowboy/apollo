@@ -32,7 +32,10 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
         var that = this;
 
         dojo.xhrGet({
-            url         : "events?s=" + escape(this.sessionId),
+            url         : "events",
+            content     : {
+                s       : this.sessionId
+            },
             handleAs    : "json",
             load        : function(packet)
             {
@@ -57,12 +60,13 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
 
     sendAction : function(packet)
     {
-        var that = this;
-
         dojo.xhrPost({
             url         : "action",
-            handleAs    : "text",
-            postData    : "p=" + escape(packet.dump()) + "&s=" + that.sessionId
+            content     : {
+                p       : packet.dump(),
+                s       : this.sessionId
+            },
+            handleAs    : "text"
         });
     },
 
