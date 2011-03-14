@@ -22,7 +22,7 @@
 
 from apollo.server.dylib import Dylib
 
-from apollo.server.protocol.packet import packetlist
+from apollo.server.protocol.packet.meta import packetlist
 
 class PacketList(Dylib):
     name = "packetlist"

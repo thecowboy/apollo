@@ -20,7 +20,7 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.protocol import Packet
+from apollo.server.protocol.packet import Packet
 
 class PacketError(Packet):
     name = "error"

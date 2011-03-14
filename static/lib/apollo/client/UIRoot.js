@@ -58,15 +58,15 @@ dojo.declare("apollo.client.UIRoot", apollo.client.Component, {
         this.uiElements = {};
     },
 
-    add : function(type, params)
+    add : function(type)
     {
         var res = "static/ui/" + type;
-        var dialog = new dijit.Dialog(params);
+        var dialog = new dijit.Dialog();
         dialog.attr("content", "Loading...");
         dialog.uiroot = this;
         dialog.core = this.core;
 
-        var loadContent = function()
+        var loadContent = function(callback)
         {
             dojo.xhrGet({
                 url         : res + ".html",
@@ -74,6 +74,7 @@ dojo.declare("apollo.client.UIRoot", apollo.client.Component, {
                 load        : function(data)
                 {
                     dialog.attr("content", data);
+                    callback();
                 }
             });
         };
@@ -89,8 +90,10 @@ dojo.declare("apollo.client.UIRoot", apollo.client.Component, {
                 if(context.preLoad) context.preLoad(dialog);
                 dojo.ready(function()
                 {
-                    loadContent();
-                    if(context.postLoad) context.postLoad(dialog);
+                    loadContent(function()
+                    {
+                        if(context.postLoad) context.postLoad(dialog);
+                    });
                 });
             },
             error           : loadContent

@@ -47,6 +47,14 @@ dojo.declare("apollo.client.Core", null, {
     {
         this.transport.go();
         dojo.addClass(dojo.body(), "claro");
-        this.uiroot.add("logindialog", { title : "Login" }).show();
+        this.uiroot.add("logindialog").show();
+    },
+
+    die : function(msg)
+    {
+        var dialog = this.uiroot.add("errordialog");
+        dialog.message = msg;
+        dialog.show();
+        this.transport.shutdown();
     }
 });

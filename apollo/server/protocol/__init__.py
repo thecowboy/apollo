@@ -19,19 +19,3 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-
-import json
-
-class Packet(object):
-    name = "packet"
-
-    def __init__(self, payload):
-        self.__dict__.update(payload)
-
-    def dispatch(self, transport, core):
-        pass
-
-    def dump(self):
-        dic = self.__dict__.copy()
-        dic["__name__"] = self.name
-        return json.dumps(dic)

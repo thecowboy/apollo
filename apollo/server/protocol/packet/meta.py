@@ -20,27 +20,18 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.protocol.packet import Packet
+# packet type autodiscovery
+from apollo.server.util.importlib import import_module
+import os
 
-from apollo.server.models import meta
-from apollo.server.models.user import User
+packetlist = {}
 
-from apollo.server.protocol.packet.packetdeauthenticate import PacketDeauthenticate
-
-class PacketAuthenticate(Packet):
-    name = "auth"
-
-    def dispatch(self, transport, core):
-        user_cursor = meta.session.find(User, { "name" : self.username })
-
-        try:
-            user = user_cursor.one()
-        except ValueError:
-            transport.sendEvent(PacketDeauthenticate())
-            return
-
-        if not user.check_password(self.password):
-            transport.sendEvent(PacketDeauthenticate())
-            return
-
-        transport.sendEvent(PacketAuthenticate())
+for filename in os.listdir(os.path.dirname(__file__)):
+    if filename[:6] == "packet" and filename[-3:] == ".py":
+        # assume this is a packet
+        module_name = filename.rsplit(".", 1)[0]
+        module = import_module(".%s" % module_name, "apollo.server.protocol.packet")
+        for member_name in dir(module):
+            if member_name != "Packet" and member_name[:6] == "Packet":
+                packet_type = getattr(module, member_name)
+                packetlist[packet_type.name] = packet_type

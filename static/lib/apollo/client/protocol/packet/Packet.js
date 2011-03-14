@@ -36,6 +36,9 @@ dojo.declare("apollo.client.protocol.packet.Packet", null, {
 
     dump : function()
     {
-        return dojo.toJson(dojo.mixin({ __name__ : this.name}, this));
+        var dic = dojo.mixin({ __name__ : this.name}, this);
+        delete dic.declaredClass;
+        delete dic.name;
+        return dojo.toJson(dic);
     }
 });

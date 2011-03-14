@@ -42,8 +42,12 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
                 // do stuff
                 that.processEvent(packet);
 
-                // start the comet loop again
-                that.eventComet();
+                // start the comet loop again (if we want to)
+                if(!that.shutdowned) that.eventComet();
+            },
+            error       : function()
+            {
+                core.die("Transport error (event)");
             }
         });
     },
@@ -66,7 +70,11 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
                 p       : packet.dump(),
                 s       : this.sessionId
             },
-            handleAs    : "text"
+            handleAs    : "text",
+            error       : function()
+            {
+                core.die("Transport error (action)");
+            }
         });
     },
 
@@ -84,4 +92,9 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
             }
         });
     },
+
+    shutdown : function()
+    {
+        this.shutdowned = true;
+    }
 });

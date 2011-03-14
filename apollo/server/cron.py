@@ -56,4 +56,5 @@ class CronScheduler(Component):
         logging.info("Purged %d expired session(s)." % num_rows)
 
     def go(self):
+        self.run()
         self.callback.start()

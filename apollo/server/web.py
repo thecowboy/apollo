@@ -31,7 +31,7 @@ from apollo.server.models import meta
 from apollo.server.models.session import Session
 
 from apollo.server.protocol.transport import Transport
-from apollo.server.protocol.packet import packetlist
+from apollo.server.protocol.packet.meta import packetlist
 from apollo.server.protocol.packet.packeterror import PacketError
 
 class FrontendHandler(RequestHandler):

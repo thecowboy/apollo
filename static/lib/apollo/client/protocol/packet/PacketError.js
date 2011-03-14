@@ -25,5 +25,10 @@ dojo.provide("apollo.client.protocol.packet.PacketError");
 dojo.require("apollo.client.protocol.packet.Packet");
 
 dojo.declare("apollo.client.protocol.packet.PacketError", apollo.client.protocol.packet.Packet, {
-    name    : "error"
+    name    : "error",
+
+    dispatch : function(transport, core)
+    {
+        core.die(this.msg);
+    },
 });
