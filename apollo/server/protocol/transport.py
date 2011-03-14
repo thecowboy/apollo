@@ -45,4 +45,4 @@ class Transport(object):
         self.bound_handler = None
 
     def session(self):
-        return meta.session.find(Session, { "_id" : self.session_id })
+        return meta.session.get(Session, self.session_id)
