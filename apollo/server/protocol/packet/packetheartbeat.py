@@ -30,6 +30,6 @@ class PacketHeartbeat(Packet):
 
     def dispatch(self, transport, core):
         session = transport.session()
-        session.last_active = datetime.now()
+        session.last_active = datetime.utcnow()
         meta.session.save(session)
         meta.session.flush()

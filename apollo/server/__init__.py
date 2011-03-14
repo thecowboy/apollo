@@ -89,7 +89,7 @@ class Core(Application):
 
         self.dylib_dispatcher = DylibDispatcher(self)
 
+        self.connections = {}
+
         self.cron = CronScheduler(self)
         self.cron.go()
-
-        self.connections = {}

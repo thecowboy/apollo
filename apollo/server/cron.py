@@ -42,16 +42,20 @@ class CronScheduler(Component):
     def run(self):
         logging.info("Running cron...")
 
-        now = datetime.utcnow()
-        query = {
+        cursor = meta.session.find(Session, {
             "last_active" :
             {
-                "$lte" : now - timedelta(seconds=options.session_expiry)
+                "$lte" : datetime.utcnow() - timedelta(seconds=options.session_expiry)
             }
-        }
+        })
+        num_rows = cursor.count()
 
-        num_rows = meta.session.find(Session, query).count()
-        meta.session.remove(Session, query)
+        for session in cursor:
+            session_id = str(session._id)
+            if session_id in self.core.connections:
+                del self.core.connections[session_id]
+                logging.info("Dropped active connection %s." % session_id)
+            meta.session.remove(Session, { "_id" : session._id })
 
         logging.info("Purged %d expired session(s)." % num_rows)
 
