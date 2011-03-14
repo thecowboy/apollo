@@ -58,7 +58,7 @@ dojo.declare("apollo.client.UIRoot", apollo.client.Component, {
         this.uiElements = {};
     },
 
-    add : function(type)
+    add : function(id, type)
     {
         var res = "static/ui/" + type;
         var dialog = new dijit.Dialog();
@@ -99,7 +99,7 @@ dojo.declare("apollo.client.UIRoot", apollo.client.Component, {
             error           : loadContent
         });
 
-        this.uiElements[dialog.id] = dialog;
+        this.uiElements[id] = dialog;
         return dialog;
     },
 

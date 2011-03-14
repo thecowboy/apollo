@@ -26,7 +26,6 @@ from ming import Session
 from ming.orm import ThreadLocalORMSession
 
 doc_session = Session()
-doc_session.autoflush = True
 session = ThreadLocalORMSession(doc_session=doc_session)
 
 def bind_session(bind):

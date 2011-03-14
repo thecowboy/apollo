@@ -31,7 +31,7 @@ from ming.datastore import DataStore
 
 from apollo.server.web import FrontendHandler, SessionHandler, ActionHandler, EventsHandler, DylibHandler
 from apollo.server.cron import CronScheduler
-from apollo.server.dylib.dispatch import DylibDispatcher
+from apollo.server.dylib.meta import DylibDispatcher
 
 from apollo.server.models.meta import bind_session
 

@@ -25,7 +25,7 @@ import json
 import logging
 
 from tornado.options import options
-from tornado.web import RequestHandler, asynchronous
+from tornado.web import RequestHandler, asynchronous, HTTPError
 
 from apollo.server.models import meta
 from apollo.server.models.session import Session
@@ -45,7 +45,7 @@ class SessionHandler(RequestHandler):
     def get(self, *args, **kwargs):
         self.set_header("Content-Type", "application/json")
         session = Session()
-        meta.session.flush_all()
+        meta.session.flush()
         session_id = str(session._id)
 
         self.application.connections[session_id] = Transport(session_id)
@@ -60,18 +60,21 @@ class ActionHandler(RequestHandler):
 
         payload = self.get_argument("p")
 
-        transport = self.application.connections[session_id]
+        try:
+            transport = self.application.connections[session_id]
+        except KeyError:
+            raise HTTPError(500)
 
         try:
             depayload = json.loads(payload)
         except ValueError:
-            transport.sendEvent(PacketError({ "msg" : "bad packet payload" }))
+            transport.sendEvent(PacketError(msg="bad packet payload"))
         else:
             name = depayload.get("__name__")
             if name in packetlist:
-                packetlist[name](depayload).dispatch(transport, self.application)
+                packetlist[name](**depayload).dispatch(transport, self.application)
             else:
-                transport.sendEvent(PacketError({ "msg" : "invalid packet type" }))
+                transport.sendEvent(PacketError(msg="invalid packet type"))
 
         self.finish()
 
@@ -88,7 +91,7 @@ class EventsHandler(RequestHandler):
         if session_id in self.application.connections:
             self.application.connections[session_id].bind(self)
         else:
-            self.send(PacketError({ "msg" : "bad session" }))
+            self.send(PacketError(msg="bad session"))
 
         self.set_header("Content-Type", "application/json")
 
@@ -97,4 +100,7 @@ class DylibHandler(RequestHandler):
 
     def get(self, pathspec, *args, **kwargs):
         self.set_header("Content-Type", "text/javascript")
-        self.write(self.application.dylib_dispatcher.dispatch(pathspec))
+        dylib_data = self.application.dylib_dispatcher.dispatch(pathspec)
+        if dylib_data is None:
+            raise HTTPError(404)
+        self.write(dylib_data)

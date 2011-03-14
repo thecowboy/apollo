@@ -20,7 +20,16 @@
 # THE SOFTWARE.
 #
 
+from datetime import datetime
+
+from apollo.server.models import meta
 from apollo.server.protocol.packet import Packet
 
 class PacketHeartbeat(Packet):
     name = "heartbeat"
+
+    def dispatch(self, transport, core):
+        session = transport.session()
+        session.last_active = datetime.now()
+        meta.session.save(session)
+        meta.session.flush()

@@ -20,16 +20,14 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.component import Component
+from apollo.server.dylib import Dylib
 
-class Dylib(Component):
-    name = "dummy"
-    depends = []
+from tornado.options import options
 
-    def generate(self):
-        output = "dojo.provide(\"apollo.client.dylib.%s\");\n\n" % self.name
+class DylibConfig(Dylib):
+    name = "config"
 
-        for depend in self.depends:
-            output += "dojo.require(\"%s\");\n" % depend
-
-        return output + "\n"
+    def generate(self): 
+        output = super(DylibConfig, self).generate();
+        output += "apollo.client.dylib.config.session_expiry = %d;" % options.session_expiry
+        return output

@@ -20,26 +20,16 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.component import Component
-from apollo.server.dylib.packetlist import PacketList
+from apollo.server.dylib import Dylib
 
-DYLIB_MAPPINGS = {
-    "packetlist" : PacketList
-}
+from apollo.server.protocol.packet.meta import packetlist
 
-class DylibDispatcher(Component):
-    DYLIB_MAPPINGS = {
-        "packetlist" : PacketList
-    }
+class DylibPacketList(Dylib):
+    name = "packetlist"
+    depends = [ ("apollo.client.protocol.packet.%s" % packet_type.__name__) for packet_type in packetlist.values() ]
 
-    def __init__(self, core):
-        super(DylibDispatcher, self).__init__(core)
-
-        self.dylibs = {}
-        for pathspec, dylibtype in self.DYLIB_MAPPINGS.iteritems():
-            self.dylibs[pathspec] = dylibtype(self.core)
-
-    def dispatch(self, pathspec):
-        if pathspec in self.dylibs:
-            return self.dylibs[pathspec].generate()
-        return ""
+    def generate(self): 
+        output = super(DylibPacketList, self).generate();
+        for packet_name, packet_type in packetlist.iteritems():
+            output += "apollo.client.dylib.packetlist.%s = apollo.client.protocol.packet.%s;\n" % (packet_name, packet_type.__name__)
+        return output

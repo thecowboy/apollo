@@ -21,15 +21,29 @@
 #
 
 from apollo.server.component import Component
+from apollo.server.util.importlib import import_module
 
-class Dylib(Component):
-    name = "dummy"
-    depends = []
+import os
 
-    def generate(self):
-        output = "dojo.provide(\"apollo.client.dylib.%s\");\n\n" % self.name
+class DylibDispatcher(Component):
+    def __init__(self, core):
+        super(DylibDispatcher, self).__init__(core)
+        self.dylibs = {}
 
-        for depend in self.depends:
-            output += "dojo.require(\"%s\");\n" % depend
+        self.autodiscover()
 
-        return output + "\n"
+    def autodiscover(self):
+        for filename in os.listdir(os.path.dirname(__file__)):
+            if filename[:5] == "dylib" and filename[-3:] == ".py":
+                # assume this is a dylib
+                module_name = filename.rsplit(".", 1)[0]
+                module = import_module(".%s" % module_name, "apollo.server.dylib")
+                for member_name in dir(module):
+                    if member_name != "Dylib" and member_name[:5] == "Dylib":
+                        member = getattr(module, member_name)
+                        self.dylibs[member.name] = member(self.core)
+
+    def dispatch(self, pathspec):
+        if pathspec in self.dylibs:
+            return self.dylibs[pathspec].generate()
+        return None

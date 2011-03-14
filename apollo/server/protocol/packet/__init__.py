@@ -25,10 +25,7 @@ import json
 class Packet(object):
     name = "packet"
 
-    def __init__(self, payload=None):
-        if payload is None:
-            payload = {}
-
+    def __init__(self, **payload):
         self.__dict__.update(payload)
 
     def dispatch(self, transport, core):

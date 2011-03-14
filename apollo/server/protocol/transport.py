@@ -20,6 +20,8 @@
 # THE SOFTWARE.
 #
 
+from pymongo.objectid import ObjectId
+
 from apollo.server.models import meta
 from apollo.server.models.session import Session
 
@@ -45,4 +47,4 @@ class Transport(object):
         self.bound_handler = None
 
     def session(self):
-        return meta.session.get(Session, self.session_id)
+        return meta.session.get(Session, ObjectId(self.session_id))

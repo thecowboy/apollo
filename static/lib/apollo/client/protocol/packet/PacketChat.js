@@ -20,44 +20,15 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.Core");
+dojo.provide("apollo.client.protocol.packet.PacketChat");
 
-dojo.require("apollo.client.UIRoot");
-dojo.require("apollo.client.protocol.Transport");
+dojo.require("apollo.client.protocol.packet.Packet");
 
-// packets
-dojo.require("apollo.client.protocol.packet.PacketAuthenticate");
+dojo.declare("apollo.client.protocol.packet.PacketChat", apollo.client.protocol.packet.Packet, {
+    name    : "chat",
 
-dojo.declare("apollo.client.Core", null, {
-    constructor : function()
+    dispatch : function(transport, core)
     {
-        this.uiroot = new apollo.client.UIRoot(this);
-        this.transport = new apollo.client.protocol.Transport(this);
-    },
-
-    login : function(username, password)
-    {
-        this.transport.sendAction(new apollo.client.protocol.packet.PacketAuthenticate({
-            username    : username,
-            password    : password
-        }));
-    },
-
-    go : function()
-    {
-        this.transport.go();
-        dojo.addClass(dojo.body(), "claro");
-        this.uiroot.add("login", "logindialog").show();
-    },
-
-    die : function(msg)
-    {
-        if(this.dead) return;
-
-        this.dead = true;
-        var dialog = this.uiroot.add("error", "errordialog");
-        dialog.message = msg;
-        dialog.show();
-        this.transport.shutdown();
+        // TODO: chat stuff!
     }
 });

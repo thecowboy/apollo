@@ -20,16 +20,10 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.component import Component
+from apollo.server.protocol.packet import Packet
 
-class Dylib(Component):
-    name = "dummy"
-    depends = []
+class PacketChat(Packet):
+    name = "chat"
 
-    def generate(self):
-        output = "dojo.provide(\"apollo.client.dylib.%s\");\n\n" % self.name
-
-        for depend in self.depends:
-            output += "dojo.require(\"%s\");\n" % depend
-
-        return output + "\n"
+    def dispatch(self, transport, core):
+        pass # TODO: chat stuff!

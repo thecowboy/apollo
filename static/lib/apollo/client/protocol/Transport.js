@@ -23,8 +23,12 @@
 dojo.provide("apollo.client.protocol.Transport");
 
 dojo.require("apollo.client.Component");
-dojo.require("apollo.client.dylib.packetlist");
+
+dojo.require("apollo.client.protocol.packet.PacketHeartbeat");
 dojo.require("apollo.client.protocol.packet.PacketError");
+
+dojo.require("apollo.client.dylib.packetlist");
+dojo.require("apollo.client.dylib.config");
 
 dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
     eventComet : function()
@@ -78,7 +82,7 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
         });
     },
 
-    go : function()
+    acquireSession : function()
     {
         var that = this;
 
@@ -88,13 +92,34 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
             load        : function(sessionId)
             {
                 that.sessionId = sessionId;
+                that.startHeartbeat();
                 that.eventComet();
             }
         });
     },
 
+    go : function()
+    {
+        this.acquireSession();
+    },
+
+    startHeartbeat : function()
+    {
+        var that = this;
+        this.heartbeat = setInterval(function()
+        {
+            that.sendAction(new apollo.client.protocol.packet.PacketHeartbeat());
+        }, apollo.client.dylib.config.session_expiry * 1000 / 30);
+    },
+
+    stopHeartbeat : function()
+    {
+        clearInterval(this.heartbeat);
+    },
+
     shutdown : function()
     {
         this.shutdowned = true;
+        this.stopHeartbeat();
     }
 });

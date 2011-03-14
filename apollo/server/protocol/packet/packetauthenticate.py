@@ -26,6 +26,7 @@ from apollo.server.models import meta
 from apollo.server.models.user import User
 
 from apollo.server.protocol.packet.packetdeauthenticate import PacketDeauthenticate
+from apollo.server.protocol.packet.packetlogin import PacketLogin
 
 class PacketAuthenticate(Packet):
     name = "auth"
@@ -43,4 +44,9 @@ class PacketAuthenticate(Packet):
             transport.sendEvent(PacketDeauthenticate())
             return
 
-        transport.sendEvent(PacketAuthenticate())
+        session = transport.session()
+        session.user_id = user._id
+        meta.session.save(session)
+        meta.session.flush()
+
+        transport.sendEvent(PacketLogin(username=self.username))
