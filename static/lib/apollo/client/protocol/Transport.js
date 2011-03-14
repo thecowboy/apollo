@@ -27,12 +27,12 @@ dojo.require("apollo.client.dylib.packetlist");
 dojo.require("apollo.client.protocol.packet.PacketError");
 
 dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
-    eventComet : function(sessionId)
+    eventComet : function()
     {
         var that = this;
 
         dojo.xhrGet({
-            url         : "events?s=" + escape(sessionId),
+            url         : "events?s=" + escape(this.sessionId),
             handleAs    : "json",
             load        : function(packet)
             {
@@ -40,7 +40,7 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
                 that.processEvent(packet);
 
                 // start the comet loop again
-                that.eventComet(sessionId);
+                that.eventComet();
             }
         });
     },
@@ -57,15 +57,12 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
 
     sendAction : function(packet)
     {
-        var encapsulatedPacket = {
-            name        : packet.name,
-            payload     : packet
-        };
+        var that = this;
 
         dojo.xhrPost({
             url         : "action",
             handleAs    : "text",
-            postdata    : "p=" + escape(JSON.stringify(encapsulatedPacket))
+            postData    : "p=" + escape(packet.dump()) + "&s=" + that.sessionId
         });
     },
 
@@ -78,7 +75,8 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
             handleAs    : "text",
             load        : function(sessionId)
             {
-                that.eventComet(sessionId);
+                that.sessionId = sessionId;
+                that.eventComet();
             }
         });
     },

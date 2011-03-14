@@ -20,11 +20,19 @@
 # THE SOFTWARE.
 #
 
+import json
+
+import logging
+
 from tornado.options import options
 from tornado.web import RequestHandler, asynchronous
 
 from apollo.server.models import meta
 from apollo.server.models.session import Session
+
+from apollo.server.protocol.transport import Transport
+from apollo.server.protocol.packet import packetlist
+from apollo.server.protocol.packet.packeterror import PacketError
 
 class FrontendHandler(RequestHandler):
     def get(self):
@@ -38,20 +46,50 @@ class SessionHandler(RequestHandler):
         self.set_header("Content-Type", "application/json")
         session = Session()
         meta.session.flush_all()
-        self.write(str(session._id))
+        session_id = str(session._id)
+
+        self.application.connections[session_id] = Transport(session_id)
+        logging.info("Acquired session: %s" % session_id)
+        self.write(session_id)
 
 class ActionHandler(RequestHandler):
     SUPPORTED_METHODS = ("POST",)
 
     def post(self, *args, **kwargs):
+        session_id = self.get_argument("s")
+
+        payload = self.get_argument("p")
+
+        transport = self.application.connections[session_id]
+
+        try:
+            depayload = json.loads(payload)
+        except ValueError:
+            transport.sendEvent(PacketError({ "msg" : "bad packet payload" }))
+        else:
+            name = depayload.get("__name__")
+            if name in packetlist:
+                packetlist[name](depayload).dispatch(transport, self.application)
+            else:
+                transport.sendEvent(PacketError({ "msg" : "invalid packet type" }))
+
         self.finish()
 
 class EventsHandler(RequestHandler):
     SUPPORTED_METHODS = ("GET",)
 
+    def send(self, packet):
+        self.finish(packet.dump())
+
     @asynchronous
     def get(self, *args, **kwargs):
         session_id = self.get_argument("s")
+
+        if session_id in self.application.connections:
+            self.application.connections[session_id].bind(self)
+        else:
+            self.send(PacketError({ "msg" : "bad session" }))
+
         self.set_header("Content-Type", "application/json")
 
 class DylibHandler(RequestHandler):

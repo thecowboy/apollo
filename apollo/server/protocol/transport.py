@@ -20,10 +20,29 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.protocol import Packet
+from apollo.server.models import meta
+from apollo.server.models.session import Session
 
-class PacketAuthenticate(Packet):
-    name = "auth"
+class Transport(object):
+    def __init__(self, session_id, bound_handler=None):
+        self.session_id = session_id
+        self.bound_handler = bound_handler
+        self.intermedq = []
 
-    def dispatch(self, transport, core):
-        pass
+    def bind(self, bind):
+        self.bound_handler = bind
+        while self.intermedq:
+            self.sendEvent(self.intermedq.pop())
+
+    def sendEvent(self, packet):
+        if self.bound_handler is None:
+            self.intermedq.append(packet)
+            return
+
+        self.bound_handler.send(packet)
+
+        # unbind immediately
+        self.bound_handler = None
+
+    def session(self):
+        return meta.session.find(Session, { "_id" : self.session_id })

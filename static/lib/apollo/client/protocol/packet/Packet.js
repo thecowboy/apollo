@@ -32,5 +32,10 @@ dojo.declare("apollo.client.protocol.packet.Packet", null, {
 
     dispatch : function(transport, core)
     {
+    },
+
+    dump : function()
+    {
+        return JSON.stringify(dojo.mixin({ __name__ : this.name}, this));
     }
 });

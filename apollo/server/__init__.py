@@ -91,3 +91,5 @@ class Core(Application):
 
         self.cron = CronScheduler(self)
         self.cron.go()
+
+        self.connections = {}
