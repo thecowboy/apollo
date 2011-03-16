@@ -20,7 +20,6 @@
 # THE SOFTWARE.
 #
 
-import os
 from hashlib import sha256
 from datetime import datetime
 
