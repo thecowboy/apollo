@@ -27,7 +27,8 @@ dojo.require("apollo.client.protocol.packet.Packet");
 dojo.declare("apollo.client.protocol.packet.PacketDeauthenticate", apollo.client.protocol.packet.Packet, {
     name    : "deauth",
 
-    dispatch : function()
+    dispatch : function(transport, core)
     {
+        core.deauth();
     }
 });

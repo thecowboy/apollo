@@ -53,9 +53,8 @@ dojo.declare("apollo.client.UIRoot", apollo.client.Component, {
     {
         for(var key in this.uiElements)
         {
-            this.uiElements[key].destroy();
+            this.remove(key);
         }
-        this.uiElements = {};
     },
 
     add : function(id, type)
@@ -73,6 +72,7 @@ dojo.declare("apollo.client.UIRoot", apollo.client.Component, {
                 handleAs    : "text",
                 load        : function(data)
                 {
+                    if(!dialog.domNode) return; // dialog is gone already
                     dialog.attr("content", data);
                     callback();
                 }
@@ -93,6 +93,7 @@ dojo.declare("apollo.client.UIRoot", apollo.client.Component, {
                     loadContent(function()
                     {
                         if(context.postLoad) context.postLoad(dialog);
+                        dialog.show();
                     });
                 });
             },
@@ -105,6 +106,8 @@ dojo.declare("apollo.client.UIRoot", apollo.client.Component, {
 
     remove : function(id)
     {
+        if(!this.uiElements[id]) return;
+
         this.uiElements[id].destroy();
         delete this.uiElements[id];
     }

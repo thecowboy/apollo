@@ -7,6 +7,9 @@ setup_options()
 
 core = Core()
 
+# very naughty!
+meta.session.impl.bind.bind._conn.drop_database(meta.session.impl.bind.database)
+
 user = User()
 user.name = "root"
 user.password = "test"

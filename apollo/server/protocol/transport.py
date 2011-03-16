@@ -20,15 +20,19 @@
 # THE SOFTWARE.
 #
 
+import os
+from hashlib import sha256
+
 from pymongo.objectid import ObjectId
 
 from apollo.server.models import meta
 from apollo.server.models.session import Session
 
 class Transport(object):
-    def __init__(self, session_id, bound_handler=None):
-        self.session_id = session_id
+    def __init__(self, token, bound_handler=None):
+        self.token = token
         self.bound_handler = bound_handler
+        self.nonce = sha256(os.urandom(64)).hexdigest()
         self.intermedq = []
 
     def bind(self, bind):
@@ -47,4 +51,4 @@ class Transport(object):
         self.bound_handler = None
 
     def session(self):
-        return meta.session.find(Session, { "session_id" : self.session_id }).one()
+        return meta.session.find(Session, { "token" : self.token }).one()

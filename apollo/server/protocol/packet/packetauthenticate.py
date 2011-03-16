@@ -20,6 +20,8 @@
 # THE SOFTWARE.
 #
 
+from hashlib import sha256
+
 from apollo.server.protocol.packet import Packet
 
 from apollo.server.models import meta
@@ -40,7 +42,7 @@ class PacketAuthenticate(Packet):
             transport.sendEvent(PacketDeauthenticate())
             return
 
-        if not user.check_password(self.password):
+        if self.pwhash != sha256(self.nonce + user.pwhash + transport.nonce).hexdigest():
             transport.sendEvent(PacketDeauthenticate())
             return
 

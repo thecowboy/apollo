@@ -47,20 +47,25 @@ class SessionHandler(RequestHandler):
         session = Session()
         meta.session.flush()
 
-        self.application.connections[session.session_id] = Transport(session.session_id)
-        logging.info("Acquired session: %s" % session.session_id)
-        self.write(session.session_id)
+        transport = Transport(session.token)
+        self.application.connections[session.token] = transport
+        logging.info("Acquired session: %s" % session.token)
+
+        self.write(json.dumps({
+            "s" :   session.token,
+            "n":    transport.nonce
+        }))
 
 class ActionHandler(RequestHandler):
     SUPPORTED_METHODS = ("POST",)
 
     def post(self, *args, **kwargs):
-        session_id = self.get_argument("s")
+        token = self.get_argument("s")
 
         payload = self.get_argument("p")
 
         try:
-            transport = self.application.connections[session_id]
+            transport = self.application.connections[token]
         except KeyError:
             raise HTTPError(500)
 
@@ -85,10 +90,10 @@ class EventsHandler(RequestHandler):
 
     @asynchronous
     def get(self, *args, **kwargs):
-        session_id = self.get_argument("s")
+        token = self.get_argument("s")
 
-        if session_id in self.application.connections:
-            self.application.connections[session_id].bind(self)
+        if token in self.application.connections:
+            self.application.connections[token].bind(self)
         else:
             self.send(PacketError(msg="bad session"))
 

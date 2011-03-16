@@ -7,7 +7,3 @@ this.preLoad = function(dialog)
     dialog.attr("title", "Login");
     dialog.closeButtonNode.style.display = "none";
 };
-
-this.postLoad = function(dialog)
-{
-};

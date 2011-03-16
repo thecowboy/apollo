@@ -41,14 +41,9 @@ class User(MappedClass):
     pwhash = FieldProperty(str)
 
     def _set_password(self, value):
-        salt = sha256(os.urandom(64)).hexdigest()[:16]
-        self.pwhash = sha256(salt + value).hexdigest() + salt
+        self.pwhash = sha256("%s:%s" % (self.name, value)).hexdigest()
 
     password = property(fset=_set_password)
-
-    def check_password(self, value):
-        salt = self.pwhash[64:]
-        return sha256(salt + value).hexdigest() + salt == self.pwhash
 
     last_active = FieldProperty(datetime, if_missing=datetime.utcnow)
     registered = FieldProperty(datetime, if_missing=datetime.utcnow)

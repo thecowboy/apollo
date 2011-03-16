@@ -29,7 +29,6 @@ dojo.declare("apollo.client.protocol.packet.PacketLogin", apollo.client.protocol
 
     dispatch : function(transport, core)
     {
-        // TODO: something better!
-        core.uiroot.remove("login");
+        if(this.username == core.state.username) core.auth();
     }
 });

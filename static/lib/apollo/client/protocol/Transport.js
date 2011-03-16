@@ -38,13 +38,19 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
         dojo.xhrGet({
             url         : "events",
             content     : {
-                s       : this.sessionId
+                s       : this.token
             },
             handleAs    : "json",
             load        : function(packet)
             {
                 // do stuff
-                that.processEvent(packet);
+                try
+                {
+                    that.processEvent(packet);
+                } catch(e) {
+                    core.die("Internal error (transport event): " + e);
+                    throw e;
+                }
 
                 // start the comet loop again (if we want to)
                 if(!that.shutdowned) that.eventComet();
@@ -72,7 +78,7 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
             url         : "action",
             content     : {
                 p       : packet.dump(),
-                s       : this.sessionId
+                s       : this.token
             },
             handleAs    : "text",
             error       : function()
@@ -88,10 +94,13 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
 
         dojo.xhrGet({
             url         : "session",
-            handleAs    : "text",
-            load        : function(sessionId)
+            handleAs    : "json",
+            load        : function(packet)
             {
-                that.sessionId = sessionId;
+                that.token = packet.s;
+                that.nonce = packet.n;
+
+                that.core.ready();
                 that.startHeartbeat();
                 that.eventComet();
             }
