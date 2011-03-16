@@ -20,7 +20,11 @@
 # THE SOFTWARE.
 #
 
+import os
+
 from datetime import datetime
+
+from hashlib import sha256
 
 from ming import schema
 from ming.orm import MappedClass
@@ -35,6 +39,7 @@ class Session(MappedClass):
 
     _id = FieldProperty(schema.ObjectId)
 
+    session_id = FieldProperty(str, if_missing=lambda: sha256(os.urandom(64)).hexdigest())
     last_active = FieldProperty(datetime, if_missing=datetime.utcnow)
     user_id = ForeignIdProperty("User")
     data = FieldProperty(dict)

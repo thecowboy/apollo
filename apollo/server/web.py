@@ -46,11 +46,10 @@ class SessionHandler(RequestHandler):
         self.set_header("Content-Type", "application/json")
         session = Session()
         meta.session.flush()
-        session_id = str(session._id)
 
-        self.application.connections[session_id] = Transport(session_id)
-        logging.info("Acquired session: %s" % session_id)
-        self.write(session_id)
+        self.application.connections[session.session_id] = Transport(session.session_id)
+        logging.info("Acquired session: %s" % session.session_id)
+        self.write(session.session_id)
 
 class ActionHandler(RequestHandler):
     SUPPORTED_METHODS = ("POST",)
