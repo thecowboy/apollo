@@ -44,6 +44,9 @@ class Session(MappedClass):
     user_id = ForeignIdProperty("User")
     data = FieldProperty(dict)
 
+    def get_user(self):
+        return meta.session.get(User, self.user_id)
+
 from apollo.server.models.user import User
 
 MappedClass.compile_all()

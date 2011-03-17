@@ -15,6 +15,10 @@ user = User()
 user.name = "root"
 user.password = "test"
 
+user = User()
+user.name = "joe"
+user.password = "jimmy"
+
 meta.session.save(user)
 meta.session.flush_all()
 

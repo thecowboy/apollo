@@ -24,11 +24,20 @@ dojo.provide("apollo.client.protocol.packet.PacketLogin");
 
 dojo.require("apollo.client.protocol.packet.Packet");
 
+dojo.require("apollo.client.util.ui");
+
 dojo.declare("apollo.client.protocol.packet.PacketLogin", apollo.client.protocol.packet.Packet, {
     name    : "login",
 
     dispatch : function(transport, core)
     {
-        if(!this.username) core.auth();
+        if(!this.username)
+        {
+            core.auth();
+        }
+        else
+        {
+            apollo.client.util.ui.addConsoleMessage(this.username + " has logged in.");
+        }
     }
 });

@@ -32,5 +32,5 @@ class Channel(object):
         del self.transports[transport.token]
 
     def sendEvent(self, event):
-        for transport in self.transports.items():
+        for transport in self.transports.values():
             transport.sendEvent(event)

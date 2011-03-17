@@ -20,17 +20,41 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.protocol.packet.PacketChat");
+dojo.provide("apollo.client.util.ui");
 
-dojo.require("apollo.client.protocol.packet.Packet");
+apollo.client.util.ui.addChatMessage = function(origin, message)
+{
+    var row = dojo.create("tr", null, "chatLog");
 
-dojo.require("apollo.client.util.ui");
+    var chatOrigin = dojo.create("td");
+    dojo.addClass(chatOrigin, "chatOrigin");
+    chatOrigin.innerHTML = origin;
 
-dojo.declare("apollo.client.protocol.packet.PacketChat", apollo.client.protocol.packet.Packet, {
-    name    : "chat",
+    var chatMessage = dojo.create("td");
+    dojo.addClass(chatMessage, "chatMessage");
+    // let's do the angle bracket dance!
+    chatMessage.innerHTML = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-    dispatch : function(transport, core)
-    {
-        apollo.client.util.ui.addChatMessage(this.origin, this.msg);
-    }
-});
+    dojo.place(chatOrigin, row);
+    dojo.place(chatMessage, row);
+
+    // do scroll
+    var chatPane = dojo.byId("chatPane");
+    chatPane.scrollTop = chatPane.scrollHeight;
+}
+
+apollo.client.util.ui.addConsoleMessage = function(message)
+{
+    var row = dojo.create("tr", null, "chatLog");
+
+    var chatConsole = dojo.create("td");
+    dojo.addClass(chatConsole, "chatConsole");
+    dojo.attr(chatConsole, "colspan", 2);
+    chatConsole.innerHTML = message;
+
+    dojo.place(chatConsole, row);
+
+    // do scroll
+    var chatPane = dojo.byId("chatPane");
+    chatPane.scrollTop = chatPane.scrollHeight;
+}

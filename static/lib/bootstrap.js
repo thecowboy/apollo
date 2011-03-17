@@ -12,7 +12,9 @@ dojo.require("dijit.layout.ContentPane");
 dojo.baseUrl = "static/lib/dojo/"; // dojo WOULD be here
 
 dojo.registerModulePath("apollo.client.dylib", "../../../dylib"); // for dynamic libraries
+
 dojo.require("apollo.client.Core");
+dojo.require("apollo.client.util.ui");
 
 var core;
 

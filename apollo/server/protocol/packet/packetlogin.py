@@ -53,4 +53,6 @@ class PacketLogin(Packet):
 
         transport.sendEvent(PacketLogin())
 
-        core.bus.getChannel("chat.global").subscribeTransport(transport)
+        channel = core.bus.getChannel("chat.global")
+        channel.subscribeTransport(transport)
+        channel.sendEvent(PacketLogin(username=transport.session().get_user()["name"]))

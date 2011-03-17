@@ -107,6 +107,6 @@ class Core(Application):
     def loseTransport(self, token):
         transport = self.connections[token]
         del self.connections[token]
-
         self.bus.unsubscribeTransport(transport)
+
         logging.info("Lost transport: %s" % token)

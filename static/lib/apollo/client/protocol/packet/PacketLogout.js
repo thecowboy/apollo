@@ -29,6 +29,11 @@ dojo.declare("apollo.client.protocol.packet.PacketLogout", apollo.client.protoco
 
     dispatch : function(transport, core)
     {
-        if(!this.username) core.deauth();
+        if(!this.username)
+        {
+            core.deauth();
+        } else {
+            apollo.client.util.ui.addConsoleMessage(this.username + " has logged out.");
+        }
     }
 });

@@ -30,6 +30,8 @@ from apollo.server.component import Component
 from apollo.server.models import meta
 from apollo.server.models.session import Session
 
+from apollo.server.protocol.packet.packetlogout import PacketLogout
+
 class Transport(Component):
     def __init__(self, core, bound_handler=None):
         super(Transport, self).__init__(core)
@@ -62,5 +64,10 @@ class Transport(Component):
         return meta.session.find(Session, { "token" : self.token }).one()
 
     def shutdown(self):
-        meta.session.remove(Session, { "token" : self.token })
+        self.core.bus.unsubscribeTransport(self)
         self.core.loseTransport(self.token)
+
+        channel = self.core.bus.getChannel("chat.global")
+        channel.sendEvent(PacketLogout(username=self.session().get_user()["name"]))
+
+        meta.session.remove(Session, { "token" : self.token })

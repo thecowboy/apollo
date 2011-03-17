@@ -35,3 +35,6 @@ class Packet(object):
         dic = self.__dict__.copy()
         dic["__name__"] = self.name
         return json.dumps(dic)
+
+    def __getattr__(self, attr):
+        return None

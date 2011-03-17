@@ -22,40 +22,14 @@
 
 dojo.provide("apollo.client.Core");
 
+dojo.require("apollo.client.ActionDispatcher");
 dojo.require("apollo.client.protocol.Transport");
-
-dojo.require("apollo.client.util.sha256");
-
-// packets
-dojo.require("apollo.client.protocol.packet.PacketLogin");
-dojo.require("apollo.client.protocol.packet.PacketLogout");
 
 dojo.declare("apollo.client.Core", null, {
     constructor : function()
     {
         this.transport = new apollo.client.protocol.Transport(this);
-    },
-
-    login : function(username, password)
-    {
-        var nonce = apollo.client.util.sha256.sha256(Math.random() + "" + Math.random() + "" + Math.random());
-
-        this.transport.sendAction(new apollo.client.protocol.packet.PacketLogin({
-            username    : username,
-            pwhash      : apollo.client.util.sha256.sha256(
-                nonce +
-                apollo.client.util.sha256.sha256(
-                    username.toLowerCase() + ":" + password
-                ) +
-                this.transport.nonce
-            ),
-            nonce       : nonce
-        }));
-    },
-
-    logout : function()
-    {
-        this.transport.sendAction(new apollo.client.protocol.packet.PacketLogout());
+        this.actions = new apollo.client.ActionDispatcher(this.transport);
     },
 
     auth : function()
