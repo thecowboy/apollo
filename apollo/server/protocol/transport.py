@@ -71,7 +71,9 @@ class Transport(Component):
             pass
         self.core.loseTransport(self.token)
 
-        channel = self.core.bus.getChannel("global")
-        channel.sendEvent(PacketLogout(username=self.session().get_user()["name"]))
+        user = self.session().get_user()
+        if user is not None:
+            channel = self.core.bus.getChannel("global")
+            channel.sendEvent(PacketLogout(username=user["name"]))
 
         meta.session.remove(Session, { "token" : self.token })
