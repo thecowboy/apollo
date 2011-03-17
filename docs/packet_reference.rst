@@ -29,46 +29,39 @@ Data Members
  * ``msg``
    Error message.
 
-``PacketAuthenticate "auth"``
-=============================
-Perform authentication.
-
-Direction of Transfer
----------------------
-Client to server only.
-
-Data Members
-------------
- * ``username``
-   Username to authenticate for.
-
- * ``password``
-   Password for authentication.
-
-``PacketDeauthenticate "deauth"``
-=================================
-Perform user deauthenticate.
-
-Direction of Transfer
----------------------
-Bidrectional.
-
-Data Members
-------------
-None.
-
 ``PacketLogin "login"``
 ========================
-Inform the client a user has logged in.
+Log into the server, or inform the client a user has logged in.
 
 Direction of Transfer
 ---------------------
-Server to client only.
+Bidirectional.
 
 Data Members
 ------------
  * ``username``
-   Username of user who has logged in.
+   Username of user who has logged in (empty if it is the connected client's
+   packet).
+
+ * ``pwhash``
+   Password hashed with client and server nonce (client to server only).
+
+ * ``nonce``
+   Client nonce (client to server only).
+
+``PacketLogout "logout"``
+=========================
+Log out of the server, or inform the client a user has logged out.
+
+Direction of Transfer
+---------------------
+Bidirectional.
+
+Data Members
+------------
+ * ``username``
+   Username of user who has logged out (empty if it is the connected client's
+   packet).
 
 ``PacketChat "chat"``
 =====================
