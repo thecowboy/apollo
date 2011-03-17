@@ -40,6 +40,8 @@ from apollo.server.models.meta import bind_session
 
 class Core(Application):
     def __init__(self):
+        logging.getLogger().setLevel(options.logging_level)
+
         # apollo distribution root
         dist_root = os.path.join(os.path.dirname(__file__), "..", "..")
 
@@ -65,7 +67,8 @@ class Core(Application):
         self.connections = {}
 
         self.setupCron()
-        self.setupBus()
+
+        self.bus = Bus(self)
 
     # setup
     def setupSession(self):
@@ -90,10 +93,6 @@ class Core(Application):
     def setupCron(self):
         self.cron = CronScheduler(self)
         self.cron.go()
-
-    def setupBus(self):
-        self.bus = Bus(self)
-        self.bus.createChannel("chat.global")
 
     # transport related stuff
     def createTransport(self):

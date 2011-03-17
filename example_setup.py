@@ -12,12 +12,16 @@ core = Core()
 meta.session.impl.bind.bind._conn.drop_database(meta.session.impl.bind.database)
 
 user = User()
-user.name = "root"
-user.password = "test"
+user.name = "rfw"
+user.password = "iscool"
 
 user = User()
-user.name = "joe"
-user.password = "jimmy"
+user.name = "noshi"
+user.password = "isgat"
+
+user = User()
+user.name = "rlew"
+user.password = "stinx"
 
 meta.session.save(user)
 meta.session.flush_all()

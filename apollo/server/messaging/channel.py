@@ -20,17 +20,31 @@
 # THE SOFTWARE.
 #
 
+import logging
+
 class Channel(object):
-    def __init__(self, bus):
+    def __init__(self, name, bus):
+        self.name = name
         self.bus = bus
         self.transports = {}
 
     def subscribeTransport(self, transport):
         self.transports[transport.token] = transport
+        logging.debug("Currently attached transports on %s: %s" % (self.name, self.transports.keys()))
 
     def unsubscribeTransport(self, transport):
         del self.transports[transport.token]
+        # FIXME: why does this cause weird things to happen?!
+        #if not self.transports:
+        #    self.bus.shutdownChannel(self.name)
+        logging.debug("Currently attached transports on %s: %s" % (self.name, self.transports.keys()))
+
+    def transportProxy(self, func):
+        for transport in self.transports.values():
+            logging.debug("Applying transportProxy %s to %s" % (func, transport.token))
+            func(transport)
 
     def sendEvent(self, event):
-        for transport in self.transports.values():
-            transport.sendEvent(event)
+        multicaster = lambda transport: transport.sendEvent(event)
+        multicaster.__name__ = "multicaster"
+        self.transportProxy(multicaster)

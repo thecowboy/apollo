@@ -16,6 +16,13 @@ html, body
     cursor: crosshair;
 }
 
+#errorMessage
+{
+    padding-left: 2em;
+    font-family: monospace;
+    font-size: 1.2em;
+}
+
 .chatOrigin
 {
     width: 40px;

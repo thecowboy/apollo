@@ -36,11 +36,10 @@ class Bus(Component):
             except KeyError:
                 pass
 
-    def createChannel(self, channel):
-        self.channels[channel] = Channel(channel)
-
     def getChannel(self, channel):
+        if channel not in self.channels:
+            self.channels[channel] = Channel(channel, self)
         return self.channels[channel]
 
-    def shutdownChannel(self, channel):
+    def shutdownChannel(self, channel, instance=None):
         del self.channels[channel]

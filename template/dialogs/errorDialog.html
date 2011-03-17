@@ -1,8 +1,33 @@
 <div dojoType="dijit.Dialog" title="Error" id="errorDialog">
-    Error encountered!
+    <p>
+        Sorry, but it seems we've run into an error! We've managed to salvage
+        the following information about it:
+    </p>
 
-    <div dojoType="dijit.layout.ContentPane" id="errorMessage">
+    <p id="errorMessage">
         Unknown error.
-    </div>
+    </p>
+
+    <p>
+        The following problems may have caused it:
+        <ul>
+            <li>
+                You have logged in at two or more locations, causing one of your
+                sessions to end.
+            </li>
+
+            <li>
+                You tried to do something really weird.
+            </li>
+
+            <li>
+                The server has gone offline (that's our fault!).
+            </li>
+
+            <li>
+                The server has run into a problem (also our fault!).
+            </li>
+        </ul>
+    </p>
     {% include "../snippets/hideDijitDialogCloseButton.html" %}
 </div>

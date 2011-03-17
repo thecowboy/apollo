@@ -20,6 +20,8 @@
 # THE SOFTWARE.
 #
 
+import logging
+
 from tornado.options import define
 
 def setup_options():
@@ -35,3 +37,5 @@ def setup_options():
     define("mongodb_username", default="", help="mongodb server username", metavar="USERNAME")
     define("mongodb_password", default="", help="mongodb server password (put in apollod.conf)", metavar="PASSWORD")
     define("mongodb_database", default="apollo", help="mongodb database name", metavar="DATABASE")
+
+    define("logging_level", default=logging.WARN, help="logging level", type=int, metavar="LEVEL")

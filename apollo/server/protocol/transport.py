@@ -65,9 +65,13 @@ class Transport(Component):
 
     def shutdown(self):
         self.core.bus.unsubscribeTransport(self)
+        try:
+            self.sendEvent(PacketLogout())
+        except IOError:
+            pass
         self.core.loseTransport(self.token)
 
-        channel = self.core.bus.getChannel("chat.global")
+        channel = self.core.bus.getChannel("global")
         channel.sendEvent(PacketLogout(username=self.session().get_user()["name"]))
 
         meta.session.remove(Session, { "token" : self.token })
