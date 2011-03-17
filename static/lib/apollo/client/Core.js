@@ -22,7 +22,6 @@
 
 dojo.provide("apollo.client.Core");
 
-dojo.require("apollo.client.UIRoot");
 dojo.require("apollo.client.protocol.Transport");
 
 dojo.require("apollo.client.util.sha256");
@@ -34,15 +33,11 @@ dojo.require("apollo.client.protocol.packet.PacketLogout");
 dojo.declare("apollo.client.Core", null, {
     constructor : function()
     {
-        this.uiroot = new apollo.client.UIRoot(this);
         this.transport = new apollo.client.protocol.Transport(this);
-        this.state = {};
     },
 
     login : function(username, password)
     {
-        this.state.username = username;
-
         var nonce = apollo.client.util.sha256.sha256(Math.random() + "" + Math.random() + "" + Math.random());
 
         this.transport.sendAction(new apollo.client.protocol.packet.PacketLogin({
@@ -65,26 +60,23 @@ dojo.declare("apollo.client.Core", null, {
 
     auth : function()
     {
-        this.uiroot.remove("login");
-        this.uiroot.add("chat", "chatdialog");
+        dijit.byId("loginDialog").hide();
     },
 
     deauth : function()
     {
-        delete this.state.username;
-        this.uiroot.remove("chat");
+        
     },
 
     ready : function()
     {
-        this.uiroot.remove("loading");
-        this.uiroot.add("login", "logindialog");
+        dijit.byId("loadingDialog").hide();
+        dijit.byId("loginDialog").show();
     },
 
     go : function()
     {
-        dojo.addClass(dojo.body(), "claro");
-        this.uiroot.add("loading", "loadingdialog");
+        dijit.byId("loadingDialog").show();
         this.transport.go();
     },
 
@@ -93,9 +85,10 @@ dojo.declare("apollo.client.Core", null, {
         if(this.dead) return;
 
         this.dead = true;
-        var dialog = this.uiroot.add("error", "errordialog");
-        dialog.message = msg;
-        dialog.show();
+
+        dojo.byId("errorMessage").innerHTML = msg;
+        dijit.byId("errorDialog").show();
+
         this.transport.shutdown();
     }
 });

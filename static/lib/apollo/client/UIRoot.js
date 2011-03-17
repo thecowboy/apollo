@@ -25,11 +25,14 @@ dojo.provide("apollo.client.UIRoot");
 dojo.require("apollo.client.Component");
 dojo.require("apollo.client.util.EvaluationContext");
 
-dojo.require("dijit.Dialog");
+dojo.require("dijit._Widget");
+
+dojo.require("dojo.parser");
 
 dojo.declare("apollo.client.UIRoot", apollo.client.Component, {
     constructor : function(core)
     {
+        dojo.addClass(dojo.body(), "claro");
         this.uiElements = {};
     },
 
@@ -59,11 +62,15 @@ dojo.declare("apollo.client.UIRoot", apollo.client.Component, {
 
     add : function(id, type)
     {
+        var that = this;
+
         var res = "static/ui/" + type;
-        var dialog = new dijit.Dialog();
-        dialog.attr("content", "Loading...");
-        dialog.uiroot = this;
-        dialog.core = this.core;
+
+        var widget = new dijit._Widget();
+
+        this.uiElements[id] = widget;
+
+        var tempNode = dojo.create("div", null);
 
         var loadContent = function(callback)
         {
@@ -72,8 +79,12 @@ dojo.declare("apollo.client.UIRoot", apollo.client.Component, {
                 handleAs    : "text",
                 load        : function(data)
                 {
-                    if(!dialog.domNode) return; // dialog is gone already
-                    dialog.attr("content", data);
+                    tempNode.innerHTML = data;
+                    dojo.safeMixin(widget, dojo.parser.parse(tempNode)[0]);
+                    widget.apollo = {
+                        uiroot : that,
+                        core   : that.core
+                    };
                     callback();
                 }
             });
@@ -87,21 +98,25 @@ dojo.declare("apollo.client.UIRoot", apollo.client.Component, {
                 var context = new apollo.client.util.EvaluationContext();
                 context.eval(data);
 
-                if(context.preLoad) context.preLoad(dialog);
+                if(context.preLoad) context.preLoad(widget);
+
                 dojo.ready(function()
                 {
                     loadContent(function()
                     {
-                        if(context.postLoad) context.postLoad(dialog);
-                        dialog.show();
+                        if(context.postLoad) context.postLoad(widget);
+                        if(!that.uiElements[id])
+                        {
+                            widget.destroy();
+                            if(dijit._dialogStack.length) dijit._underlay.show();
+                        }
                     });
                 });
             },
             error           : loadContent
         });
 
-        this.uiElements[id] = dialog;
-        return dialog;
+        return widget;
     },
 
     remove : function(id)

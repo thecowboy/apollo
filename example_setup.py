@@ -1,4 +1,5 @@
-from apollo.server import Core, setup_options
+from apollo.server import setup_options
+from apollo.server.core import Core
 
 from apollo.server.models import meta
 from apollo.server.models.user import User

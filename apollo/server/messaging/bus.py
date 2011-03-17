@@ -20,47 +20,27 @@
 # THE SOFTWARE.
 #
 
-import os
-from hashlib import sha256
-
-from pymongo.objectid import ObjectId
-
 from apollo.server.component import Component
 
-from apollo.server.models import meta
-from apollo.server.models.session import Session
+from apollo.server.messaging.channel import Channel
 
-class Transport(Component):
-    def __init__(self, core, bound_handler=None):
-        super(Transport, self).__init__(core)
-        self.bound_handler = bound_handler
+class Bus(Component):
+    def __init__(self, core):
+        super(Bus, self).__init__(core)
+        self.channels = {}
 
-        session = Session()
-        self.token = session.token
-        meta.session.save(session)
-        meta.session.flush()
+    def unsubscribeTransport(self, transport):
+        for channel in self.channels.values():
+            try:
+                channel.unsubscribeTransport(transport)
+            except KeyError:
+                pass
 
-        self.nonce = sha256(os.urandom(64)).hexdigest()
-        self.intermedq = []
+    def createChannel(self, channel):
+        self.channels[channel] = Channel(channel)
 
-    def bind(self, bind):
-        self.bound_handler = bind
-        while self.intermedq:
-            self.sendEvent(self.intermedq.pop())
+    def getChannel(self, channel):
+        return self.channels[channel]
 
-    def sendEvent(self, packet):
-        if self.bound_handler is None:
-            self.intermedq.append(packet)
-            return
-
-        self.bound_handler.send(packet)
-
-        # unbind immediately
-        self.bound_handler = None
-
-    def session(self):
-        return meta.session.find(Session, { "token" : self.token }).one()
-
-    def shutdown(self):
-        meta.session.remove(Session, { "token" : self.token })
-        self.core.loseTransport(self.token)
+    def shutdownChannel(self, channel):
+        del self.channels[channel]

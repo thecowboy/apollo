@@ -51,10 +51,9 @@ class CronScheduler(Component):
         num_rows = cursor.count()
 
         for session in cursor:
-            session_id = str(session._id)
-            if session_id in self.core.connections:
-                del self.core.connections[session_id]
-                logging.info("Dropped active connection %s." % session_id)
+            if session.token in self.core.connections:
+                self.core.loseTransport(session.token)
+                logging.info("Dropped active connection %s." % session.token)
             meta.session.remove(Session, { "_id" : session._id })
 
         logging.info("Purged %d expired session(s)." % num_rows)

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # Copyright (C) 2011 by Tony Young
 #
@@ -20,20 +19,3 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
-from tornado.options import parse_command_line, parse_config_file, options
-
-from apollo.server import setup_options
-from apollo.server.core import Core
-
-if __name__ == "__main__":
-    setup_options()
-    parse_config_file("apollod.conf")
-    parse_command_line()
-
-    server = HTTPServer(Core())
-    server.bind(options.port, options.address)
-    server.start()
-    IOLoop.instance().start()

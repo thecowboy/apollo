@@ -52,3 +52,5 @@ class PacketLogin(Packet):
         meta.session.flush()
 
         transport.sendEvent(PacketLogin())
+
+        core.bus.getChannel("chat.global").subscribeTransport(transport)

@@ -26,4 +26,5 @@ class PacketChat(Packet):
     name = "chat"
 
     def dispatch(self, transport, core):
-        pass # TODO: chat stuff!
+        if not self.target:
+            core.bus.getChannel("chat.global").sendEvent(PacketChat(msg=self.msg))

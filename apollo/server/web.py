@@ -82,6 +82,10 @@ class ActionHandler(RequestHandler):
 class EventsHandler(RequestHandler):
     SUPPORTED_METHODS = ("GET",)
 
+    def on_connection_close(self):
+        if self.transport:
+            self.transport.shutdown()
+
     def send(self, packet):
         self.finish(packet.dump())
 
@@ -97,6 +101,7 @@ class EventsHandler(RequestHandler):
             self.send(PacketError(msg="bad session"))
         else:
             transport.bind(self)
+            self.transport = transport
 
 class DylibHandler(RequestHandler):
     SUPPORTED_METHODS = ("GET",)

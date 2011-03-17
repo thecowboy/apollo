@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # Copyright (C) 2011 by Tony Young
 #
@@ -21,19 +20,17 @@
 # THE SOFTWARE.
 #
 
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
-from tornado.options import parse_command_line, parse_config_file, options
+class Channel(object):
+    def __init__(self, bus):
+        self.bus = bus
+        self.transports = {}
 
-from apollo.server import setup_options
-from apollo.server.core import Core
+    def subscribeTransport(self, transport):
+        self.transports[transport.token] = transport
 
-if __name__ == "__main__":
-    setup_options()
-    parse_config_file("apollod.conf")
-    parse_command_line()
+    def unsubscribeTransport(self, transport):
+        del self.transports[transport.token]
 
-    server = HTTPServer(Core())
-    server.bind(options.port, options.address)
-    server.start()
-    IOLoop.instance().start()
+    def sendEvent(self, event):
+        for transport in self.transports.items():
+            transport.sendEvent(event)

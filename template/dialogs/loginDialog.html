@@ -1,0 +1,24 @@
+<div dojoType="dijit.Dialog" title="Login" id="loginDialog">
+    <div dojoType="dijit.form.Form" id="login_form" method="post">
+        <table style="background: url(static/assets/logotype.png) bottom right no-repeat;">
+            <tr>
+                <td><label for="login_username">Username</label></td>
+                <td><input type="text" id="login_username" name="username" required="true" dojoType="dijit.form.TextBox" /></td>
+            </tr>
+            <tr>
+                <td><label for="login_password">Password</label></td>
+                <td><input type="password" id="login_password" name="password" required="true" dojoType="dijit.form.TextBox" /></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button dojoType="dijit.form.Button" type="submit">Login</button>
+                </td>
+            </tr>
+        </table>
+        <script type="dojo/method" event="onSubmit">
+            core.login(dojo.byId("login_username").value, dojo.byId("login_password").value);
+            return false;
+        </script>
+    </div>
+    {% include "../snippets/hideDijitDialogCloseButton.html" %}
+</div>
