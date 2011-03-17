@@ -41,5 +41,5 @@ class Bus(Component):
             self.channels[channel] = Channel(channel, self)
         return self.channels[channel]
 
-    def shutdownChannel(self, channel, instance=None):
+    def shutdownChannel(self, channel):
         del self.channels[channel]
