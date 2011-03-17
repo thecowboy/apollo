@@ -29,6 +29,7 @@ from tornado.web import Application
 
 from ming.datastore import DataStore
 
+from apollo.server.protocol.transport import Transport
 from apollo.server.web import FrontendHandler, SessionHandler, ActionHandler, EventsHandler, DylibHandler
 from apollo.server.cron import CronScheduler
 from apollo.server.dylib.meta import DylibDispatcher
@@ -93,3 +94,14 @@ class Core(Application):
 
         self.cron = CronScheduler(self)
         self.cron.go()
+
+    def createTransport(self):
+        transport = Transport(self)
+        self.connections[transport.token] = transport
+        return transport
+
+    def getTransport(self, token):
+        return self.connections[token]
+
+    def loseTransport(self, token):
+        del self.connections[token]

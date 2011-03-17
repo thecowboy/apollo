@@ -6,4 +6,5 @@ this.preLoad = function(dialog)
 
     dialog.attr("title", "Login");
     dialog.closeButtonNode.style.display = "none";
+    dialog._onKey = function() { };
 };

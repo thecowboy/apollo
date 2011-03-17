@@ -20,14 +20,15 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.protocol.packet.PacketAuthenticate");
+dojo.provide("apollo.client.protocol.packet.PacketLogout");
 
 dojo.require("apollo.client.protocol.packet.Packet");
 
-dojo.declare("apollo.client.protocol.packet.PacketAuthenticate", apollo.client.protocol.packet.Packet, {
-    name    : "auth",
+dojo.declare("apollo.client.protocol.packet.PacketLogout", apollo.client.protocol.packet.Packet, {
+    name    : "logout",
 
     dispatch : function(transport, core)
     {
+        if(!this.username) core.deauth();
     }
 });

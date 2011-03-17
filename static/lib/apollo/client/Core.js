@@ -28,8 +28,8 @@ dojo.require("apollo.client.protocol.Transport");
 dojo.require("apollo.client.util.sha256");
 
 // packets
-dojo.require("apollo.client.protocol.packet.PacketAuthenticate");
-dojo.require("apollo.client.protocol.packet.PacketDeauthenticate");
+dojo.require("apollo.client.protocol.packet.PacketLogin");
+dojo.require("apollo.client.protocol.packet.PacketLogout");
 
 dojo.declare("apollo.client.Core", null, {
     constructor : function()
@@ -45,26 +45,34 @@ dojo.declare("apollo.client.Core", null, {
 
         var nonce = apollo.client.util.sha256.sha256(Math.random() + "" + Math.random() + "" + Math.random());
 
-        this.transport.sendAction(new apollo.client.protocol.packet.PacketAuthenticate({
+        this.transport.sendAction(new apollo.client.protocol.packet.PacketLogin({
             username    : username,
-            pwhash      : apollo.client.util.sha256.sha256(nonce + apollo.client.util.sha256.sha256(username + ":" + password) + this.transport.nonce),
+            pwhash      : apollo.client.util.sha256.sha256(
+                nonce +
+                apollo.client.util.sha256.sha256(
+                    username.toLowerCase() + ":" + password
+                ) +
+                this.transport.nonce
+            ),
             nonce       : nonce
         }));
     },
 
     logout : function()
     {
-        this.transport.sendAction(new apollo.client.protocol.packet.PacketDeauthenticate());
+        this.transport.sendAction(new apollo.client.protocol.packet.PacketLogout());
     },
 
     auth : function()
     {
         this.uiroot.remove("login");
+        this.uiroot.add("chat", "chatdialog");
     },
 
     deauth : function()
     {
         delete this.state.username;
+        this.uiroot.remove("chat");
     },
 
     ready : function()

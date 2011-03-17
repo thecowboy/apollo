@@ -44,15 +44,12 @@ class SessionHandler(RequestHandler):
 
     def get(self, *args, **kwargs):
         self.set_header("Content-Type", "application/json")
-        session = Session()
-        meta.session.flush()
 
-        transport = Transport(session.token)
-        self.application.connections[session.token] = transport
-        logging.info("Acquired session: %s" % session.token)
+        transport = self.application.createTransport()
+        logging.info("Acquired session: %s" % transport.token)
 
         self.write(json.dumps({
-            "s" :   session.token,
+            "s" :   transport.token,
             "n":    transport.nonce
         }))
 
@@ -65,7 +62,7 @@ class ActionHandler(RequestHandler):
         payload = self.get_argument("p")
 
         try:
-            transport = self.application.connections[token]
+            transport = self.application.getTransport(token)
         except KeyError:
             raise HTTPError(500)
 
@@ -90,14 +87,16 @@ class EventsHandler(RequestHandler):
 
     @asynchronous
     def get(self, *args, **kwargs):
+        self.set_header("Content-Type", "application/json")
+
         token = self.get_argument("s")
 
-        if token in self.application.connections:
-            self.application.connections[token].bind(self)
-        else:
+        try:
+            transport = self.application.getTransport(token)
+        except KeyError:
             self.send(PacketError(msg="bad session"))
-
-        self.set_header("Content-Type", "application/json")
+        else:
+            transport.bind(self)
 
 class DylibHandler(RequestHandler):
     SUPPORTED_METHODS = ("GET",)

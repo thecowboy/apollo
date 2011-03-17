@@ -29,6 +29,6 @@ dojo.declare("apollo.client.protocol.packet.PacketLogin", apollo.client.protocol
 
     dispatch : function(transport, core)
     {
-        if(this.username == core.state.username) core.auth();
+        if(!this.username) core.auth();
     }
 });

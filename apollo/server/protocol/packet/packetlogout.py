@@ -22,5 +22,8 @@
 
 from apollo.server.protocol.packet import Packet
 
-class PacketDeauthenticate(Packet):
-    name = "deauth"
+class PacketLogout(Packet):
+    name = "logout"
+
+    def dispatch(self, transport, core):
+        transport.deauth()

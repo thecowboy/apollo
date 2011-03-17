@@ -20,7 +20,35 @@
 # THE SOFTWARE.
 #
 
+import re
+from hashlib import sha256
+
 from apollo.server.protocol.packet import Packet
+
+from apollo.server.models import meta
+from apollo.server.models.user import User
+
+from apollo.server.protocol.packet.packetlogout import PacketLogout
 
 class PacketLogin(Packet):
     name = "login"
+
+    def dispatch(self, transport, core):
+        user_cursor = meta.session.find(User, { "name" : { "$regex" : "^%s$" % re.escape(self.username.lower()), "$options" : "i" } })
+
+        try:
+            user = user_cursor.one()
+        except ValueError:
+            transport.sendEvent(PacketLogout())
+            return
+
+        if self.pwhash != sha256(self.nonce + user.pwhash + transport.nonce).hexdigest():
+            transport.sendEvent(PacketLogout())
+            return
+
+        session = transport.session()
+        session.user_id = user._id
+        meta.session.save(session)
+        meta.session.flush()
+
+        transport.sendEvent(PacketLogin())

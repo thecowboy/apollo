@@ -40,7 +40,7 @@ class User(MappedClass):
     pwhash = FieldProperty(str)
 
     def _set_password(self, value):
-        self.pwhash = sha256("%s:%s" % (self.name, value)).hexdigest()
+        self.pwhash = sha256("%s:%s" % (self.name.lower(), value)).hexdigest()
 
     password = property(fset=_set_password)
 
