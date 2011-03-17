@@ -36,5 +36,5 @@ html, body
 .chatConsole
 {
     font-style: italic;
-    font-color: gray;
+    color: gray;
 }

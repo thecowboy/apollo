@@ -26,9 +26,9 @@
                         <table id="chatLog" style="width: 100%">
                         </table>
                     </div>
-                    <div dojoType="dijit.layout.ContentPane" region="bottom" style="padding: 0; border: 0;">
+                    <div dojoType="dijit.layout.ContentPane" region="bottom" style="padding: 0;">
                         <div dojoType="dijit.form.Form" id="chatForm" method="post">
-                            <input type="text" id="chatInput" name="message" required="true" dojoType="dijit.form.TextBox" style="width: 99%;" />
+                            <input type="text" id="chatInput" name="message" required="true" dojoType="dijit.form.TextBox" style="width: 100%; border: 0;" />
                             <script type="dojo/method" event="onSubmit">
                                 var chatInput = dojo.byId("chatInput");
 
