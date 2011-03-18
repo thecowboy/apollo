@@ -54,7 +54,7 @@ class PacketLogin(Packet):
         transport.sendEvent(PacketLogin())
 
         user_channel = core.bus.getChannel("user.%s" % user._id)
-        user_channel.transportProxy(lambda transport: transport.shutdown())
+        user_channel.processEvent(PacketLogout())
         user_channel.subscribeTransport(transport)
 
         global_channel = core.bus.getChannel("global")

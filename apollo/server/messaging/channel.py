@@ -39,12 +39,10 @@ class Channel(object):
         #    self.bus.shutdownChannel(self.name)
         logging.debug("Currently attached transports on %s: %s" % (self.name, self.transports.keys()))
 
-    def transportProxy(self, func):
+    def processEvent(self, event):
         for transport in self.transports.values():
-            logging.debug("Applying transportProxy %s to %s" % (func, transport.token))
-            func(transport)
+            event.dispatch(transport, self.bus.core)
 
     def sendEvent(self, event):
-        multicaster = lambda transport: transport.sendEvent(event)
-        multicaster.__name__ = "multicaster"
-        self.transportProxy(multicaster)
+        for transport in self.transports.values():
+            transport.sendEvent(event)
