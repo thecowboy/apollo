@@ -53,10 +53,8 @@ class PacketLogin(Packet):
 
         transport.sendEvent(PacketLogin())
 
-        user_channel = core.bus.getChannel("user.%s" % user._id)
-        user_channel.processEvent(PacketLogout())
-        user_channel.subscribeTransport(transport)
+        core.bus.broadcast("cross.%s" % user._id, PacketLogout())
 
-        global_channel = core.bus.getChannel("global")
-        global_channel.subscribeTransport(transport)
-        global_channel.sendEvent(PacketLogin(username=transport.session().getUser()["name"]))
+        transport.consume()
+
+        core.bus.broadcast("user.*", PacketLogin(username=transport.session().getUser()["name"]))

@@ -31,7 +31,7 @@ from apollo.server.models import meta
 from apollo.server.models.session import Session
 
 from apollo.server.protocol.transport import Transport
-from apollo.server.protocol.packet.meta import packetlist
+from apollo.server.protocol.packet.meta import deserialize_packet
 from apollo.server.protocol.packet.packeterror import PacketError
 
 class FrontendHandler(RequestHandler):
@@ -67,15 +67,11 @@ class ActionHandler(RequestHandler):
             raise HTTPError(500)
 
         try:
-            depayload = json.loads(payload)
+            packet = deserialize_packet(payload)
         except ValueError:
             transport.sendEvent(PacketError(msg="bad packet payload"))
         else:
-            name = depayload.get("__name__")
-            if name in packetlist:
-                packetlist[name](**depayload).dispatch(transport, self.application)
-            else:
-                transport.sendEvent(PacketError(msg="invalid packet type"))
+            packet.dispatch(transport, self.application)
 
         self.finish()
 

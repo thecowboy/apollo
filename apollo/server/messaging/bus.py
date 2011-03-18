@@ -20,26 +20,27 @@
 # THE SOFTWARE.
 #
 
+import logging
+import urlparse
+
+from tornado.options import options
+
 from apollo.server.component import Component
 
-from apollo.server.messaging.channel import Channel
+import zmq
 
-class Bus(Component):
+class Bus(object):
     def __init__(self, core):
-        super(Bus, self).__init__(core)
-        self.channels = {}
+        self.zmqctx = zmq.Context()
+        self.publisher = self.zmqctx.socket(zmq.PUB)
+        self.publisher.bind(urlparse.urlunsplit((
+            options.zmq_transport,
+            options.zmq_host,
+            "",
+            "",
+            ""
+        )))
 
-    def unsubscribeTransport(self, transport):
-        for channel in self.channels.values():
-            try:
-                channel.unsubscribeTransport(transport)
-            except KeyError:
-                pass
-
-    def getChannel(self, channel):
-        if channel not in self.channels:
-            self.channels[channel] = Channel(channel, self)
-        return self.channels[channel]
-
-    def shutdownChannel(self, channel):
-        del self.channels[channel]
+    def broadcast(self, dest, packet):
+        logging.debug("Sending to %s: %s" % (dest, packet.dump()))
+        self.publisher.send("%s:%s" % (dest, packet.dump()))

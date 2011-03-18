@@ -21,7 +21,9 @@
 #
 
 from apollo.server.util.importlib import import_module
+
 import os
+import json
 
 packetlist = {}
 
@@ -37,3 +39,9 @@ def autodiscover():
                     packetlist[member.name] = member
 
 autodiscover()
+
+def deserialize_packet(payload):
+    depayload = json.loads(payload)
+    name = depayload.get("__name__")
+    if name in packetlist:
+        return packetlist[name](**depayload)

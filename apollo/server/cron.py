@@ -25,7 +25,9 @@ import logging
 from datetime import datetime, timedelta
 
 from tornado.options import options
-from tornado.ioloop import PeriodicCallback
+
+#from tornado.ioloop import PeriodicCallback
+from zmq.eventloop.ioloop import PeriodicCallback
 
 from ming.orm import Query
 
@@ -52,7 +54,7 @@ class CronScheduler(Component):
 
         for session in cursor:
             if session.token in self.core.connections:
-                self.core.loseTransport(session.token)
+                self.core.connections[session.token].shutdown()
                 logging.info("Dropped active connection %s." % session.token)
             meta.session.remove(Session, { "_id" : session._id })
 

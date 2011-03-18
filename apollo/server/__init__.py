@@ -38,4 +38,7 @@ def setup_options():
     define("mongodb_password", default="", help="mongodb server password (put in apollod.conf)", metavar="PASSWORD")
     define("mongodb_database", default="apollo", help="mongodb database name", metavar="DATABASE")
 
+    define("zmq_transport", default="inproc", help="zmq transport", metavar="TYPE")
+    define("zmq_host", default="apollo", help="zmq host", metavar="HOST")
+
     define("logging_level", default=logging.WARN, help="logging level", type=int, metavar="LEVEL")

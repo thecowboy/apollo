@@ -20,12 +20,12 @@
 # THE SOFTWARE.
 #
 
+import logging
+
 import os
 from hashlib import sha256
 
 from Queue import Queue
-
-from pymongo.objectid import ObjectId
 
 from apollo.server.component import Component
 
@@ -33,6 +33,8 @@ from apollo.server.models import meta
 from apollo.server.models.session import Session
 
 from apollo.server.protocol.packet.packetlogout import PacketLogout
+
+from apollo.server.messaging.consumer import Consumer
 
 class Transport(Component):
     def __init__(self, core, bound_handler=None):
@@ -45,16 +47,25 @@ class Transport(Component):
         meta.session.flush()
 
         self.nonce = sha256(os.urandom(64)).hexdigest()
-        self.intermedq = Queue()
+        self.intermedq = []
+
+    def consume(self):
+        self.consumer = Consumer(self.core.bus, self)
 
     def bind(self, bind):
         self.bound_handler = bind
-        while not self.intermedq.empty():
-            self.sendEvent(self.intermedq.get())
+        logging.debug("Binding %s: %s" % (self, bind))
+        to_send = self.intermedq[:]
+        self.intermedq = []
+
+        for packet in to_send:
+            self.sendEvent(packet)
 
     def sendEvent(self, packet):
         if self.bound_handler is None:
-            self.intermedq.put(packet)
+            logging.debug("Packet placed on intermediate queue: %s" % packet)
+            logging.debug(self.core.connections)
+            self.intermedq.append(packet)
             return
 
         self.bound_handler.send(packet)
@@ -66,16 +77,20 @@ class Transport(Component):
         return meta.session.find(Session, { "token" : self.token }).one()
 
     def shutdown(self):
-        self.core.bus.unsubscribeTransport(self)
-        try:
-            self.sendEvent(PacketLogout())
-        except IOError:
-            pass
-        self.core.loseTransport(self.token)
+        self.consumer.shutdown()
+
+        self.sendEvent(PacketLogout()) # causes problems with autodisconneting cron
 
         user = self.session().getUser()
         if user is not None:
-            channel = self.core.bus.getChannel("global")
-            channel.sendEvent(PacketLogout(username=user["name"]))
+            self.core.bus.broadcast("user.*", PacketLogout(username=user["name"]))
 
         meta.session.remove(Session, { "token" : self.token })
+
+        self.core.loseTransport(self.token)
+
+    def __repr__(self):
+        return "<Transport (%s): %s>" % (
+            self.bound_handler is None and "unbound" or "bound",
+            self.token
+        )
