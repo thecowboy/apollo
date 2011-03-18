@@ -23,6 +23,8 @@
 import os
 from hashlib import sha256
 
+from Queue import Queue
+
 from pymongo.objectid import ObjectId
 
 from apollo.server.component import Component
@@ -43,16 +45,16 @@ class Transport(Component):
         meta.session.flush()
 
         self.nonce = sha256(os.urandom(64)).hexdigest()
-        self.intermedq = []
+        self.intermedq = Queue()
 
     def bind(self, bind):
         self.bound_handler = bind
-        while self.intermedq:
-            self.sendEvent(self.intermedq.pop())
+        while not self.intermedq.empty():
+            self.sendEvent(self.intermedq.get())
 
     def sendEvent(self, packet):
         if self.bound_handler is None:
-            self.intermedq.append(packet)
+            self.intermedq.put(packet)
             return
 
         self.bound_handler.send(packet)
@@ -71,7 +73,7 @@ class Transport(Component):
             pass
         self.core.loseTransport(self.token)
 
-        user = self.session().get_user()
+        user = self.session().getUser()
         if user is not None:
             channel = self.core.bus.getChannel("global")
             channel.sendEvent(PacketLogout(username=user["name"]))

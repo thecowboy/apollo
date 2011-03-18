@@ -32,7 +32,7 @@
                             <script type="dojo/method" event="onSubmit">
                                 var chatInput = dojo.byId("chatInput");
 
-                                core.actions.chat(chatInput.value);
+                                if(chatInput.value) core.actions.chat(chatInput.value);
                                 chatInput.value = "";
                                 return false;
                             </script>

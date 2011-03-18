@@ -26,8 +26,10 @@ class PacketChat(Packet):
     name = "chat"
 
     def dispatch(self, transport, core):
+        if not self.message.strip(): return
+
         if not self.target:
             core.bus.getChannel("global").sendEvent(PacketChat(
-                origin=transport.session().get_user()["name"],
+                origin=transport.session().getUser()["name"],
                 msg=self.msg
             ))

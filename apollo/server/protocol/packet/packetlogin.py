@@ -59,4 +59,4 @@ class PacketLogin(Packet):
 
         global_channel = core.bus.getChannel("global")
         global_channel.subscribeTransport(transport)
-        global_channel.sendEvent(PacketLogin(username=transport.session().get_user()["name"]))
+        global_channel.sendEvent(PacketLogin(username=transport.session().getUser()["name"]))
