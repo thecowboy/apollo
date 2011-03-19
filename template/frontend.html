@@ -16,7 +16,7 @@
                 <img src="static/assets/headerlogo.png" alt="Apollo" title="Apollo" />
             </div>
             <div dojoType="dijit.layout.ContentPane" region="center" style="margin: 0; padding: 0; overflow: hidden">
-                <canvas tabindex="0" id="surface" width="640" height="640">
+                <canvas id="surface" width="640" height="640">
                     <p>Your browser does not support HTML5 canvas.</p>
                 </canvas>
             </div>
@@ -32,6 +32,7 @@
                     <div dojoType="dijit.layout.ContentPane" region="bottom" style="padding: 0;">
                         <div dojoType="dijit.form.Form" id="chatForm" method="post">
                             <input type="text" id="chatInput" name="message" required="true" dojoType="dijit.form.TextBox" style="width: 100%; border: 0;" />
+
                             <script type="dojo/method" event="onSubmit">
                                 var chatInput = dojo.byId("chatInput");
 

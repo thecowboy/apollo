@@ -34,6 +34,7 @@ dojo.declare("apollo.client.protocol.packet.PacketLogin", apollo.client.protocol
         if(!this.username)
         {
             core.auth();
+            dijit.byId("chatInput").focus();
         }
         else
         {

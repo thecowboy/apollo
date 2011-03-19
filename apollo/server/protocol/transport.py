@@ -66,6 +66,7 @@ class Transport(Component):
             self.intermedq.append(packet)
             return
 
+        logging.debug("Sending packet: %s" % packet)
         self.bound_handler.send(packet)
 
         # unbind immediately
@@ -74,14 +75,14 @@ class Transport(Component):
     def session(self):
         return meta.session.find(Session, { "token" : self.token }).one()
 
-    def shutdown(self):
+    def shutdown(self, msg=None):
+        msg = msg or "Unknown reason"
         self.consumer.shutdown()
-
-        self.sendEvent(PacketLogout()) # causes problems with autodisconneting cron
 
         user = self.session().getUser()
         if user is not None:
-            self.core.bus.broadcast("user.*", PacketLogout(username=user.name))
+            self.sendEvent(PacketLogout(msg=msg))
+            self.core.bus.broadcast("user.*", PacketLogout(username=user.name, msg=msg))
             user.online = False
 
         meta.session.remove(Session, { "token" : self.token })

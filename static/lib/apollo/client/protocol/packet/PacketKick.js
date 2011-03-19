@@ -31,6 +31,6 @@ dojo.declare("apollo.client.protocol.packet.PacketKick", apollo.client.protocol.
 
     dispatch : function(transport, core)
     {
-        apollo.client.util.ui.addConsoleMessage(this.target + " was kicked: " + this.msg || "(no reason given)");
+        apollo.client.util.ui.addConsoleMessage(this.target + " was kicked: " + this.msg);
     }
 });

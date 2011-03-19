@@ -45,13 +45,13 @@ class Consumer(object):
             ""
         )))
 
-        # subscribe to user channel
-        self.subscriber.setsockopt(zmq.SUBSCRIBE, "user.*")
-        self.subscriber.setsockopt(zmq.SUBSCRIBE, "user.%s" % transport.session().getUser()["_id"])
-
         # subscribe to cross channel
         self.subscriber.setsockopt(zmq.SUBSCRIBE, "cross.*")
         self.subscriber.setsockopt(zmq.SUBSCRIBE, "cross.%s" % transport.session().getUser()["_id"])
+
+        # subscribe to user channel
+        self.subscriber.setsockopt(zmq.SUBSCRIBE, "user.*")
+        self.subscriber.setsockopt(zmq.SUBSCRIBE, "user.%s" % transport.session().getUser()["_id"])
 
         logging.debug("Created subscriber")
 

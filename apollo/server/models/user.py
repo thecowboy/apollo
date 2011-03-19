@@ -48,7 +48,6 @@ class User(MappedClass):
 
     online = FieldProperty(bool, if_missing=False)
 
-    last_active = FieldProperty(datetime, if_missing=datetime.utcnow)
     registered = FieldProperty(datetime, if_missing=datetime.utcnow)
 
     sessions = RelationProperty("Session")

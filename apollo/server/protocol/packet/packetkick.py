@@ -44,5 +44,6 @@ class PacketKick(Packet):
             transport.sendEvent(PacketError(severity=PacketError.WARN, msg="User is not online."))
             return
 
-        core.bus.broadcast("user.*", PacketKick(target=self.target, msg=self.msg))
-        core.bus.broadcast("cross.%s" % user._id, PacketLogout())
+        self.msg = self.msg or "(no reason given)"
+
+        core.bus.broadcast("cross.%s" % user._id, PacketLogout(msg="Kicked by server: %s" % self.msg))

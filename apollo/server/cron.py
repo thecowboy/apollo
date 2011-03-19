@@ -53,7 +53,7 @@ class CronScheduler(Component):
 
         for session in cursor:
             if session.token in self.core.connections:
-                self.core.connections[session.token].shutdown()
+                self.core.connections[session.token].shutdown("Heartbeat timeout")
                 logging.info("Dropped active connection %s." % session.token)
             meta.session.remove(Session, { "_id" : session._id })
 

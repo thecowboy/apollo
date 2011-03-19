@@ -37,10 +37,10 @@ dojo.declare("apollo.client.protocol.packet.PacketLogout", apollo.client.protoco
             }
             else
             {
-                core.deauth();
+                core.deauth(this.msg);
             }
         } else {
-            apollo.client.util.ui.addConsoleMessage(this.username + " has logged out.");
+            apollo.client.util.ui.addConsoleMessage(this.username + " has logged out: " + this.msg);
         }
     }
 });

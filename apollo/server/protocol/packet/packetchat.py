@@ -20,7 +20,11 @@
 # THE SOFTWARE.
 #
 
+from apollo.server.models import meta
+from apollo.server.models.user import User
+
 from apollo.server.protocol.packet import Packet
+from apollo.server.protocol.packet.packeterror import PacketError
 
 class PacketChat(Packet):
     name = "chat"
@@ -28,8 +32,31 @@ class PacketChat(Packet):
     def dispatch(self, transport, core):
         if not self.msg.strip(): return
 
-        if not self.target:
-            core.bus.broadcast("user.*", PacketChat(
-                origin=transport.session().getUser()["name"],
+        if self.target:
+            try:
+                user = User.getUserByName(self.target)
+            except ValueError:
+                transport.sendEvent(PacketError(severity=PacketError.WARN, msg="User does not exist."))
+                return
+
+            if not user.online:
+                transport.sendEvent(PacketError(severity=PacketError.WARN, msg="User is not online."))
+                return
+
+            core.bus.broadcast("user.%s" % user._id, PacketChat(
+                origin=transport.session().getUser().name,
+                target=self.target,
                 msg=self.msg
             ))
+
+            transport.sendEvent(PacketChat(
+                origin=transport.session().getUser().name,
+                target=self.target,
+                msg=self.msg
+            ))
+            return
+
+        core.bus.broadcast("user.*", PacketChat(
+            origin=transport.session().getUser().name,
+            msg=self.msg
+        ))

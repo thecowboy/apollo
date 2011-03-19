@@ -20,52 +20,10 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.Core");
+dojo.provide("apollo.client.protocol.packet.PacketRepeat");
 
-dojo.require("apollo.client.ActionDispatcher");
-dojo.require("apollo.client.protocol.Transport");
+dojo.require("apollo.client.protocol.packet.Packet");
 
-dojo.declare("apollo.client.Core", null, {
-    constructor : function()
-    {
-        this.transport = new apollo.client.protocol.Transport(this);
-        this.actions = new apollo.client.ActionDispatcher(this.transport);
-    },
-
-    auth : function()
-    {
-        dijit.byId("loginDialog").hide();
-    },
-
-    deauth : function(msg)
-    {
-        dojo.byId("logoutReason").innerHTML = msg;
-        dijit.byId("logoutDialog").show();
-        this.dead = true;
-        this.transport.shutdown();
-    },
-
-    ready : function()
-    {
-        dijit.byId("loadingDialog").hide();
-        dijit.byId("loginDialog").show();
-    },
-
-    go : function()
-    {
-        dijit.byId("loadingDialog").show();
-        this.transport.go();
-    },
-
-    die : function(msg)
-    {
-        if(this.dead) return;
-
-        this.dead = true;
-
-        dojo.byId("errorMessage").innerHTML = msg;
-        dijit.byId("errorDialog").show();
-
-        this.transport.shutdown();
-    }
+dojo.declare("apollo.client.protocol.packet.PacketRepeat", apollo.client.protocol.packet.Packet, {
+    name    : "repeat"
 });

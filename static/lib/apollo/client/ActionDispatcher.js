@@ -47,9 +47,11 @@ dojo.declare("apollo.client.ActionDispatcher", null, {
             pwhash      : apollo.client.util.sha256.sha256(
                 nonce +
                 apollo.client.util.sha256.sha256(
-                    username.toLowerCase() + ":" + password
-                ) +
-                this.transport.nonce
+                    apollo.client.util.sha256.sha256(
+                        username.toLowerCase() + ":" + password
+                    ) +
+                    this.transport.nonce
+                )
             ),
             nonce       : nonce
         }));
@@ -78,6 +80,20 @@ dojo.declare("apollo.client.ActionDispatcher", null, {
                             return;
                         }
                         this.transport.sendAction(new apollo.client.protocol.packet.PacketKick({
+                            target : rest[0],
+                            msg    : rest.slice(1).join(" ")
+                        }));
+                        break;
+
+                    case "tell":
+                    case "msg":
+                    case "whisper":
+                        if(rest.length < 1)
+                        {
+                            apollo.client.util.ui.addConsoleMessage("Incorrect number of arguments.");
+                            return;
+                        }
+                        this.transport.sendAction(new apollo.client.protocol.packet.PacketChat({
                             target : rest[0],
                             msg    : rest.slice(1).join(" ")
                         }));

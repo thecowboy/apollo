@@ -78,3 +78,19 @@ Data Members
 
  * ``msg``
    Message body.
+
+``PacketKick "kick"``
+=====================
+Ask the server to kick a client.
+
+Direction of Transfer
+---------------------
+Client to server only.
+
+Data Members
+------------
+ * ``target``
+   User to kick.
+
+ * ``msg``
+   Reason for kick.

@@ -39,7 +39,7 @@ class PacketLogin(Packet):
             transport.sendEvent(PacketLogout())
             return
 
-        if self.pwhash != sha256(self.nonce + user.pwhash + transport.nonce).hexdigest():
+        if self.pwhash != sha256(self.nonce + sha256(user.pwhash + transport.nonce).hexdigest()).hexdigest():
             transport.sendEvent(PacketLogout())
             return
 
@@ -50,7 +50,13 @@ class PacketLogin(Packet):
 
         transport.sendEvent(PacketLogin())
 
-        core.bus.broadcast("cross.%s" % user._id, PacketLogout())
+        # HACK: broadcasting to a cross channel does not work, as it will send
+        #       the logout packet after the login packet!
+        #
+        #       if anyone has a better idea tell me :(
+        for connection in core.connections.values():
+            if connection.session().user_id == user._id and connection is not transport:
+                connection.shutdown("Coexistence not permitted")
 
         transport.consume()
 

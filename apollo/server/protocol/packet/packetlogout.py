@@ -26,4 +26,4 @@ class PacketLogout(Packet):
     name = "logout"
 
     def dispatch(self, transport, core):
-        transport.shutdown()
+        transport.shutdown(self.msg)

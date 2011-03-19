@@ -42,7 +42,6 @@ class Session(MappedClass):
     token = FieldProperty(str, if_missing=lambda: sha256(os.urandom(64)).hexdigest())
     last_active = FieldProperty(datetime, if_missing=datetime.utcnow)
     user_id = ForeignIdProperty("User")
-    data = FieldProperty(dict)
 
     def getUser(self):
         return meta.session.get(User, self.user_id)
