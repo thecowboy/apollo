@@ -20,27 +20,17 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.protocol.packet.PacketLogout");
+dojo.provide("apollo.client.protocol.packet.PacketKick");
 
 dojo.require("apollo.client.protocol.packet.Packet");
 
-dojo.declare("apollo.client.protocol.packet.PacketLogout", apollo.client.protocol.packet.Packet, {
-    name    : "logout",
+dojo.require("apollo.client.util.ui");
+
+dojo.declare("apollo.client.protocol.packet.PacketKick", apollo.client.protocol.packet.Packet, {
+    name    : "kick",
 
     dispatch : function(transport, core)
     {
-        if(!this.username)
-        {
-            if(dijit.byId("loginDialog").open)
-            {
-                dojo.byId("login_error").style.display = "";
-            }
-            else
-            {
-                core.deauth();
-            }
-        } else {
-            apollo.client.util.ui.addConsoleMessage(this.username + " has logged out.");
-        }
+        apollo.client.util.ui.addConsoleMessage(this.target + " was kicked: " + this.msg || "(no reason given)");
     }
 });

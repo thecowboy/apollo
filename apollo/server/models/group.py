@@ -21,39 +21,25 @@
 #
 
 from hashlib import sha256
+from datetime import datetime
 
-from apollo.server.protocol.packet import Packet
+from ming import schema
+from ming.orm import MappedClass
+from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from apollo.server.models import meta
+
+class Group(MappedClass):
+    class __mongometa__:
+        name = "group"
+        session = meta.session
+
+    _id = FieldProperty(schema.ObjectId)
+
+    name = FieldProperty(str)
+    permissions = FieldProperty([])
+    users = RelationProperty("User")
+
 from apollo.server.models.user import User
 
-from apollo.server.protocol.packet.packetlogout import PacketLogout
-
-class PacketLogin(Packet):
-    name = "login"
-
-    def dispatch(self, transport, core):
-        try:
-            user = User.getUserByName(self.username)
-        except ValueError:
-            transport.sendEvent(PacketLogout())
-            return
-
-        if self.pwhash != sha256(self.nonce + user.pwhash + transport.nonce).hexdigest():
-            transport.sendEvent(PacketLogout())
-            return
-
-        session = transport.session()
-        session.user_id = user._id
-        meta.session.save(session)
-        meta.session.flush()
-
-        transport.sendEvent(PacketLogin())
-
-        core.bus.broadcast("cross.%s" % user._id, PacketLogout())
-
-        transport.consume()
-
-        core.bus.broadcast("user.*", PacketLogin(username=user.name))
-        user.online = True
-        meta.session.flush_all()
+MappedClass.compile_all()

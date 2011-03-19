@@ -23,11 +23,14 @@
 dojo.provide("apollo.client.ActionDispatcher");
 
 dojo.require("apollo.client.util.sha256");
+dojo.require("apollo.client.util.ui");
 
 // packets
 dojo.require("apollo.client.protocol.packet.PacketLogin");
 dojo.require("apollo.client.protocol.packet.PacketLogout");
 dojo.require("apollo.client.protocol.packet.PacketChat");
+
+dojo.require("apollo.client.protocol.packet.PacketKick");
 
 dojo.declare("apollo.client.ActionDispatcher", null, {
     constructor : function(transport)
@@ -59,6 +62,35 @@ dojo.declare("apollo.client.ActionDispatcher", null, {
 
     chat : function(msg)
     {
+        if(msg[0] == "/")
+        {
+            if(msg[1] != "/")
+            {
+                var parts = msg.split(" ");
+                var rest = parts.slice(1);
+
+                switch(parts[0].substring(1))
+                {
+                    case "kick":
+                        if(rest.length < 1)
+                        {
+                            apollo.client.util.ui.addConsoleMessage("Incorrect number of arguments.");
+                            return;
+                        }
+                        this.transport.sendAction(new apollo.client.protocol.packet.PacketKick({
+                            target : rest[0],
+                            msg    : rest.slice(1).join(" ")
+                        }));
+                        break;
+
+                    default:
+                        apollo.client.util.ui.addConsoleMessage("Command not recognized.");
+                }
+
+                return;
+            }
+            msg = msg.substring(1);
+        }
         this.transport.sendAction(new apollo.client.protocol.packet.PacketChat({ msg: msg }));
     },
 });

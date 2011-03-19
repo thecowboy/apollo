@@ -24,7 +24,6 @@
 from tornado.httpserver import HTTPServer
 from tornado.options import parse_command_line, parse_config_file, options
 
-#from tornado.ioloop import IOLoop
 from zmq.eventloop.ioloop import IOLoop
 
 from apollo.server import setup_options

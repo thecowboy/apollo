@@ -20,6 +20,8 @@
 # THE SOFTWARE.
 #
 
+import re
+
 from hashlib import sha256
 from datetime import datetime
 
@@ -44,11 +46,31 @@ class User(MappedClass):
 
     password = property(fset=_set_password)
 
+    online = FieldProperty(bool, if_missing=False)
+
     last_active = FieldProperty(datetime, if_missing=datetime.utcnow)
     registered = FieldProperty(datetime, if_missing=datetime.utcnow)
 
     sessions = RelationProperty("Session")
+    group_id = ForeignIdProperty("Group")
+
+    def hasPermission(self, permission):
+        group = meta.session.get(Group, self.group_id)
+
+        if group is None:
+            return False
+
+        for perm in group.permissions:
+            if re.match(re.escape(perm).replace("\\*", ".+"), permission):
+                return True
+
+        return False
+
+    @staticmethod
+    def getUserByName(name):
+        return meta.session.find(User, { "name" : { "$regex" : "^%s$" % re.escape(name.lower()), "$options" : "i" } }).one()
 
 from apollo.server.models.session import Session
+from apollo.server.models.group import Group
 
 MappedClass.compile_all()

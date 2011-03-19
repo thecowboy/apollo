@@ -24,11 +24,23 @@ dojo.provide("apollo.client.protocol.packet.PacketError");
 
 dojo.require("apollo.client.protocol.packet.Packet");
 
+dojo.require("apollo.client.util.ui");
+
 dojo.declare("apollo.client.protocol.packet.PacketError", apollo.client.protocol.packet.Packet, {
     name    : "error",
 
+    WARN    : 0,
+    ERROR   : 1,
+
     dispatch : function(transport, core)
     {
-        core.die("Error packet: " + this.msg);
+        if(this.severity == this.WARN)
+        {
+            apollo.client.util.ui.addConsoleMessage(this.msg);
+        }
+        else
+        {
+            core.die("Error packet: " + this.msg);
+        }
     },
 });

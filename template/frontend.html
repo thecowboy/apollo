@@ -20,6 +20,9 @@
                     <p>Your browser does not support HTML5 canvas.</p>
                 </canvas>
             </div>
+            <div dojoType="dijit.layout.ContentPane" region="trailing" style="width: 20%">
+                blah
+            </div>
             <div dojoType="dijit.layout.ContentPane" region="bottom" style="height: 25%; padding: 0; border: 0;">
                 <div dojoType="dijit.layout.BorderContainer" style="width: 100%; height: 100%;">
                     <div dojoType="dijit.layout.ContentPane" region="center" id="chatPane">
@@ -44,6 +47,7 @@
 
         <!-- dialogs -->
         {% include "dialogs/loginDialog.html" %}
+        {% include "dialogs/logoutDialog.html" %}
         {% include "dialogs/loadingDialog.html" %}
         {% include "dialogs/errorDialog.html" %}
 

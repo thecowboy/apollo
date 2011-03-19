@@ -25,8 +25,6 @@ import logging
 import os
 from hashlib import sha256
 
-from Queue import Queue
-
 from apollo.server.component import Component
 
 from apollo.server.models import meta
@@ -83,9 +81,12 @@ class Transport(Component):
 
         user = self.session().getUser()
         if user is not None:
-            self.core.bus.broadcast("user.*", PacketLogout(username=user["name"]))
+            self.core.bus.broadcast("user.*", PacketLogout(username=user.name))
+            user.online = False
 
         meta.session.remove(Session, { "token" : self.token })
+
+        meta.session.flush_all()
 
         self.core.loseTransport(self.token)
 

@@ -26,7 +26,6 @@ from datetime import datetime, timedelta
 
 from tornado.options import options
 
-#from tornado.ioloop import PeriodicCallback
 from zmq.eventloop.ioloop import PeriodicCallback
 
 from ming.orm import Query

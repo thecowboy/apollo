@@ -24,3 +24,6 @@ from apollo.server.protocol.packet import Packet
 
 class PacketError(Packet):
     name = "error"
+
+    WARN = 0
+    ERROR = 1

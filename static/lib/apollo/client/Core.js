@@ -39,7 +39,9 @@ dojo.declare("apollo.client.Core", null, {
 
     deauth : function()
     {
-        
+        dijit.byId("logoutDialog").show();
+        this.dead = true;
+        this.transport.shutdown();
     },
 
     ready : function()

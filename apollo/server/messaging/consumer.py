@@ -25,7 +25,6 @@ import logging
 import urlparse
 import zmq
 
-#from tornado.ioloop import IOLoop
 from zmq.eventloop.ioloop import IOLoop
 
 from tornado.options import options

@@ -20,40 +20,29 @@
 # THE SOFTWARE.
 #
 
-from hashlib import sha256
-
-from apollo.server.protocol.packet import Packet
-
 from apollo.server.models import meta
 from apollo.server.models.user import User
 
+from apollo.server.protocol.packet import Packet
+from apollo.server.protocol.packet.packeterror import PacketError
 from apollo.server.protocol.packet.packetlogout import PacketLogout
 
-class PacketLogin(Packet):
-    name = "login"
+from apollo.server.util.decorators import requirePermission
 
+class PacketKick(Packet):
+    name = "kick"
+
+    @requirePermission("moderator.kick")
     def dispatch(self, transport, core):
         try:
-            user = User.getUserByName(self.username)
+            user = User.getUserByName(self.target)
         except ValueError:
-            transport.sendEvent(PacketLogout())
+            transport.sendEvent(PacketError(severity=PacketError.WARN, msg="User does not exist."))
             return
 
-        if self.pwhash != sha256(self.nonce + user.pwhash + transport.nonce).hexdigest():
-            transport.sendEvent(PacketLogout())
+        if not user.online:
+            transport.sendEvent(PacketError(severity=PacketError.WARN, msg="User is not online."))
             return
 
-        session = transport.session()
-        session.user_id = user._id
-        meta.session.save(session)
-        meta.session.flush()
-
-        transport.sendEvent(PacketLogin())
-
+        core.bus.broadcast("user.*", PacketKick(target=self.target, msg=self.msg))
         core.bus.broadcast("cross.%s" % user._id, PacketLogout())
-
-        transport.consume()
-
-        core.bus.broadcast("user.*", PacketLogin(username=user.name))
-        user.online = True
-        meta.session.flush_all()
