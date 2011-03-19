@@ -25,6 +25,9 @@ dojo.provide("apollo.client.Core");
 dojo.require("apollo.client.ActionDispatcher");
 dojo.require("apollo.client.protocol.Transport");
 
+dojo.require("apollo.client.protocol.packet.PacketInfo");
+dojo.require("apollo.client.protocol.packet.PacketUser");
+
 dojo.declare("apollo.client.Core", null, {
     constructor : function()
     {
@@ -35,6 +38,12 @@ dojo.declare("apollo.client.Core", null, {
     auth : function()
     {
         dijit.byId("loginDialog").hide();
+        this.requery();
+    },
+
+    requery : function()
+    {
+        this.transport.sendAction(new apollo.client.protocol.packet.PacketUser());
     },
 
     deauth : function(msg)

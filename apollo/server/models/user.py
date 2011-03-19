@@ -22,6 +22,8 @@
 
 import re
 
+from pymongo.objectid import ObjectId
+
 from hashlib import sha256
 from datetime import datetime
 
@@ -52,6 +54,15 @@ class User(MappedClass):
 
     sessions = RelationProperty("Session")
     group_id = ForeignIdProperty("Group")
+
+    # location information
+    location = FieldProperty({ "x" : int, "y" : int, "realm" : ObjectId })
+
+    # rpg stuff
+    level = FieldProperty(int, if_missing=1)
+    hp = FieldProperty({ "current" : int, "max" : int })
+    ap = FieldProperty({ "current" : int, "max" : int })
+    xp = FieldProperty({ "current" : int, "max" : int })
 
     def hasPermission(self, permission):
         group = meta.session.get(Group, self.group_id)

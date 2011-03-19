@@ -27,12 +27,13 @@ from apollo.server.protocol.packet import Packet
 from apollo.server.protocol.packet.packeterror import PacketError
 from apollo.server.protocol.packet.packetlogout import PacketLogout
 
-from apollo.server.util.decorators import requirePermission
+from apollo.server.util.decorators import requirePermission, requireAuthentication
 
 class PacketKick(Packet):
     name = "kick"
 
     @requirePermission("moderator.kick")
+    @requireAuthentication
     def dispatch(self, transport, core):
         try:
             user = User.getUserByName(self.target)

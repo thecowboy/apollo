@@ -20,26 +20,22 @@
 # THE SOFTWARE.
 #
 
-from hashlib import sha256
-from datetime import datetime
-
-from ming import schema
-from ming.orm import MappedClass
-from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
+from apollo.server.protocol.packet import Packet
 
 from apollo.server.models import meta
 
-class Group(MappedClass):
-    class __mongometa__:
-        name = "group"
-        session = meta.session
+from apollo.server.util.decorators import requireAuthentication
 
-    _id = FieldProperty(schema.ObjectId)
+class PacketUser(Packet):
+    name = "user"
 
-    name = FieldProperty(str)
-    permissions = FieldProperty([str])
-    users = RelationProperty("User")
-
-from apollo.server.models.user import User
-
-MappedClass.compile_all()
+    @requireAuthentication
+    def dispatch(self, transport, core):
+        user = transport.session().getUser()
+        transport.sendEvent(PacketUser(
+            name=user.name,
+            level=user.level,
+            hp=user.hp,
+            ap=user.ap,
+            xp=user.xp
+        ))

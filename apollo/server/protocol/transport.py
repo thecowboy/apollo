@@ -46,6 +46,7 @@ class Transport(Component):
 
         self.nonce = sha256(os.urandom(64)).hexdigest()
         self.intermedq = []
+        self.consumer = None
 
     def consume(self):
         self.consumer = Consumer(self.core.bus, self)
@@ -77,7 +78,9 @@ class Transport(Component):
 
     def shutdown(self, msg=None):
         msg = msg or "Unknown reason"
-        self.consumer.shutdown()
+
+        if self.consumer is not None:
+            self.consumer.shutdown()
 
         user = self.session().getUser()
         if user is not None:

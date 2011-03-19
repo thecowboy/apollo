@@ -20,10 +20,17 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.protocol.packet.PacketRepeat");
+dojo.provide("apollo.client.protocol.packet.PacketInfo");
 
 dojo.require("apollo.client.protocol.packet.Packet");
 
-dojo.declare("apollo.client.protocol.packet.PacketRepeat", apollo.client.protocol.packet.Packet, {
-    name    : "repeat"
+dojo.require("apollo.client.util.ui");
+
+dojo.declare("apollo.client.protocol.packet.PacketInfo", apollo.client.protocol.packet.Packet, {
+    name    : "info",
+
+    dispatch : function(transport, core)
+    {
+        apollo.client.util.ui.setInfoData(this.location, this.tileinfo, this.things);
+    }
 });

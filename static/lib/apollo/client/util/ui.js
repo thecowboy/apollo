@@ -58,3 +58,46 @@ apollo.client.util.ui.addConsoleMessage = function(message)
     var chatPane = dojo.byId("chatPane");
     chatPane.scrollTop = chatPane.scrollHeight;
 }
+
+apollo.client.util.ui.setUserData = function(name, level, hp, ap, xp)
+{
+    var namefield = dojo.byId("infoUserName");
+    var levelfield = dojo.byId("infoUserLevel");
+
+    var hpfield = dijit.byId("infoUserHP");
+    var apfield = dijit.byId("infoUserAP");
+    var xpfield = dijit.byId("infoUserXP");
+
+    namefield.innerHTML = name;
+    levelfield.innerHTML = level;
+
+    hpfield.update({ maximum : hp.max, progress : hp.current });
+    hpfield.label.innerHTML = hp.current + " / " + hp.max;
+
+    apfield.update({ maximum : ap.max, progress : ap.current });
+    apfield.label.innerHTML = ap.current + " / " + ap.max;
+
+    xpfield.update({ maximum : xp.max, progress : xp.current });
+}
+
+apollo.client.util.ui.setInfoData = function(location, tileinfo, things)
+{
+    var realmfield = dojo.byId("infoThisTileRealm");
+    var xfield = dojo.byId("infoThisTileXCoordinate");
+    var yfield = dojo.byId("infoThisTileYCoordinate");
+
+    var tile = dojo.byId("infoThisTileImg");
+    var things = dojo.byId("infoThisTileThings");
+
+    realmfield.innerHTML = location.realm;
+    xfield.innerHTML = location.x;
+    yfield.innerHTML = location.y;
+
+    tile.src = "static/tiles/" + tileinfo.img + ".png";
+    tile.alt = tileinfo.name;
+    tile.title = tileinfo.name;
+
+    if(things.length == 0)
+    {
+    }
+}

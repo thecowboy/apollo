@@ -29,6 +29,10 @@ Data Members
  * ``msg``
    Error message.
 
+ * ``severity``
+   Severity of the error -- PacketError.WARN to emit only a console message and
+   PacketError.ERROR to close the client connection.
+
 ``PacketLogin "login"``
 ========================
 Log into the server, or inform the client a user has logged in.
@@ -94,3 +98,48 @@ Data Members
 
  * ``msg``
    Reason for kick.
+
+``PacketInfo "info"``
+=====================
+Request information about the current tile from the server, or send the client
+information about the current tile.
+
+Data Members
+------------
+ * ``location``
+   Location of the tile (x, y and realm).
+
+ * ``tileinfo``
+   Information about the tile.
+
+ * ``things``
+   Things present at the tile.
+
+ * ``extents``
+   Realm extents.
+
+``PacketUser "user"``
+=====================
+Request basic information about either an arbitrary user from the server or the
+current user, or send the client user information.
+
+Data Members
+------------
+ * ``target``
+   User to request information about. Empty if requesting information about
+   current user.
+
+ * ``name``
+   User's name. In most cases will be the same value as ``target``.
+
+ * ``level``
+   Level of the user.
+
+ * ``hp``
+   User's HP, in { current, max }.
+
+ * ``ap``
+   User's AP, in { current, max }.
+
+ * ``xp``
+   User's XP, in { current, max }.

@@ -22,8 +22,11 @@
 
 from apollo.server.protocol.packet import Packet
 
+from apollo.server.util.decorators import requireAuthentication
+
 class PacketLogout(Packet):
     name = "logout"
 
+    @requireAuthentication
     def dispatch(self, transport, core):
         transport.shutdown(self.msg)

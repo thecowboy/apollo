@@ -6,6 +6,8 @@ dojo.require("dijit.form.Form");
 dojo.require("dijit.form.Button");
 dojo.require("dijit.form.TextBox");
 
+dojo.require("dijit.ProgressBar");
+
 dojo.require("dijit.layout.BorderContainer");
 dojo.require("dijit.layout.ContentPane");
 

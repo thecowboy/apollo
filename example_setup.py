@@ -21,6 +21,15 @@ user.name = "rfw"
 user.password = "iscool"
 user.group_id = admins._id
 
+user.hp.current = 100
+user.hp.max = 100
+
+user.ap.current = 50
+user.ap.max = 100
+
+user.xp.current = 10
+user.xp.max = 100
+
 user = User()
 user.name = "noshi"
 user.password = "isgat"

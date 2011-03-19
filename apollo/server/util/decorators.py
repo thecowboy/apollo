@@ -31,3 +31,13 @@ def requirePermission(permission):
                 transport.sendEvent(PacketError(severity=PacketError.WARN, msg="Not permitted to perform action."))
         return _closure
     return _decorator
+
+def requireAuthentication(fn):
+    def _closure(self, transport, core):
+        try:
+            transport.session().getUser()
+        except ValueError:
+            transport.sendEvent(PacketError(msg="not authenticated"))
+        else:
+            fn(self, transport, core)
+    return _closure

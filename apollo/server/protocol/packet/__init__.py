@@ -33,7 +33,7 @@ class Packet(object):
 
     def dump(self):
         dic = self.__dict__.copy()
-        dic["__name__"] = self.name
+        dic["__name__"] = self.__class__.name
         return json.dumps(dic)
 
     def __getattr__(self, attr):

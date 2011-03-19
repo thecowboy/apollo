@@ -26,9 +26,12 @@ from apollo.server.models.user import User
 from apollo.server.protocol.packet import Packet
 from apollo.server.protocol.packet.packeterror import PacketError
 
+from apollo.server.util.decorators import requireAuthentication
+
 class PacketChat(Packet):
     name = "chat"
 
+    @requireAuthentication
     def dispatch(self, transport, core):
         if not self.msg.strip(): return
 

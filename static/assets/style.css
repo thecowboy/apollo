@@ -38,3 +38,9 @@ html, body
     font-style: italic;
     color: gray;
 }
+
+th
+{
+    font-weight: bold !important;
+    padding-right: 10px !important;
+}

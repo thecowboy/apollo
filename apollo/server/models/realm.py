@@ -29,17 +29,13 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from apollo.server.models import meta
 
-class Group(MappedClass):
+class Realm(MappedClass):
     class __mongometa__:
-        name = "group"
+        name = "realm"
         session = meta.session
 
     _id = FieldProperty(schema.ObjectId)
 
     name = FieldProperty(str)
-    permissions = FieldProperty([str])
-    users = RelationProperty("User")
-
-from apollo.server.models.user import User
 
 MappedClass.compile_all()

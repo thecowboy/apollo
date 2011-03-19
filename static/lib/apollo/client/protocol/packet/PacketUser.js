@@ -20,24 +20,17 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.protocol.packet.Packet");
+dojo.provide("apollo.client.protocol.packet.PacketUser");
 
-dojo.declare("apollo.client.protocol.packet.Packet", null, {
-    name : "packet",
+dojo.require("apollo.client.protocol.packet.Packet");
 
-    constructor : function(payload)
-    {
-        dojo.safeMixin(this, payload);
-    },
+dojo.require("apollo.client.util.ui");
+
+dojo.declare("apollo.client.protocol.packet.PacketUser", apollo.client.protocol.packet.Packet, {
+    name    : "user",
 
     dispatch : function(transport, core)
     {
-    },
-
-    dump : function()
-    {
-        var dic = dojo.mixin({ __name__ : this.__proto__.name}, this);
-        delete dic.declaredClass;
-        return dojo.toJson(dic);
+        apollo.client.util.ui.setUserData(this.name, this.level, this.hp, this.ap, this.xp);
     }
 });
