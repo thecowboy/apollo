@@ -33,7 +33,7 @@ dojo.declare("apollo.client.protocol.packet.PacketChat", apollo.client.protocol.
     {
         if(this.target)
         {
-            apollo.client.util.ui.addChatMessage(this.origin + " [" + this.target + "]", this.msg);
+            apollo.client.util.ui.addChatMessage(this.origin + " > " + this.target, this.msg);
         }
         else
         {

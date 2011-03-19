@@ -25,18 +25,19 @@ dojo.provide("apollo.client.util.ui");
 apollo.client.util.ui.addChatMessage = function(origin, message)
 {
     var row = dojo.create("tr", null, "chatLog");
+    var col = dojo.create("td", null, row);
 
-    var chatOrigin = dojo.create("td");
+    var chatOrigin = dojo.create("span");
     dojo.addClass(chatOrigin, "chatOrigin");
-    chatOrigin.innerHTML = origin;
+    chatOrigin.innerHTML = origin + ": ";
 
-    var chatMessage = dojo.create("td");
+    var chatMessage = dojo.create("span");
     dojo.addClass(chatMessage, "chatMessage");
     // let's do the angle bracket dance!
     chatMessage.innerHTML = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-    dojo.place(chatOrigin, row);
-    dojo.place(chatMessage, row);
+    dojo.place(chatOrigin, col);
+    dojo.place(chatMessage, col);
 
     // do scroll
     var chatPane = dojo.byId("chatPane");
@@ -49,7 +50,6 @@ apollo.client.util.ui.addConsoleMessage = function(message)
 
     var chatConsole = dojo.create("td");
     dojo.addClass(chatConsole, "chatConsole");
-    dojo.attr(chatConsole, "colspan", 2);
     chatConsole.innerHTML = message;
 
     dojo.place(chatConsole, row);
