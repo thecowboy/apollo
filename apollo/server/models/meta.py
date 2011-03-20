@@ -39,7 +39,7 @@ def bind_session(bind):
 
 def autodiscover():
     for filename in os.listdir(os.path.dirname(__file__)):
-        if filename not in ("meta.py", "__init__.py"):
+        if filename not in ("meta.py", "__init__.py") and filename[-3:] == ".py":
             module_name = filename.rsplit(".", 1)[0]
             module = import_module(".%s" % module_name, "apollo.server.models")
             for member_name in dir(module):
