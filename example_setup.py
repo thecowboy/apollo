@@ -49,29 +49,27 @@ realm = Realm(
 print "Generating realm..."
 
 num_tiles = 0
-for u in xrange(0, int(math.ceil(REALM_WIDTH / float(CHUNK_STRIDE)))):
-    for v in xrange(0, int(math.ceil(REALM_HEIGHT / float(CHUNK_STRIDE)))):
-
-        left = u * CHUNK_STRIDE
-        top = v * CHUNK_STRIDE
-        right = (u + 1) * CHUNK_STRIDE - 1
-        bottom = (v + 1) * CHUNK_STRIDE - 1
-
+for cx in xrange(0, int(math.ceil(REALM_WIDTH / float(CHUNK_STRIDE)))):
+    for cy in xrange(0, int(math.ceil(REALM_HEIGHT / float(CHUNK_STRIDE)))):
         chunk = Chunk(
-            extents={
-                "left"  : left,
-                "top"   : top,
-                "right" : right,
-                "bottom": bottom
+            location={
+                "cx" : cx,
+                "cy" : cy
             },
             realm_id=realm._id
         )
-        for x in xrange(left, min(REALM_WIDTH, right + 1)):
-            for y in xrange(top, min(REALM_HEIGHT, bottom + 1)):
+        for rx in xrange(0, CHUNK_STRIDE):
+            for ry in xrange(0, CHUNK_STRIDE):
+                x = cx * CHUNK_STRIDE + rx
+                y = cy * CHUNK_STRIDE + ry
+
+                if x > REALM_WIDTH - 1 or y > REALM_HEIGHT - 1:
+                    continue
+
                 tile = Tile(
                     location={
-                        "x" : x,
-                        "y" : y
+                        "rx" : rx,
+                        "ry" : ry
                     },
                     chunk_id=chunk._id,
                     terrain_id=terrains[random.randrange(0, len(terrains))]._id

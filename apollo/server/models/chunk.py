@@ -35,11 +35,9 @@ class Chunk(MappedClass):
 
     _id = FieldProperty(schema.ObjectId)
 
-    extents = FieldProperty({
-        "top" : int,
-        "left" : int,
-        "bottom" : int,
-        "right" : int
+    location = FieldProperty({
+        "cx" : int,
+        "cy" : int
     }, required=True)
 
     fresh = FieldProperty(bool, if_missing=False)
