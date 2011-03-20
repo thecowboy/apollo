@@ -35,5 +35,3 @@ class Terrain(MappedClass):
 
     name = FieldProperty(str)
     img = FieldProperty(str)
-
-MappedClass.compile_all()

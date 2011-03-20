@@ -35,8 +35,3 @@ class Realm(MappedClass):
 
     name = FieldProperty(str)
     chunks = RelationProperty("Chunk")
-
-from apollo.server.models.chunk import Chunk
-from apollo.server.models.terrain import Terrain
-
-MappedClass.compile_all()

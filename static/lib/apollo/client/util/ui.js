@@ -59,17 +59,8 @@ apollo.client.util.ui.addConsoleMessage = function(message)
     chatPane.scrollTop = chatPane.scrollHeight;
 }
 
-apollo.client.util.ui.setUserData = function(name, level, hp, ap, xp)
+apollo.client.util.ui.setUserData = function(name, level, stats, max)
 {
-    hp.current = hp.current || 0;
-    hp.max = hp.max || 0;
-
-    ap.current = ap.current || 0;
-    ap.max = ap.max || 0;
-
-    xp.current = xp.current || 0;
-    xp.max = xp.max || 100; // 100 so the bar doesn't go wtf
-
     var namefield = dojo.byId("infoUserName");
     var levelfield = dojo.byId("infoUserLevel");
 
@@ -80,13 +71,13 @@ apollo.client.util.ui.setUserData = function(name, level, hp, ap, xp)
     namefield.innerHTML = name;
     levelfield.innerHTML = level;
 
-    hpfield.update({ maximum : hp.max, progress : hp.current });
-    hpfield.label.innerHTML = hp.current + " / " + hp.max;
+    hpfield.update({ maximum : max.hp, progress : stats.hp });
+    hpfield.label.innerHTML = stats.hp + " / " + max.hp;
 
-    apfield.update({ maximum : ap.max, progress : ap.current });
-    apfield.label.innerHTML = ap.current + " / " + ap.max;
+    apfield.update({ maximum : max.ap, progress : stats.ap });
+    apfield.label.innerHTML = stats.ap + " / " + max.ap;
 
-    xpfield.update({ maximum : xp.max, progress : xp.current });
+    xpfield.update({ maximum : max.xp, progress : stats.xp });
 }
 
 apollo.client.util.ui.setInfoData = function(location, tileinfo, things)

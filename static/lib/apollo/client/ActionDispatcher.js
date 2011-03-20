@@ -29,6 +29,7 @@ dojo.require("apollo.client.util.ui");
 dojo.require("apollo.client.protocol.packet.PacketLogin");
 dojo.require("apollo.client.protocol.packet.PacketLogout");
 dojo.require("apollo.client.protocol.packet.PacketChat");
+dojo.require("apollo.client.protocol.packet.PacketOnline");
 
 dojo.require("apollo.client.protocol.packet.PacketKick");
 
@@ -97,6 +98,10 @@ dojo.declare("apollo.client.ActionDispatcher", null, {
                             target : rest[0],
                             msg    : rest.slice(1).join(" ")
                         }));
+                        break;
+
+                    case "online":
+                        this.transport.sendAction(new apollo.client.protocol.packet.PacketOnline());
                         break;
 
                     default:

@@ -26,20 +26,12 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from apollo.server.models import meta
 
-class Chunk(MappedClass):
+class Profession(MappedClass):
     class __mongometa__:
-        name = "chunk"
+        name = "profession"
         session = meta.session
 
     _id = FieldProperty(schema.ObjectId)
 
-    extents = FieldProperty({
-        "top" : int,
-        "left" : int,
-        "bottom" : int,
-        "right" : int
-    })
-
-    fresh = FieldProperty(bool, if_missing=False)
-
-    realm_id = ForeignIdProperty("Realm")
+    name = FieldProperty(str)
+    curvemap = FieldProperty(schema.Anything)

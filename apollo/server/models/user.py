@@ -59,9 +59,8 @@ class User(MappedClass):
 
     # rpg stuff
     level = FieldProperty(int, if_missing=1)
-    hp = FieldProperty({ "current" : int, "max" : int })
-    ap = FieldProperty({ "current" : int, "max" : int })
-    xp = FieldProperty({ "current" : int, "max" : int })
+    profession_id = ForeignIdProperty("Profession")
+    stats = FieldProperty(schema.Anything)
 
     def hasPermission(self, permission):
         group = meta.session.get(Group, self.group_id)
@@ -78,9 +77,3 @@ class User(MappedClass):
     @staticmethod
     def getUserByName(name):
         return meta.session.find(User, { "name" : { "$regex" : "^%s$" % re.escape(name.lower()), "$options" : "i" } }).one()
-
-from apollo.server.models.session import Session
-from apollo.server.models.group import Group
-from apollo.server.models.tile import Tile
-
-MappedClass.compile_all()

@@ -20,26 +20,16 @@
 # THE SOFTWARE.
 #
 
-from ming import schema
-from ming.orm import MappedClass
-from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
+from apollo.server.protocol.packet import Packet
 
 from apollo.server.models import meta
+from apollo.server.models.user import User
 
-class Chunk(MappedClass):
-    class __mongometa__:
-        name = "chunk"
-        session = meta.session
+from apollo.server.util.decorators import requireAuthentication
 
-    _id = FieldProperty(schema.ObjectId)
+class PacketOnline(Packet):
+    name = "online"
 
-    extents = FieldProperty({
-        "top" : int,
-        "left" : int,
-        "bottom" : int,
-        "right" : int
-    })
-
-    fresh = FieldProperty(bool, if_missing=False)
-
-    realm_id = ForeignIdProperty("Realm")
+    @requireAuthentication
+    def dispatch(self, transport, core):
+        transport.sendEvent(PacketOnline(users=[ user.name for user in meta.session.find(User, { "online" : True }) ]))

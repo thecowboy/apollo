@@ -20,17 +20,17 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.protocol.packet.PacketUser");
+dojo.provide("apollo.client.protocol.packet.PacketOnline");
 
 dojo.require("apollo.client.protocol.packet.Packet");
 
 dojo.require("apollo.client.util.ui");
 
-dojo.declare("apollo.client.protocol.packet.PacketUser", apollo.client.protocol.packet.Packet, {
-    name    : "user",
+dojo.declare("apollo.client.protocol.packet.PacketOnline", apollo.client.protocol.packet.Packet, {
+    name    : "online",
 
     dispatch : function(transport, core)
     {
-        if(!this.target) apollo.client.util.ui.setUserData(this.name, this.level, this.stats, this.max);
+        apollo.client.util.ui.addConsoleMessage("Users online: " + this.users.join(", "));
     }
 });

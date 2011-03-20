@@ -31,6 +31,7 @@ from ming.orm import MappedClass
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from apollo.server.models import meta
+from apollo.server.models.user import User
 
 class Session(MappedClass):
     class __mongometa__:
@@ -45,7 +46,3 @@ class Session(MappedClass):
 
     def getUser(self):
         return meta.session.get(User, self.user_id)
-
-from apollo.server.models.user import User
-
-MappedClass.compile_all()

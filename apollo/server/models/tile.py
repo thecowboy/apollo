@@ -34,10 +34,5 @@ class Tile(MappedClass):
     _id = FieldProperty(schema.ObjectId)
 
     location = FieldProperty({ "x" : int, "y" : int })
-    chunks = ForeignIdProperty("Chunk")
-    terrain = ForeignIdProperty("Terrain")
-
-from apollo.server.models.chunk import Chunk
-from apollo.server.models.terrain import Terrain
-
-MappedClass.compile_all()
+    chunk_id = ForeignIdProperty("Chunk")
+    terrain_id = ForeignIdProperty("Terrain")

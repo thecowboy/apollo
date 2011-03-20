@@ -23,6 +23,7 @@
 from apollo.server.protocol.packet import Packet
 
 from apollo.server.models import meta
+from apollo.server.models.profession import Profession
 
 from apollo.server.util.decorators import requireAuthentication
 
@@ -32,10 +33,23 @@ class PacketUser(Packet):
     @requireAuthentication
     def dispatch(self, transport, core):
         user = transport.session().getUser()
+        profession = meta.session.get(Profession, user.profession_id)
+
+        max = {}
+        for statname, statcode in profession.curvemap.iteritems():
+            max[statname] = eval(
+                compile(
+                    statcode,
+                    "<%s curve mapping for %s>" % (statname, profession.name),
+                    "eval"
+                ),
+                {},
+                { "user" : user }
+            )
+
         transport.sendEvent(PacketUser(
             name=user.name,
             level=user.level,
-            hp=user.hp,
-            ap=user.ap,
-            xp=user.xp
+            stats=user.stats,
+            max=max
         ))

@@ -22,7 +22,12 @@
 
 # I stole this idea from Pylons
 
+import os
+
+from apollo.server.util.importlib import import_module
+
 from ming import Session
+from ming.orm import MappedClass
 from ming.orm import ThreadLocalORMSession
 
 doc_session = Session()
@@ -30,3 +35,16 @@ session = ThreadLocalORMSession(doc_session=doc_session)
 
 def bind_session(bind):
     doc_session.bind = bind
+    autodiscover()
+
+def autodiscover():
+    for filename in os.listdir(os.path.dirname(__file__)):
+        if filename not in ("meta.py", "__init__.py"):
+            module_name = filename.rsplit(".", 1)[0]
+            module = import_module(".%s" % module_name, "apollo.server.models")
+            for member_name in dir(module):
+                member = getattr(module, member_name)
+                if isinstance(member, MappedClass):
+                    locals()[member.__name__] = member
+
+    MappedClass.compile_all()

@@ -143,11 +143,8 @@ Data Members
  * ``level``
    Level of the user.
 
- * ``hp``
-   User's HP, in { current, max }.
+ * ``stats``
+   User's stats.
 
- * ``ap``
-   User's AP, in { current, max }.
-
- * ``xp``
-   User's XP, in { current, max }.
+ * ``max``
+   User's max stats.

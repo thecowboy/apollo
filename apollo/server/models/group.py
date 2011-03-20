@@ -39,8 +39,3 @@ class Group(MappedClass):
     name = FieldProperty(str)
     permissions = FieldProperty([str])
     users = RelationProperty("User")
-
-from apollo.server.models.user import User
-from apollo.server.models.tile import Tile
-
-MappedClass.compile_all()
