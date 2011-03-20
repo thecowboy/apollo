@@ -20,9 +20,6 @@
 # THE SOFTWARE.
 #
 
-from hashlib import sha256
-from datetime import datetime
-
 from ming import schema
 from ming.orm import MappedClass
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
@@ -37,5 +34,9 @@ class Realm(MappedClass):
     _id = FieldProperty(schema.ObjectId)
 
     name = FieldProperty(str)
+    chunks = RelationProperty("Chunk")
+
+from apollo.server.models.chunk import Chunk
+from apollo.server.models.terrain import Terrain
 
 MappedClass.compile_all()

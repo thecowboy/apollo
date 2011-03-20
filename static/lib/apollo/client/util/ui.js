@@ -61,6 +61,15 @@ apollo.client.util.ui.addConsoleMessage = function(message)
 
 apollo.client.util.ui.setUserData = function(name, level, hp, ap, xp)
 {
+    hp.current = hp.current || 0;
+    hp.max = hp.max || 0;
+
+    ap.current = ap.current || 0;
+    ap.max = ap.max || 0;
+
+    xp.current = xp.current || 0;
+    xp.max = xp.max || 100; // 100 so the bar doesn't go wtf
+
     var namefield = dojo.byId("infoUserName");
     var levelfield = dojo.byId("infoUserLevel");
 

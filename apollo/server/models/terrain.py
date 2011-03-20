@@ -20,27 +20,20 @@
 # THE SOFTWARE.
 #
 
-from hashlib import sha256
-from datetime import datetime
-
 from ming import schema
 from ming.orm import MappedClass
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from apollo.server.models import meta
 
-class Group(MappedClass):
+class Terrain(MappedClass):
     class __mongometa__:
-        name = "group"
+        name = "terrain"
         session = meta.session
 
     _id = FieldProperty(schema.ObjectId)
 
     name = FieldProperty(str)
-    permissions = FieldProperty([str])
-    users = RelationProperty("User")
-
-from apollo.server.models.user import User
-from apollo.server.models.tile import Tile
+    img = FieldProperty(str)
 
 MappedClass.compile_all()

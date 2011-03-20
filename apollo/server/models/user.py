@@ -55,8 +55,7 @@ class User(MappedClass):
     sessions = RelationProperty("Session")
     group_id = ForeignIdProperty("Group")
 
-    # location information
-    location = FieldProperty({ "x" : int, "y" : int, "realm" : ObjectId })
+    tile_id = ForeignIdProperty("Tile")
 
     # rpg stuff
     level = FieldProperty(int, if_missing=1)
@@ -82,5 +81,6 @@ class User(MappedClass):
 
 from apollo.server.models.session import Session
 from apollo.server.models.group import Group
+from apollo.server.models.tile import Tile
 
 MappedClass.compile_all()

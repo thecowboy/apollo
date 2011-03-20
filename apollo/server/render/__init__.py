@@ -19,28 +19,3 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-
-from hashlib import sha256
-from datetime import datetime
-
-from ming import schema
-from ming.orm import MappedClass
-from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
-
-from apollo.server.models import meta
-
-class Group(MappedClass):
-    class __mongometa__:
-        name = "group"
-        session = meta.session
-
-    _id = FieldProperty(schema.ObjectId)
-
-    name = FieldProperty(str)
-    permissions = FieldProperty([str])
-    users = RelationProperty("User")
-
-from apollo.server.models.user import User
-from apollo.server.models.tile import Tile
-
-MappedClass.compile_all()

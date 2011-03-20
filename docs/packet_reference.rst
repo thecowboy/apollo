@@ -104,6 +104,10 @@ Data Members
 Request information about the current tile from the server, or send the client
 information about the current tile.
 
+Direction of Transfer
+---------------------
+Bidirectional.
+
 Data Members
 ------------
  * ``location``
@@ -122,6 +126,10 @@ Data Members
 =====================
 Request basic information about either an arbitrary user from the server or the
 current user, or send the client user information.
+
+Direction of Transfer
+---------------------
+Bidirectional.
 
 Data Members
 ------------
