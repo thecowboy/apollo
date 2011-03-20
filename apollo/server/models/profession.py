@@ -41,4 +41,4 @@ class Profession(MappedClass):
 
     basestats = FieldProperty(schema.Anything)
 
-    spawnpoint = ForeignIdProperty("Tile")
+    spawnpoint_id = ForeignIdProperty("Tile")

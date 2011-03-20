@@ -55,11 +55,10 @@ class User(MappedClass):
     sessions = RelationProperty("Session")
     group_id = ForeignIdProperty("Group")
 
-    tile_id = ForeignIdProperty("Tile")
-
     # rpg stuff
     level = FieldProperty(int, if_missing=1)
     profession_id = ForeignIdProperty("Profession")
+    location_id = ForeignIdProperty("Tile")
 
     hp = FieldProperty(int, if_missing=0)
     ap = FieldProperty(int, if_missing=0)
