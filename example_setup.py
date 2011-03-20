@@ -30,7 +30,7 @@ SPAWN_Y = 12
 # create terrain
 terrains = [
     Terrain(name="Grass", img="grass"),
-    Terrain(name="Grass", img="grass")
+    Terrain(name="Rocks", img="rocks")
 ]
 
 # create realm
