@@ -32,6 +32,7 @@ from ming.orm import MappedClass
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from apollo.server.models import meta
+from apollo.server.models.group import Group
 
 class User(MappedClass):
     class __mongometa__:
