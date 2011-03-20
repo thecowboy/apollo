@@ -33,6 +33,6 @@ class Tile(MappedClass):
 
     _id = FieldProperty(schema.ObjectId)
 
-    location = FieldProperty({ "x" : int, "y" : int })
-    chunk_id = ForeignIdProperty("Chunk")
-    terrain_id = ForeignIdProperty("Terrain")
+    location = FieldProperty({ "x" : int, "y" : int }, required=True)
+    chunk_id = ForeignIdProperty("Chunk", required=True)
+    terrain_id = ForeignIdProperty("Terrain", required=True)

@@ -33,5 +33,5 @@ class Terrain(MappedClass):
 
     _id = FieldProperty(schema.ObjectId)
 
-    name = FieldProperty(str)
-    img = FieldProperty(str)
+    name = FieldProperty(str, required=True)
+    img = FieldProperty(str, required=True)

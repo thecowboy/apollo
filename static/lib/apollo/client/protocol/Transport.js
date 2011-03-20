@@ -55,9 +55,9 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
                 // start the comet loop again (if we want to)
                 if(!that.shutdowned) that.eventComet();
             },
-            error       : function()
+            error       : function(e)
             {
-                core.die("Transport error (event)");
+                core.die("Transport error (event): " + e);
             }
         });
     },
@@ -81,9 +81,9 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
                 s       : this.token
             },
             handleAs    : "text",
-            error       : function()
+            error       : function(e)
             {
-                core.die("Transport error (action)");
+                core.die("Transport error (action): " + e);
             }
         });
     },

@@ -40,7 +40,7 @@ class User(MappedClass):
 
     _id = FieldProperty(schema.ObjectId)
 
-    name = FieldProperty(str)
+    name = FieldProperty(str, required=True)
     pwhash = FieldProperty(str)
 
     def _set_password(self, value):
@@ -53,12 +53,13 @@ class User(MappedClass):
     registered = FieldProperty(datetime, if_missing=datetime.utcnow)
 
     sessions = RelationProperty("Session")
-    group_id = ForeignIdProperty("Group")
+
+    group_id = ForeignIdProperty("Group", required=True)
 
     # rpg stuff
     level = FieldProperty(int, if_missing=1)
-    profession_id = ForeignIdProperty("Profession")
-    location_id = ForeignIdProperty("Tile")
+    profession_id = ForeignIdProperty("Profession", required=True)
+    location_id = ForeignIdProperty("Tile", required=True)
 
     hp = FieldProperty(int, if_missing=0)
     ap = FieldProperty(int, if_missing=0)

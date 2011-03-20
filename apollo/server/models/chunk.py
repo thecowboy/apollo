@@ -38,8 +38,8 @@ class Chunk(MappedClass):
         "left" : int,
         "bottom" : int,
         "right" : int
-    })
+    }, required=True)
 
     fresh = FieldProperty(bool, if_missing=False)
 
-    realm_id = ForeignIdProperty("Realm")
+    realm_id = ForeignIdProperty("Realm", required=True)

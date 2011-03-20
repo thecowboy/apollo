@@ -33,5 +33,6 @@ class Realm(MappedClass):
 
     _id = FieldProperty(schema.ObjectId)
 
-    name = FieldProperty(str)
+    name = FieldProperty(str, required=True)
+    size = FieldProperty({ "width" : int, "height" : int }, required=True)
     chunks = RelationProperty("Chunk")

@@ -36,6 +36,6 @@ class Group(MappedClass):
 
     _id = FieldProperty(schema.ObjectId)
 
-    name = FieldProperty(str)
+    name = FieldProperty(str, required=True)
     permissions = FieldProperty([str])
     users = RelationProperty("User")

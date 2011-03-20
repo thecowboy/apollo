@@ -33,11 +33,11 @@ class Profession(MappedClass):
 
     _id = FieldProperty(schema.ObjectId)
 
-    name = FieldProperty(str)
+    name = FieldProperty(str, required=True)
 
-    hpcurve = FieldProperty(str)
-    apcurve = FieldProperty(str)
-    xpcurve = FieldProperty(str)
+    hpcurve = FieldProperty(str, required=True)
+    apcurve = FieldProperty(str, required=True)
+    xpcurve = FieldProperty(str, required=True)
 
     basestats = FieldProperty(schema.Anything)
 
