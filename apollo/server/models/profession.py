@@ -34,4 +34,11 @@ class Profession(MappedClass):
     _id = FieldProperty(schema.ObjectId)
 
     name = FieldProperty(str)
-    curvemap = FieldProperty(schema.Anything)
+
+    hpcurve = FieldProperty(str)
+    apcurve = FieldProperty(str)
+    xpcurve = FieldProperty(str)
+
+    basestats = FieldProperty(schema.Anything)
+
+    spawnpoint = ForeignIdProperty("Tile")

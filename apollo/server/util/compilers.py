@@ -20,26 +20,33 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.protocol.packet import Packet
+class BaseCompiler(object):
+    cache = {}
 
-from apollo.server.models import meta
-from apollo.server.models.profession import Profession
+    def __init__(self, code):
+        if (self.__class__.__name__, code) not in self.cache:
+            self.cache[self.__class__.__name__, code] = self.compile(code)
 
-from apollo.server.util.decorators import requireAuthentication
-from apollo.server.util.compilers import CurveCompiler
+        self.code_obj = self.cache[self.__class__.__name__, code]
 
-class PacketUser(Packet):
-    name = "user"
+    def compile(self, code):
+        raise NotImplementedError
 
-    @requireAuthentication
-    def dispatch(self, transport, core):
-        user = transport.session().getUser()
-        profession = meta.session.get(Profession, user.profession_id)
+    def __call__(self, **locals):
+        return eval(self.code_obj, locals)
 
-        transport.sendEvent(PacketUser(
-            name=user.name,
-            level=user.level,
-            hp={ "now" : user.hp, "max" : CurveCompiler(profession.hpcurve)(user=user) },
-            ap={ "now" : user.ap, "max" : CurveCompiler(profession.apcurve)(user=user) },
-            xp={ "now" : user.xp, "max" : CurveCompiler(profession.xpcurve)(user=user) }
-        ))
+class CurveCompiler(BaseCompiler):
+    def compile(self, code):
+        return compile(
+            code,
+            "<curve mapping: %s>" % code,
+            "eval"
+        )
+
+class EventCompiler(BaseCompiler):
+    def compile(self, code):
+        return compile(
+            code,
+            "<event code>",
+            "exec"
+        )

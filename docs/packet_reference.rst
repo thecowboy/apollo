@@ -143,8 +143,11 @@ Data Members
  * ``level``
    Level of the user.
 
- * ``stats``
-   User's stats.
+ * ``hp``
+   User's HP and max HP.
 
- * ``max``
-   User's max stats.
+ * ``ap``
+   User's AP and max AP.
+
+ * ``xp``
+   User's XP and max XP.

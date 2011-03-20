@@ -31,6 +31,12 @@ dojo.declare("apollo.client.protocol.packet.PacketUser", apollo.client.protocol.
 
     dispatch : function(transport, core)
     {
-        if(!this.target) apollo.client.util.ui.setUserData(this.name, this.level, this.stats, this.max);
+        if(!this.target) apollo.client.util.ui.setUserData(
+            this.name,
+            this.level,
+            this.hp,
+            this.ap,
+            this.xp
+        );
     }
 });

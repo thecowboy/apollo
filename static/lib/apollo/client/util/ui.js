@@ -59,7 +59,7 @@ apollo.client.util.ui.addConsoleMessage = function(message)
     chatPane.scrollTop = chatPane.scrollHeight;
 }
 
-apollo.client.util.ui.setUserData = function(name, level, stats, max)
+apollo.client.util.ui.setUserData = function(name, level, hp, ap, xp)
 {
     var namefield = dojo.byId("infoUserName");
     var levelfield = dojo.byId("infoUserLevel");
@@ -71,13 +71,13 @@ apollo.client.util.ui.setUserData = function(name, level, stats, max)
     namefield.innerHTML = name;
     levelfield.innerHTML = level;
 
-    hpfield.update({ maximum : max.hp, progress : stats.hp });
-    hpfield.label.innerHTML = stats.hp + " / " + max.hp;
+    hpfield.update({ progress : hp.now, maximum : hp.max });
+    hpfield.label.innerHTML = hp.now + " / " + hp.max;
 
-    apfield.update({ maximum : max.ap, progress : stats.ap });
-    apfield.label.innerHTML = stats.ap + " / " + max.ap;
+    apfield.update({ progress : ap.now, maximum : ap.max });
+    apfield.label.innerHTML = ap.now + " / " + ap.max;
 
-    xpfield.update({ maximum : max.xp, progress : stats.xp });
+    xpfield.update({ progress : xp.now, maximum : xp.max });
 }
 
 apollo.client.util.ui.setInfoData = function(location, tileinfo, things)

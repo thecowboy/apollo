@@ -60,6 +60,11 @@ class User(MappedClass):
     # rpg stuff
     level = FieldProperty(int, if_missing=1)
     profession_id = ForeignIdProperty("Profession")
+
+    hp = FieldProperty(int, if_missing=0)
+    ap = FieldProperty(int, if_missing=0)
+    xp = FieldProperty(int, if_missing=0)
+
     stats = FieldProperty(schema.Anything)
 
     def hasPermission(self, permission):

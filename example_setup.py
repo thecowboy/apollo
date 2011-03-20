@@ -15,11 +15,9 @@ meta.session.impl.bind.bind._conn.drop_database(meta.session.impl.bind.database)
 
 tester = Profession()
 tester.name = "Tester"
-tester.curvemap = {
-    "hp" : "10 + user.level * 10",
-    "ap" : "10 + user.level * 10",
-    "xp" : "10 + user.level * 10"
-}
+tester.hpcurve = "10 + user.level * 10"
+tester.apcurve = "10 + user.level * 10"
+tester.xpcurve = "10 + user.level * 10"
 
 admins = Group()
 admins.name = "Administrators"
