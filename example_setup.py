@@ -1,4 +1,5 @@
 import random
+import math
 
 from apollo.server import setup_options
 from apollo.server.core import Core
@@ -11,7 +12,7 @@ from apollo.server.models.profession import Profession
 
 from apollo.server.models.terrain import Terrain
 from apollo.server.models.realm import Realm
-from apollo.server.models.chunk import Chunk
+from apollo.server.models.chunk import Chunk, CHUNK_STRIDE
 from apollo.server.models.tile import Tile
 
 # initialize
@@ -23,7 +24,6 @@ core = Core()
 meta.session.impl.bind.bind._conn.drop_database(meta.session.impl.bind.database)
 
 # set spawn
-
 SPAWN_X = 10
 SPAWN_Y = 12
 
@@ -45,23 +45,29 @@ realm = Realm(
     }
 )
 
-# create chunks + tiles
-CHUNK_SIZE = 8
-
 # BEST TERRAIN GENERATOR EVER
-for u in xrange(0, REALM_WIDTH, CHUNK_SIZE):
-    for v in xrange(0, REALM_HEIGHT, CHUNK_SIZE):
+print "Generating realm..."
+
+num_tiles = 0
+for u in xrange(0, int(math.ceil(REALM_WIDTH / float(CHUNK_STRIDE)))):
+    for v in xrange(0, int(math.ceil(REALM_HEIGHT / float(CHUNK_STRIDE)))):
+
+        left = u * CHUNK_STRIDE
+        top = v * CHUNK_STRIDE
+        right = (u + 1) * CHUNK_STRIDE - 1
+        bottom = (v + 1) * CHUNK_STRIDE - 1
+
         chunk = Chunk(
             extents={
-                "left"  : u,
-                "top"   : v,
-                "right" : u + CHUNK_SIZE - 1,
-                "bottom": v + CHUNK_SIZE - 1
+                "left"  : left,
+                "top"   : top,
+                "right" : right,
+                "bottom": bottom
             },
             realm_id=realm._id
         )
-        for x in xrange(u, u + CHUNK_SIZE):
-            for y in xrange(v, v + CHUNK_SIZE):
+        for x in xrange(left, min(REALM_WIDTH, right + 1)):
+            for y in xrange(top, min(REALM_HEIGHT, bottom + 1)):
                 tile = Tile(
                     location={
                         "x" : x,
@@ -70,10 +76,15 @@ for u in xrange(0, REALM_WIDTH, CHUNK_SIZE):
                     chunk_id=chunk._id,
                     terrain_id=terrains[random.randrange(0, len(terrains))]._id
                 )
+                num_tiles += 1
                 if x == SPAWN_X and y == SPAWN_Y:
                     spawntile = tile
 
-# create permissions
+print "Generated %d tiles." % num_tiles
+
+print "Populating with first-run data..."
+
+# create professions
 tester = Profession(
     name="Tester",
     hpcurve="10 + user.level * 10",
@@ -130,6 +141,7 @@ user = User(
 user.password = "isgat"
 
 # we're done!
+print "Flushing data (this may take a while)..."
 meta.session.flush_all()
 
 print "Example setup completed."

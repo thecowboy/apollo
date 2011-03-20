@@ -26,6 +26,8 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from apollo.server.models import meta
 
+CHUNK_STRIDE = 8
+
 class Chunk(MappedClass):
     class __mongometa__:
         name = "chunk"
