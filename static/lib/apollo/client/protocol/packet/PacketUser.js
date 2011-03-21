@@ -34,6 +34,7 @@ dojo.declare("apollo.client.protocol.packet.PacketUser", apollo.client.protocol.
         if(!this.target) apollo.client.util.ui.setUserData(
             this.name,
             this.level,
+            this.profession,
             this.hp,
             this.ap,
             this.xp

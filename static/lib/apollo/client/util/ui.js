@@ -59,10 +59,11 @@ apollo.client.util.ui.addConsoleMessage = function(message)
     chatPane.scrollTop = chatPane.scrollHeight;
 }
 
-apollo.client.util.ui.setUserData = function(name, level, hp, ap, xp)
+apollo.client.util.ui.setUserData = function(name, level, profession, hp, ap, xp)
 {
     var namefield = dojo.byId("infoUserName");
     var levelfield = dojo.byId("infoUserLevel");
+    var proffield = dojo.byId("infoUserProfession");
 
     var hpfield = dijit.byId("infoUserHP");
     var apfield = dijit.byId("infoUserAP");
@@ -70,6 +71,7 @@ apollo.client.util.ui.setUserData = function(name, level, hp, ap, xp)
 
     namefield.innerHTML = name;
     levelfield.innerHTML = level;
+    proffield.innerHTML = profession;
 
     hpfield.update({ progress : hp.now, maximum : hp.max });
     hpfield.label.innerHTML = hp.now + " / " + hp.max;
@@ -108,3 +110,4 @@ apollo.client.util.ui.linkify = function(text)
 {
     return text.replace(linkExpr, "<a href=\"$1\">$1</a>");
 }
+

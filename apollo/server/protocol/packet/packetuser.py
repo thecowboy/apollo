@@ -47,6 +47,9 @@ class PacketUser(Packet):
          * ``level``
            Level of the user.
 
+         * ``profession``
+           Name of the user's profession.
+
          * ``hp``
            User's HP and max HP.
 
@@ -67,6 +70,7 @@ class PacketUser(Packet):
         transport.sendEvent(PacketUser(
             name=user.name,
             level=user.level,
+            profession=profession.name,
             hp={ "now" : user.hp, "max" : CurveCompiler(profession.hpcurve)(user=user) },
             ap={ "now" : user.ap, "max" : CurveCompiler(profession.apcurve)(user=user) },
             xp={ "now" : user.xp, "max" : CurveCompiler(profession.xpcurve)(user=user) }
