@@ -41,6 +41,6 @@ Submodules
    dylib.rst
    messaging.rst
    models.rst
-   protocol/index.rst
+   protocol.rst
    render.rst
    util.rst

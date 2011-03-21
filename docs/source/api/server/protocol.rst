@@ -1,5 +1,21 @@
+``apollo.server.protocol``
+==========================
+
+.. automodule:: apollo.server.protocol
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+``apollo.server.protocol.transport``
+------------------------------------
+
+.. automodule:: apollo.server.protocol.transport
+   :members:
+   :inherited-members:
+   :undoc-members:
+
 ``apollo.server.protocol.packet``
-=================================
+---------------------------------
 
 .. automodule:: apollo.server.protocol.packet
    :members:
@@ -7,7 +23,7 @@
    :undoc-members:
 
 Packets
--------
+~~~~~~~
 The following packets are implemented:
 
 .. automodule:: apollo.server.protocol.packet.packetchat
