@@ -1,10 +1,9 @@
-=================
 API Documentation
 =================
 
-This section houses the API documentation for server.
+This section houses the Apollo API documentation.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
-   root/index
+   server/index

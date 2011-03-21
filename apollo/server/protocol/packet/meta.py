@@ -28,10 +28,17 @@ import json
 packetlist = {}
 
 def autodiscover():
+    """
+    Autodiscover all packets and store them in the packet list.
+    """
     for filename in os.listdir(os.path.dirname(__file__)):
-        if filename[:6] == "packet" and filename[-3:] == ".py":
+        if filename[-3:] == ".py":
             # assume this is a packet
-            module_name = filename.rsplit(".", 1)[0]
+            module_name, ext = filename.rsplit(".", 1)
+
+            if module_name[:6] != "packet":
+                continue
+
             module = import_module(".%s" % module_name, "apollo.server.protocol.packet")
             for member_name in dir(module):
                 if member_name != "Packet" and member_name[:6] == "Packet":
@@ -41,6 +48,13 @@ def autodiscover():
 autodiscover()
 
 def deserialize_packet(payload):
+    """
+    Deserialize a packet into the appropriate packet object.
+
+    :Parameters:
+         * ``payload``
+           Packet payload that was transferred.
+    """
     depayload = json.loads(payload)
     name = depayload.get("__name__")
     if name in packetlist:

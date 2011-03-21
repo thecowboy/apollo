@@ -27,6 +27,10 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from apollo.server.models import meta
 
 class Tile(MappedClass):
+    """
+    A tile in the world.
+    """
+
     class __mongometa__:
         name = "tile"
         session = meta.session
@@ -37,6 +41,18 @@ class Tile(MappedClass):
         "rx" : int,
         "ry" : int
     }, required=True)
+    """
+    Location of the tile. These are in coordinates relative to the chunk. They
+    have the same scale as aboslute coordinates, and can be calculated with the
+    expressions ``ax % CHUNK_STRIDE`` and ``ay % CHUNK_STRIDE``.
+    """
 
     chunk_id = ForeignIdProperty("Chunk", required=True)
+    """
+    ID of the chunk this tile belongs to.
+    """
+
     terrain_id = ForeignIdProperty("Terrain", required=True)
+    """
+    ID of the terrain type this tile is.
+    """

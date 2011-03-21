@@ -35,6 +35,10 @@ from apollo.server.models import meta
 from apollo.server.models.group import Group
 
 class User(MappedClass):
+    """
+    A user.
+    """
+
     class __mongometa__:
         name = "user"
         session = meta.session
@@ -42,33 +46,95 @@ class User(MappedClass):
     _id = FieldProperty(schema.ObjectId)
 
     name = FieldProperty(str, required=True)
+    """
+    The username of the user.
+    """
+
     pwhash = FieldProperty(str)
+    """
+    The password hash of the user (see ``_set_password`` for how this is
+    calculated).
+    """
 
     def _set_password(self, value):
+        """
+        Setter function for the user's password hash.
+
+        :Paramater:
+             * ``value``
+               Plaintext password to encode.
+        """
         self.pwhash = sha256("%s:%s" % (self.name.lower(), value)).hexdigest()
 
     password = property(fset=_set_password)
+    """
+    Convenice property for setting the user's password.
+    """
 
     online = FieldProperty(bool, if_missing=False)
+    """
+    The status of the user being online.
+    """
 
     registered = FieldProperty(datetime, if_missing=datetime.utcnow)
+    """
+    Date when user registered.
+    """
 
     sessions = RelationProperty("Session")
+    """
+    User's sessions.
+    """
 
     group_id = ForeignIdProperty("Group", required=True)
+    """
+    ID of the group the user belongs to.
+    """
 
     # rpg stuff
     level = FieldProperty(int, if_missing=1)
+    """
+    User's level.
+    """
+
     profession_id = ForeignIdProperty("Profession", required=True)
+    """
+    ID of the profession the user belongs to.
+    """
+
     location_id = ForeignIdProperty("Tile", required=True)
+    """
+    ID of the tile the user is currrently at.
+    """
 
     hp = FieldProperty(int, if_missing=0)
+    """
+    User's HP.
+    """
+
     ap = FieldProperty(int, if_missing=0)
+    """
+    User's AP.
+    """
+
     xp = FieldProperty(int, if_missing=0)
+    """
+    User's XP.
+    """
 
     stats = FieldProperty(schema.Anything)
+    """
+    User's stats.
+    """
 
     def hasPermission(self, permission):
+        """
+        Check if the user has the specified permission.
+
+        :Parameters:
+             * ``permission``
+               Permission to check for.
+        """
         group = meta.session.get(Group, self.group_id)
 
         if group is None:
@@ -82,4 +148,11 @@ class User(MappedClass):
 
     @staticmethod
     def getUserByName(name):
+        """
+        Get user by name case-insensitively.
+
+        :Parameters:
+             * ``name``
+               Username.
+        """
         return meta.session.find(User, { "name" : { "$regex" : "^%s$" % re.escape(name.lower()), "$options" : "i" } }).one()

@@ -95,7 +95,7 @@ class Transport(Component):
             return
 
         logging.debug("Sending packet: %s" % packet)
-        self.bound_handler.send(packet)
+        self.bound_handler.finish(packet.dump())
 
         # unbind immediately
         self.bound_handler = None

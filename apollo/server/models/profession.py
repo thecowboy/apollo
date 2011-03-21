@@ -27,6 +27,10 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from apollo.server.models import meta
 
 class Profession(MappedClass):
+    """
+    An RPG-style profession (think `Warrior`, `Caster`, etc.).
+    """
+
     class __mongometa__:
         name = "profession"
         session = meta.session
@@ -34,11 +38,40 @@ class Profession(MappedClass):
     _id = FieldProperty(schema.ObjectId)
 
     name = FieldProperty(str, required=True)
+    """
+    Name of the profession.
+    """
 
     hpcurve = FieldProperty(str, required=True)
+    """
+    Python expression that evaluates to the HP for this profession based on user
+    stats.
+
+    The variable ``user`` is available for accessing user stats.
+    """
+
     apcurve = FieldProperty(str, required=True)
+    """
+    Python expression that evaluates to the AP for this profession based on user
+    stats.
+
+    The variable ``user`` is available for accessing user stats.
+    """
+
     xpcurve = FieldProperty(str, required=True)
+    """
+    Python expression that evaluates to the XP for this profession based on user
+    stats.
+
+    The variable ``user`` is available for accessing user stats.
+    """
 
     basestats = FieldProperty(schema.Anything)
+    """
+    Base stats for this profession.
+    """
 
     spawnpoint_id = ForeignIdProperty("Tile")
+    """
+    ID of the tile that is the profession's default spawnpoint.
+    """

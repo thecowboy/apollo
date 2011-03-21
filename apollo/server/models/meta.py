@@ -34,13 +34,27 @@ doc_session = Session()
 session = ThreadLocalORMSession(doc_session=doc_session)
 
 def bind_session(bind):
+    """
+    Bind the session to a database connection.
+
+    :Parameters:
+         * ``bind``
+            Database connection.
+    """
     doc_session.bind = bind
     autodiscover()
 
 def autodiscover():
+    """
+    Autodiscover all models and compile them.
+    """
     for filename in os.listdir(os.path.dirname(__file__)):
-        if filename not in ("meta.py", "__init__.py") and filename[-3:] == ".py":
-            module_name = filename.rsplit(".", 1)[0]
+        if filename[-3:] == ".py":
+            module_name, ext = filename.rsplit(".", 1)
+
+            if module_name in ("meta", "__init__"):
+                continue
+
             module = import_module(".%s" % module_name, "apollo.server.models")
             for member_name in dir(module):
                 member = getattr(module, member_name)

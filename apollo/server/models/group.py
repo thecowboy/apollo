@@ -30,6 +30,9 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from apollo.server.models import meta
 
 class Group(MappedClass):
+    """
+    A permission group.
+    """
     class __mongometa__:
         name = "group"
         session = meta.session
@@ -37,5 +40,16 @@ class Group(MappedClass):
     _id = FieldProperty(schema.ObjectId)
 
     name = FieldProperty(str, required=True)
+    """
+    Name of the group, e.g. `Administrator`.
+    """
+
     permissions = FieldProperty([str])
+    """
+    List of permissions the group has. The wildcard character ``*`` is allowed.
+    """
+
     users = RelationProperty("User")
+    """
+    Users that are members of this group.
+    """

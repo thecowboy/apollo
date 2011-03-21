@@ -27,8 +27,16 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from apollo.server.models import meta
 
 CHUNK_STRIDE = 8
+"""
+Stride of a chunk, i.e. how many tiles it can contain both horizontally and
+vertically.
+"""
 
 class Chunk(MappedClass):
+    """
+    A region of the map ``CHUNK_STRIDE`` high and wide. These are rendered for
+    the client to display, instead of the client stitching up its own tiles.
+    """
     class __mongometa__:
         name = "chunk"
         session = meta.session
@@ -39,7 +47,21 @@ class Chunk(MappedClass):
         "cx" : int,
         "cy" : int
     }, required=True)
+    """
+    Location of the chunk, in chunk coordinates.
+
+    Chunk coordinates are calculated with the expressions ``ax // CHUNK_STRIDE``
+    and ``ay // CHUNK_STRIDE``, where ``ax`` and ``ay`` are absolute x and y
+    coordinates, respectively.
+    """
 
     fresh = FieldProperty(bool, if_missing=False)
+    """
+    Chunk is "fresh", i.e. no changes to the tiles that reside within it since
+    the last render.
+    """
 
     realm_id = ForeignIdProperty("Realm", required=True)
+    """
+    ID of the realm the chunk belongs to.
+    """

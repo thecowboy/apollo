@@ -50,9 +50,13 @@ class DylibDispatcher(Component):
          * It must have a member that begins with ``Dylib``.
         """
         for filename in os.listdir(os.path.dirname(__file__)):
-            if filename[:5] == "dylib" and filename[-3:] == ".py":
-                # assume this is a dylib
-                module_name = filename.rsplit(".", 1)[0]
+            if filename[-3:] == ".py":
+                module_name, ext = filename.rsplit(".", 1)
+
+                # do not scan if it does not start with dylib
+                if module_name[:5] != "dylib":
+                    continue
+
                 module = import_module(".%s" % module_name, "apollo.server.dylib")
                 for member_name in dir(module):
                     if member_name != "Dylib" and member_name[:5] == "Dylib":

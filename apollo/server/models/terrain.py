@@ -27,6 +27,10 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from apollo.server.models import meta
 
 class Terrain(MappedClass):
+    """
+    Terrain type.
+    """
+
     class __mongometa__:
         name = "terrain"
         session = meta.session
@@ -34,4 +38,11 @@ class Terrain(MappedClass):
     _id = FieldProperty(schema.ObjectId)
 
     name = FieldProperty(str, required=True)
+    """
+    Name of the terrain type.
+    """
+
     img = FieldProperty(str, required=True)
+    """
+    Image of the terrain type.
+    """

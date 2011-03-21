@@ -34,6 +34,10 @@ from apollo.server.models import meta
 from apollo.server.models.user import User
 
 class Session(MappedClass):
+    """
+    A session that is established when a user makes a connection.
+    """
+
     class __mongometa__:
         name = "session"
         session = meta.session
@@ -41,8 +45,22 @@ class Session(MappedClass):
     _id = FieldProperty(schema.ObjectId)
 
     token = FieldProperty(str, if_missing=lambda: sha256(os.urandom(64)).hexdigest())
+    """
+    Unique session identifier.
+    """
+
     last_active = FieldProperty(datetime, if_missing=datetime.utcnow)
+    """
+    Last active session time.
+    """
+
     user_id = ForeignIdProperty("User")
+    """
+    ID of the user connected to this session.
+    """
 
     def getUser(self):
+        """
+        Get the user connected to this session (if any).
+        """
         return meta.session.get(User, self.user_id)

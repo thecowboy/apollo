@@ -102,9 +102,6 @@ class EventsHandler(RequestHandler):
         if self.transport:
             self.transport.shutdown()
 
-    def send(self, packet):
-        self.finish(packet.dump())
-
     @asynchronous
     def get(self, *args, **kwargs):
         self.set_header("Content-Type", "application/json")

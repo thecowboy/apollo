@@ -27,6 +27,10 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from apollo.server.models import meta
 
 class Realm(MappedClass):
+    """
+    The representation of a "world".
+    """
+
     class __mongometa__:
         name = "realm"
         session = meta.session
@@ -34,5 +38,16 @@ class Realm(MappedClass):
     _id = FieldProperty(schema.ObjectId)
 
     name = FieldProperty(str, required=True)
+    """
+    The name of the realm.
+    """
+
     size = FieldProperty({ "width" : int, "height" : int }, required=True)
+    """
+    The size of the realm, in absolute coordinates.
+    """
+
     chunks = RelationProperty("Chunk")
+    """
+    The chunks contained in this world.
+    """
