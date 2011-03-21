@@ -26,6 +26,16 @@ from apollo.server.models import meta
 from apollo.server.protocol.packet import Packet
 
 class PacketHeartbeat(Packet):
+    """
+    Inform the server the client is still active.
+
+    :Direction of Transfer:
+        Client to server.
+
+    :Data Members:
+        None.
+    """
+
     name = "heartbeat"
 
     def dispatch(self, transport, core):

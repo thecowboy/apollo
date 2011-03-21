@@ -29,6 +29,34 @@ from apollo.server.util.decorators import requireAuthentication
 from apollo.server.util.compilers import CurveCompiler
 
 class PacketUser(Packet):
+    """
+    Request basic information about either an arbitrary user from the server or
+    the current user, or send the client user information.
+
+    :Direction of Transfer:
+        Bidirectional.
+
+    :Data Members:
+         * ``target``
+           User to request information about. Empty if requesting information
+           about current user.
+
+         * ``name``
+           User's name. In most cases will be the same value as ``target``.
+
+         * ``level``
+           Level of the user.
+
+         * ``hp``
+           User's HP and max HP.
+
+         * ``ap``
+           User's AP and max AP.
+
+         * ``xp``
+           User's XP and max XP.
+    """
+
     name = "user"
 
     @requireAuthentication

@@ -20,12 +20,20 @@
 # THE SOFTWARE.
 #
 
+"""
+Dylib dispatching and autodiscovery.
+"""
+
 from apollo.server.component import Component
 from apollo.server.util.importlib import import_module
 
 import os
 
 class DylibDispatcher(Component):
+    """
+    Dispatcher for dylibs. Handles requests for them.
+    """
+
     def __init__(self, core):
         super(DylibDispatcher, self).__init__(core)
         self.dylibs = {}
@@ -33,6 +41,14 @@ class DylibDispatcher(Component):
         self.autodiscover()
 
     def autodiscover(self):
+        """
+        Autodiscover all dylibs. The following conditions must hold for a dylib
+        to be autodiscovered:
+
+         * Its filename must begin with ``dylib`` and end with ``.py``.
+        
+         * It must have a member that begins with ``Dylib``.
+        """
         for filename in os.listdir(os.path.dirname(__file__)):
             if filename[:5] == "dylib" and filename[-3:] == ".py":
                 # assume this is a dylib
@@ -44,6 +60,13 @@ class DylibDispatcher(Component):
                         self.dylibs[member.name] = member(self.core)
 
     def dispatch(self, pathspec):
+        """
+        Dispatch a dylib request according to a path specification.
+
+        :Parameters:
+            * ``pathspec``
+              Path specification.
+        """
         if pathspec in self.dylibs:
             return self.dylibs[pathspec].generate()
         return None

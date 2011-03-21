@@ -25,6 +25,10 @@ from apollo.server.dylib import Dylib
 from apollo.server.protocol.packet.meta import packetlist
 
 class DylibPacketList(Dylib):
+    """
+    A dylib that informs clients of the implemented packets on the server.
+    """
+
     name = "packetlist"
     depends = [ ("apollo.client.protocol.packet.%s" % packet_type.__name__) for packet_type in packetlist.values() ]
 

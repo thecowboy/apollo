@@ -30,6 +30,23 @@ from apollo.server.models.user import User
 from apollo.server.protocol.packet.packetlogout import PacketLogout
 
 class PacketLogin(Packet):
+    """
+    Log into the server, or inform the client a user has logged in.
+
+    :Direction of Transfer:
+        Bidirectional.
+
+    :Data Members:
+         * ``username``
+           Username of user who has logged in (empty if it is the connected
+           client's packet).
+
+         * ``pwhash``
+           Password hashed with client and server nonce (client to server only).
+
+         * ``nonce``
+           Client nonce (client to server only).
+    """
     name = "login"
 
     def dispatch(self, transport, core):

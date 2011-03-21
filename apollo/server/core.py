@@ -20,6 +20,10 @@
 # THE SOFTWARE.
 #
 
+"""
+The heart of the Apollo server.
+"""
+
 import logging
 import os
 import urlparse
@@ -39,6 +43,9 @@ from apollo.server.messaging.bus import Bus
 from apollo.server.models.meta import bind_session
 
 class Core(Application):
+    """
+    The very core of Apollo. Everything depends on this.
+    """
     def __init__(self):
         logging.getLogger().setLevel(options.logging_level)
 
@@ -72,6 +79,9 @@ class Core(Application):
 
     # setup
     def setupSession(self):
+        """
+        Set up the session for Ming (MongoDB).
+        """
         # netloc for mongodb
         mongodb_netloc = options.mongodb_host
         if options.mongodb_port:
@@ -91,19 +101,39 @@ class Core(Application):
         )), database=options.mongodb_database))
 
     def setupCron(self):
+        """
+        Kickstart the cron scheduler.
+        """
         self.cron = CronScheduler(self)
         self.cron.go()
 
     # transport related stuff
     def createTransport(self):
+        """
+        Create a transport and register it.
+        """
         transport = Transport(self)
         self.connections[transport.token] = transport
         return transport
 
     def getTransport(self, token):
+        """
+        Get a transport by its unique session token.
+
+        :Parameters:
+            * ``token``
+              Unique token that identifies a transport.
+        """
         return self.connections[token]
 
     def loseTransport(self, token):
+        """
+        Forget a transport.
+
+        :Parameters:
+            * ``token``
+              Unique token that identifies a transport.
+        """
         transport = self.connections[token]
         del self.connections[token]
 

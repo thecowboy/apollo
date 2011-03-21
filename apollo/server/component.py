@@ -21,5 +21,8 @@
 #
 
 class Component(object):
+    """
+    Component for class composition that usually attaches to Apollo core.
+    """
     def __init__(self, core):
         self.core = core

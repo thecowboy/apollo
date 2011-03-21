@@ -29,6 +29,19 @@ from apollo.server.protocol.packet.packeterror import PacketError
 from apollo.server.util.decorators import requireAuthentication
 
 class PacketChat(Packet):
+    """
+    Send the client a chat message, or ask the server to relay a chat message.
+
+    :Direction of Transfer:
+        Bidirectional.
+
+    :Data Members:
+         * ``target``
+           Target of message if from client; origin of message if from server.
+
+         * ``msg``
+           Message body.
+    """
     name = "chat"
 
     @requireAuthentication

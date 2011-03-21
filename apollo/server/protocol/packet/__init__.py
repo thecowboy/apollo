@@ -23,15 +23,32 @@
 import json
 
 class Packet(object):
+    """
+    Base packet class. Implements the command pattern.
+    """
     name = "packet"
 
     def __init__(self, **payload):
         self.__dict__.update(payload)
 
     def dispatch(self, transport, core):
+        """
+        Dispatch the packet. Can be decorated with decorators from
+        ``apollo.server.util.decorators``.
+
+        :Parameters:
+            * ``transport``
+              The transport processing the packet.
+
+            * ``core``
+              The Core object.
+        """
         pass
 
     def dump(self):
+        """
+        Dump the packet into JSON format.
+        """
         dic = self.__dict__.copy()
         dic["__name__"] = self.__class__.name
         return json.dumps(dic)

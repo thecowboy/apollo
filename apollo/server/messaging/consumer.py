@@ -58,11 +58,21 @@ class Consumer(object):
         IOLoop.instance().add_handler(self.subscriber, lambda *args: self.on_message(self.subscriber), zmq.POLLIN)
 
     def shutdown(self):
+        """
+        Shut down the consumer.
+        """
         logging.debug("Shutting down consumer for %s" % self.transport)
         IOLoop.instance().remove_handler(self.subscriber)
         self.subscriber.close()
 
     def on_message(self, socket):
+        """
+        Handle a message.
+
+        :Parameters:
+             * ``socket``
+                Socket message arrives on.
+        """
         message = socket.recv()
         logging.debug("Got raw message: %s" % message)
 
@@ -75,9 +85,23 @@ class Consumer(object):
             self.on_user_message(payload)
 
     def on_cross_message(self, message):
+        """
+        Handle a cross-server message.
+
+        :Parameters:
+             * ``message``
+                Message body.
+        """
         logging.debug("Sending cross message packet: %s" % message)
         deserialize_packet(message).dispatch(self.transport, self.transport.core)
 
     def on_user_message(self, message):
+        """
+        Handle a direct message.
+
+        :Parameters:
+             * ``message``
+                Message body.
+        """
         logging.debug("Sending user message packet: %s" % message)
         self.transport.sendEvent(deserialize_packet(message))

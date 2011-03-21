@@ -20,6 +20,10 @@
 # THE SOFTWARE.
 #
 
+"""
+Transport communication for the Apollo protocol.
+"""
+
 import logging
 
 import os
@@ -35,6 +39,12 @@ from apollo.server.protocol.packet.packetlogout import PacketLogout
 from apollo.server.messaging.consumer import Consumer
 
 class Transport(Component):
+    """
+    Transport. Has a socket-like interface to hide the fact connections are not
+    persistent. Also has a consumer for reading messages off a message queue
+    and records its own session.
+    """
+
     def __init__(self, core, bound_handler=None):
         super(Transport, self).__init__(core)
         self.bound_handler = bound_handler
@@ -49,9 +59,19 @@ class Transport(Component):
         self.consumer = None
 
     def consume(self):
+        """
+        Start consuming messages from the message queue.
+        """
         self.consumer = Consumer(self.core.bus, self)
 
     def bind(self, bind):
+        """
+        Bind a handler to this socket.
+
+        :Parameters:
+            * ``bind``
+              Handler to bind.
+        """
         self.bound_handler = bind
         logging.debug("Binding %s: %s" % (self, bind))
         to_send = self.intermedq[:]
@@ -61,6 +81,13 @@ class Transport(Component):
             self.sendEvent(packet)
 
     def sendEvent(self, packet):
+        """
+        Send a packet.
+
+        :Parameters:
+            * ``packet``
+              Packet to send.
+        """
         if self.bound_handler is None:
             logging.debug("Packet placed on intermediate queue: %s" % packet)
             logging.debug(self.core.connections)
@@ -74,9 +101,19 @@ class Transport(Component):
         self.bound_handler = None
 
     def session(self):
+        """
+        Get the session object from the database.
+        """
         return meta.session.find(Session, { "token" : self.token }).one()
 
     def shutdown(self, msg=None):
+        """
+        Shutdown the transport.
+
+        :Parameters:
+            * ``msg``
+              Optional message to provide.
+        """
         msg = msg or "Unknown reason"
 
         if self.consumer is not None:

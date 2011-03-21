@@ -20,11 +20,18 @@
 # THE SOFTWARE.
 #
 
+"""
+Apollo server core package.
+"""
+
 import logging
 
 from tornado.options import define
 
 def setup_options():
+    """
+    Initialize options for use with Tornado.
+    """
     define("address", default="127.0.0.1", help="bind to the given address", metavar="ADDRESS")
     define("port", default=8081, help="run on the given port", type=int, metavar="PORT")
 

@@ -34,12 +34,24 @@ from apollo.server.protocol.transport import Transport
 from apollo.server.protocol.packet.meta import deserialize_packet
 from apollo.server.protocol.packet.packeterror import PacketError
 
+"""
+Apollo's HTTP frontend handlers.
+"""
+
 class FrontendHandler(RequestHandler):
+    """
+    Send the user the Apollo client frontend.
+    """
+
     def get(self):
         self.set_header("Content-Type", "text/html; charset=utf8")
         self.write(self.application.loader.load("frontend.html").generate())
 
 class SessionHandler(RequestHandler):
+    """
+    Request a session token from Apollo server.
+    """
+
     SUPPORTED_METHODS = ("GET",)
 
     def get(self, *args, **kwargs):
@@ -54,6 +66,10 @@ class SessionHandler(RequestHandler):
         }))
 
 class ActionHandler(RequestHandler):
+    """
+    Endpoint for sending packets to the Apollo server.
+    """
+
     SUPPORTED_METHODS = ("POST",)
 
     def post(self, *args, **kwargs):
@@ -76,6 +92,10 @@ class ActionHandler(RequestHandler):
         self.finish()
 
 class EventsHandler(RequestHandler):
+    """
+    Endpoint for receiving packets from the Apollo server.
+    """
+
     SUPPORTED_METHODS = ("GET",)
 
     def on_connection_close(self):
@@ -100,6 +120,10 @@ class EventsHandler(RequestHandler):
             self.transport = transport
 
 class DylibHandler(RequestHandler):
+    """
+    Apollo dylib endpoint.
+    """
+
     SUPPORTED_METHODS = ("GET",)
 
     def get(self, pathspec, *args, **kwargs):

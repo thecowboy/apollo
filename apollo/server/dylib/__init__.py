@@ -20,13 +20,23 @@
 # THE SOFTWARE.
 #
 
+"""
+Apollo JavaScript dynamic libraries (dylib).
+"""
+
 from apollo.server.component import Component
 
 class Dylib(Component):
+    """
+    Base dynamic library class. Generates basic JavaScript.
+    """
     name = "dummy"
     depends = []
 
     def generate(self):
+        """
+        Override me! Base implementation provides the ``dojo.provide`` header.
+        """
         output = "dojo.provide(\"apollo.client.dylib.%s\");\n\n" % self.name
 
         for depend in self.depends:

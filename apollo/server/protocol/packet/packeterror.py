@@ -23,6 +23,21 @@
 from apollo.server.protocol.packet import Packet
 
 class PacketError(Packet):
+    """
+    Inform the client an error has occured.
+
+    :Direction of Transfer:
+        Server to client only.
+
+    :Data Members:
+         * ``msg``
+           Error message.
+
+         * ``severity``
+           Severity of the error -- PacketError.WARN to emit only a console
+           message and PacketError.ERROR to close the client connection.
+    """
+
     name = "error"
 
     WARN = 0

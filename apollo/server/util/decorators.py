@@ -20,9 +20,20 @@
 # THE SOFTWARE.
 #
 
+"""
+Apollo server authorization and authentication decorators.
+"""
+
 from apollo.server.protocol.packet.packeterror import PacketError
 
 def requirePermission(permission):
+    """
+    Dispatch the packet only if a specific permission is present.
+
+    :Parameters:
+        * ``permission``
+          Permission required.
+    """
     def _decorator(fn):
         def _closure(self, transport, core):
             if transport.session().getUser().hasPermission(permission):
@@ -33,6 +44,9 @@ def requirePermission(permission):
     return _decorator
 
 def requireAuthentication(fn):
+    """
+    Dispatch the packet only if logged in.
+    """
     def _closure(self, transport, core):
         try:
             transport.session().getUser()

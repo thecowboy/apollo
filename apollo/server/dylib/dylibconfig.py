@@ -25,6 +25,9 @@ from apollo.server.dylib import Dylib
 from tornado.options import options
 
 class DylibConfig(Dylib):
+    """
+    A dylib that exposes relevant parts of the server configuration to clients.
+    """
     name = "config"
 
     def generate(self): 

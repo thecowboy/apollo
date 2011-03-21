@@ -30,6 +30,19 @@ from apollo.server.protocol.packet.packetlogout import PacketLogout
 from apollo.server.util.decorators import requirePermission, requireAuthentication
 
 class PacketKick(Packet):
+    """
+    Ask the server to kick a client.
+
+    :Direction of Transfer:
+        Client to server only.
+
+    :Data Members:
+         * ``target``
+           User to kick.
+
+         * ``msg``
+           Reason for kick.
+    """
     name = "kick"
 
     @requirePermission("moderator.kick")

@@ -11,7 +11,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   packet_reference
+   intro
+   api/index
 
 Indices and tables
 ==================

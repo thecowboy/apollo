@@ -36,11 +36,17 @@ from apollo.server.models import meta
 from apollo.server.models.session import Session
 
 class CronScheduler(Component):
+    """
+    Apollo scheduler service. Performs clean up of dead sessions, etc.
+    """
     def __init__(self, core):
         super(CronScheduler, self).__init__(core)
         self.callback = PeriodicCallback(self.run, options.cron_interval * 1000)
 
     def run(self):
+        """
+        Run cron (once).
+        """
         logging.info("Running cron...")
 
         cursor = meta.session.find(Session, {
@@ -60,5 +66,8 @@ class CronScheduler(Component):
         logging.info("Purged %d expired session(s)." % num_rows)
 
     def go(self):
+        """
+        Start the cron cycle.
+        """
         self.run()
         self.callback.start()

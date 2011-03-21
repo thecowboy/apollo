@@ -30,6 +30,9 @@ from apollo.server.component import Component
 import zmq
 
 class Bus(object):
+    """
+    Apollo's message bus system.
+    """
     def __init__(self, core):
         self.zmqctx = zmq.Context()
         self.publisher = self.zmqctx.socket(zmq.PUB)
@@ -42,5 +45,16 @@ class Bus(object):
         )))
 
     def broadcast(self, dest, packet):
+        """
+        Broadcast a packet to a specific destination.
+
+        :Parameters:
+             * ``dest``
+               Destination. Prefixed with ``cross.`` for cross-server
+               communication and ``user.`` for direct user messaging.
+
+             * ``packet``
+               Packet to broadcast.
+        """
         logging.debug("Sending to %s: %s" % (dest, packet.dump()))
         self.publisher.send("%s:%s" % (dest, packet.dump()))

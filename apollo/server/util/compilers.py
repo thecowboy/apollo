@@ -20,22 +20,46 @@
 # THE SOFTWARE.
 #
 
+"""
+Compilers for database code.
+"""
+
 class BaseCompiler(object):
+    """
+    Base compiler class. Subclasses should override the ``compile`` method.
+    """
     cache = {}
 
     def __init__(self, code):
+        """
+        Initialize a compiler.
+
+        :Parameter:
+            * ``code``
+              Code to compile.
+        """
         if (self.__class__.__name__, code) not in self.cache:
             self.cache[self.__class__.__name__, code] = self.compile(code)
 
         self.code_obj = self.cache[self.__class__.__name__, code]
 
     def compile(self, code):
+        """
+        Implementation for compiler that returns a code objcet.
+
+        :Parameter:
+            * ``code``
+              Code to compile.
+        """
         raise NotImplementedError
 
     def __call__(self, **locals):
         return eval(self.code_obj, locals)
 
 class CurveCompiler(BaseCompiler):
+    """
+    Compile a stat curve expression, e.g. ``profession.hpcurve``.
+    """
     def compile(self, code):
         return compile(
             code,
@@ -44,6 +68,9 @@ class CurveCompiler(BaseCompiler):
         )
 
 class EventCompiler(BaseCompiler):
+    """
+    Compile event code.
+    """
     def compile(self, code):
         return compile(
             code,

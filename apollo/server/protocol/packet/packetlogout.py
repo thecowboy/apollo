@@ -25,6 +25,17 @@ from apollo.server.protocol.packet import Packet
 from apollo.server.util.decorators import requireAuthentication
 
 class PacketLogout(Packet):
+    """
+    Log out of the server, or inform the client a user has logged out.
+
+    :Direction of Transfer:
+        Bidirectional.
+
+    :Data Members:
+         * ``username``
+           Username of user who has logged out (empty if it is the connected
+           client's packet).
+    """
     name = "logout"
 
     @requireAuthentication
