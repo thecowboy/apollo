@@ -26,6 +26,16 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from apollo.server.models import meta
 
+TILE_WIDTH = 64
+"""
+Width of a single tile.
+"""
+
+TILE_HEIGHT = 32
+"""
+Height of a single tile (top half not counted).
+"""
+
 class Tile(MappedClass):
     """
     A tile in the world.

@@ -6,6 +6,8 @@ import math
 from apollo.server import setup_options
 from apollo.server.core import Core
 
+from apollo.server.render.renderer import Renderer
+
 from apollo.server.models import meta
 
 from apollo.server.models.user import User
@@ -21,6 +23,7 @@ from apollo.server.models.tile import Tile
 setup_options()
 
 core = Core()
+
 
 # clear out the old database (while breaking many, many layers of encapsulation)
 meta.session.impl.bind.bind._conn.drop_database(meta.session.impl.bind.database)
@@ -38,8 +41,8 @@ terrains = [
 ]
 
 # create realm
-REALM_WIDTH = 256
-REALM_HEIGHT = 256
+REALM_WIDTH = 64
+REALM_HEIGHT = 64
 
 realm = Realm(
     name="Best Realm Ever",
@@ -93,6 +96,13 @@ for cx in xrange(0, int(math.ceil(REALM_WIDTH / float(CHUNK_STRIDE)))):
                     spawntile = tile
 
 print "Generated tiles: %d/%d" % (num_tiles, num_tiles)
+
+print "Rendering chunks..."
+
+renderer = Renderer()
+renderer.renderAll(realm._id)
+
+print "Chunks rendered."
 
 print "Populating with first-run data..."
 

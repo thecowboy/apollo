@@ -20,6 +20,10 @@
 # THE SOFTWARE.
 #
 
+"""
+Apollo's HTTP frontend handlers.
+"""
+
 import json
 
 import logging
@@ -33,10 +37,6 @@ from apollo.server.models.session import Session
 from apollo.server.protocol.transport import Transport
 from apollo.server.protocol.packet.meta import deserialize_packet
 from apollo.server.protocol.packet.packeterror import PacketError
-
-"""
-Apollo's HTTP frontend handlers.
-"""
 
 class FrontendHandler(RequestHandler):
     """

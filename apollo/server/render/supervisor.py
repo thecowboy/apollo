@@ -20,36 +20,15 @@
 # THE SOFTWARE.
 #
 
-# For more information about the options in this file, run apollod.py with the
-# --help switch.
+"""
+Supervisor for the renderer processes.
+"""
 
-debug               = True
+from tornado import options
 
-address             = "0.0.0.0"
-port                = 8081
+from apollo.server.component import Component
+from multiprocessing import Pool
 
-render_process_num  = 4
-
-cron_interval       = 3600
-
-session_expiry      = 3600
-
-mongodb_host        = "localhost"
-mongodb_port        = 27017
-mongodb_username    = ""
-mongodb_password    = ""
-mongodb_database    = "apollo"
-
-zmq_transport       = "inproc"
-zmq_host            = "apollo"
-
-# logging levels:
-#
-# 10 DEBUG
-# 20 INFO
-# 30 WARN
-# 40 ERROR
-# 50 CRITICAL
-#
-# usually 30 should be sufficient
-logging_level       = 10
+def RendererSupervisor(Component):
+    def go(self):
+        self.pool = Pool(options.render_process_num)

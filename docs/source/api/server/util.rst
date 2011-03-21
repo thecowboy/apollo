@@ -21,3 +21,11 @@
    :members:
    :inherited-members:
    :undoc-members:
+
+``apollo.server.util.mathhelper``
+---------------------------------
+
+.. automodule:: apollo.server.util.mathhelper
+   :members:
+   :inherited-members:
+   :undoc-members:
