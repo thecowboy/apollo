@@ -1,3 +1,5 @@
+import sys
+
 import random
 import math
 
@@ -28,6 +30,8 @@ SPAWN_X = 10
 SPAWN_Y = 12
 
 # create terrain
+print "Generating terrain information..."
+
 terrains = [
     Terrain(name="Grass", img="grass"),
     Terrain(name="Rocks", img="rocks")
@@ -45,8 +49,12 @@ realm = Realm(
     }
 )
 
+meta.session.flush_all()
+
 # BEST TERRAIN GENERATOR EVER
 print "Generating realm..."
+
+MAX_TILES = REALM_WIDTH * REALM_HEIGHT
 
 num_tiles = 0
 for cx in xrange(0, int(math.ceil(REALM_WIDTH / float(CHUNK_STRIDE)))):
@@ -75,10 +83,16 @@ for cx in xrange(0, int(math.ceil(REALM_WIDTH / float(CHUNK_STRIDE)))):
                     terrain_id=terrains[random.randrange(0, len(terrains))]._id
                 )
                 num_tiles += 1
+
+                if not num_tiles % 1000:
+                    meta.session.flush_all()
+                    print "Generated tiles: %d/%d\r" % (num_tiles, MAX_TILES),
+                    sys.stdout.flush()
+
                 if x == SPAWN_X and y == SPAWN_Y:
                     spawntile = tile
 
-print "Generated %d tiles." % num_tiles
+print "Generated tiles: %d/%d" % (num_tiles, num_tiles)
 
 print "Populating with first-run data..."
 
@@ -108,12 +122,12 @@ user = User(
     group_id=admins._id,
     profession_id=tester._id,
     location_id=spawntile._id,
-    stats={
-        "hp" : 1,
-        "ap" : 1,
-        "xp" : 0
-    },
-    level=10
+
+    level=10,
+
+    hp=1,
+    ap=1,
+    xp=1
 )
 user.password = "iscool"
 
@@ -122,11 +136,10 @@ user = User(
     group_id=admins._id,
     profession_id=tester._id,
     location_id=spawntile._id,
-    stats={
-        "hp" : 1,
-        "ap" : 1,
-        "xp" : 0
-    }
+
+    hp=1,
+    ap=1,
+    xp=1
 )
 user.password = "stinx"
 
@@ -139,7 +152,6 @@ user = User(
 user.password = "isgat"
 
 # we're done!
-print "Flushing data (this may take a while)..."
 meta.session.flush_all()
 
 print "Example setup completed."
