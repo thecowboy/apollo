@@ -85,7 +85,8 @@ dojo.declare("apollo.client.ActionDispatcher", null, {
                             msg    : rest.slice(1).join(" ")
                         }));
                         break;
-
+                    
+                    case "w":
                     case "tell":
                     case "msg":
                     case "whisper":
@@ -99,7 +100,8 @@ dojo.declare("apollo.client.ActionDispatcher", null, {
                             msg    : rest.slice(1).join(" ")
                         }));
                         break;
-
+                
+                    case "list":
                     case "online":
                         this.transport.sendAction(new apollo.client.protocol.packet.PacketOnline());
                         break;
