@@ -47,6 +47,9 @@ class PacketUser(Packet):
          * ``level``
            Level of the user.
 
+         * ``profession``
+           Name of the user's profession.
+
          * ``hp``
            User's HP and max HP.
 
