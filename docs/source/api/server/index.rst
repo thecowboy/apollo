@@ -38,9 +38,9 @@ Submodules
 .. toctree::
    :maxdepth: 2
 
-   dylib.rst
-   messaging.rst
-   models.rst
-   protocol.rst
-   render.rst
-   util.rst
+   dylib
+   messaging
+   models
+   protocol
+   render
+   util

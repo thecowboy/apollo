@@ -7,3 +7,4 @@ This section houses the Apollo API documentation.
    :maxdepth: 3
 
    server/index
+   client
