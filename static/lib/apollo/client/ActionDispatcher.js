@@ -72,8 +72,13 @@ dojo.declare("apollo.client.ActionDispatcher", null, {
                 var parts = msg.split(" ");
                 var rest = parts.slice(1);
 
-                switch(parts[0].substring(1))
+                switch(parts[0].substring(1).toLowerCase())
                 {
+                    case "logout":
+                    case "camp":
+                        this.transport.sendAction(new apollo.client.protocol.packet.PacketLogout({
+                            msg    : rest.join(" ")
+                        }));
                     case "kick":
                         if(rest.length < 1)
                         {
