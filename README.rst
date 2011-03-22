@@ -17,6 +17,15 @@ Depends
  * Ming
    http://merciless.sourceforge.net
 
+ * ZeroMQ
+   http://www.zeromq.org
+
+ * numpy
+   http://numpy.scipy.org
+
+ * PIL
+   http://www.pythonware.com/products/pil
+
 Installation
 ------------
 
@@ -28,3 +37,10 @@ License
 
 Apollo is licensed under the MIT license. The text can be found in the COPYING
 file.
+
+All sample graphical assets (sprites, tiles, etc.) are graciously put together
+by Henry de Chabert, and are licensed under `Creative Commons
+Attribution-NonCommercial 3.0`_.
+
+.. _`Creative Commons Attribution-NonCommercial 3.0`:
+   http://creativecommons.org/licenses/by-nc/3.0/
