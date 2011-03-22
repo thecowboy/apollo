@@ -27,8 +27,15 @@ Supervisor for the renderer processes.
 from tornado import options
 
 from apollo.server.component import Component
-from multiprocessing import Pool
+from apollo.server.render.renderer import Renderer
 
-def RendererSupervisor(Component):
+from multiprocessing import Pool, Process
+
+class RendererSupervisor(Component):
     def go(self):
         self.pool = Pool(options.render_process_num)
+
+class RendererSlave(Process):
+    def __init__(self, *args, **kwargs):
+        self.renderer = Renderer()
+        Process.__init__(self, *args, **kwargs)

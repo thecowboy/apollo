@@ -2,4 +2,4 @@
 *.log
 *.db
 docs/build
-static/chunks
+static/chunks/*.png
