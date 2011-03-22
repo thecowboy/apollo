@@ -124,7 +124,7 @@ class User(MappedClass):
         User's max HP, according to their ``profession.hpcurve``.
         """
         profession = meta.session.get(Profession, self.profession_id)
-        return CurveCompiler(profession.hpcurve)(self)
+        return CurveCompiler(profession.hpcurve)(user=self)
 
     ap = FieldProperty(int, if_missing=0)
     """
@@ -137,7 +137,7 @@ class User(MappedClass):
         User's max AP, according to their ``profession.apcurve``.
         """
         profession = meta.session.get(Profession, self.profession_id)
-        return CurveCompiler(profession.apcurve)(self)
+        return CurveCompiler(profession.apcurve)(user=self)
 
     xp = FieldProperty(int, if_missing=0)
     """
@@ -150,7 +150,7 @@ class User(MappedClass):
         User's max AP, according to their ``profession.apcurve``.
         """
         profession = meta.session.get(Profession, self.profession_id)
-        return CurveCompiler(profession.apcurve)(self)
+        return CurveCompiler(profession.apcurve)(user=self)
 
     stats = FieldProperty(schema.Anything)
     """

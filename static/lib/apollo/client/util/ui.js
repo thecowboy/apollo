@@ -34,7 +34,12 @@ apollo.client.util.ui.addChatMessage = function(origin, message)
     var chatMessage = dojo.create("span");
     dojo.addClass(chatMessage, "chatMessage");
     // let's do the angle bracket dance!
-    chatMessage.innerHTML = apollo.client.util.ui.linkify(message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+    chatMessage.innerHTML = apollo.client.util.ui.linkify(
+        message
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+    );
 
     dojo.place(chatOrigin, col);
     dojo.place(chatMessage, col);
@@ -110,4 +115,3 @@ apollo.client.util.ui.linkify = function(text)
 {
     return text.replace(linkExpr, "<a href=\"$1\">$1</a>");
 }
-
