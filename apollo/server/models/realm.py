@@ -42,9 +42,9 @@ class Realm(MappedClass):
     The name of the realm.
     """
 
-    size = FieldProperty({ "width" : int, "height" : int }, required=True)
+    size = FieldProperty({ "cw" : int, "ch" : int }, required=True)
     """
-    The size of the realm, in absolute coordinates.
+    The size of the realm, in chunk coordinates.
     """
 
     chunks = RelationProperty("Chunk")

@@ -24,18 +24,37 @@
 Supervisor for the renderer processes.
 """
 
-from tornado import options
+import logging
+
+from tornado.options import options
 
 from apollo.server.component import Component
 from apollo.server.render.renderer import Renderer
 
 from multiprocessing import Pool, Process
 
-class RendererSupervisor(Component):
-    def go(self):
-        self.pool = Pool(options.render_process_num)
+workerData = {}
+"""
+Worker data dictionary. Because ``multiprocessing.pool`` does not have a more
+sensible place to store data, we can just throw it here.
+"""
 
-class RendererSlave(Process):
-    def __init__(self, *args, **kwargs):
-        self.renderer = Renderer()
-        Process.__init__(self, *args, **kwargs)
+class RendererSupervisor(object):
+    def go(self):
+        self.pool = Pool(
+            processes=options.render_process_num,
+            initializer=self.initializeRenderer
+        )
+        logging.info("Started renderer supervisor with %d processes" % options.render_process_num)
+
+    def initializeRenderer(self):
+        """
+        Initialize the renderer for a process.
+        """
+        workerData["renderer"] = Renderer()
+
+    def renderChunk(self, chunk_id):
+        self.pool.apply_async(self._renderChunk)
+
+    def _renderChunk(self, chunk_id):
+        workerData["renderer"].render(chunk_id)

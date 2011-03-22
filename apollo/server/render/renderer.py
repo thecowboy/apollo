@@ -21,6 +21,7 @@
 #
 
 import os
+import logging
 
 import Image
 
@@ -60,7 +61,7 @@ class Renderer(object):
              * ``realm_id``
                The ID of the realm.
         """
-        for chunk in meta.session.find(Chunk, { "realm_id" : realm_id }):
+        for chunk in meta.session.find(Chunk, { "realm_id" : realm_id }).sort([ ("location.cx", 1), ("location.cy", 1) ]):
             self.render(chunk._id)
 
     def render(self, chunk_id):
@@ -87,6 +88,7 @@ class Renderer(object):
         )
 
         chunk = meta.session.get(Chunk, chunk_id)
+        logging.info("Rendering chunk at (%d, %d)" % (chunk.location.cx, chunk.location.cy))
 
         for tile in meta.session.find(Tile, { "chunk_id" : chunk._id }).sort([ ("location.rx", 1), ("location.ry", 1) ]):
             terrain = meta.session.get(Terrain, tile.terrain_id)
@@ -105,3 +107,5 @@ class Renderer(object):
             )
 
         chunk_img.save(os.path.join(STATIC_CHUNK_PATH, "%d.%d.png" % (chunk.location.cx, chunk.location.cy)))
+        chunk.fresh = True
+        meta.session.save(chunk)

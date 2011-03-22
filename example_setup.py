@@ -1,4 +1,5 @@
 import sys
+import logging
 
 import random
 import math
@@ -20,10 +21,10 @@ from apollo.server.models.chunk import Chunk, CHUNK_STRIDE
 from apollo.server.models.tile import Tile
 
 # initialize
+logging.basicConfig(level=logging.INFO)
 setup_options()
 
 core = Core()
-
 
 # clear out the old database (while breaking many, many layers of encapsulation)
 meta.session.impl.bind.bind._conn.drop_database(meta.session.impl.bind.database)
@@ -41,14 +42,11 @@ terrains = [
 ]
 
 # create realm
-REALM_WIDTH = 64
-REALM_HEIGHT = 64
-
 realm = Realm(
     name="Best Realm Ever",
     size={
-        "width" : REALM_WIDTH,
-        "height" : REALM_HEIGHT
+        "cw" : 8,
+        "ch" : 8
     }
 )
 
@@ -57,11 +55,11 @@ meta.session.flush_all()
 # BEST TERRAIN GENERATOR EVER
 print "Generating realm..."
 
-MAX_TILES = REALM_WIDTH * REALM_HEIGHT
+MAX_TILES = realm.size.cw * CHUNK_STRIDE * realm.size.ch * CHUNK_STRIDE 
 
 num_tiles = 0
-for cx in xrange(0, int(math.ceil(REALM_WIDTH / float(CHUNK_STRIDE)))):
-    for cy in xrange(0, int(math.ceil(REALM_HEIGHT / float(CHUNK_STRIDE)))):
+for cx in xrange(0, realm.size.cw):
+    for cy in xrange(0, realm.size.ch):
         chunk = Chunk(
             location={
                 "cx" : cx,
@@ -74,9 +72,6 @@ for cx in xrange(0, int(math.ceil(REALM_WIDTH / float(CHUNK_STRIDE)))):
                 x = cx * CHUNK_STRIDE + rx
                 y = cy * CHUNK_STRIDE + ry
 
-                if x > REALM_WIDTH - 1 or y > REALM_HEIGHT - 1:
-                    continue
-
                 tile = Tile(
                     location={
                         "rx" : rx,
@@ -88,14 +83,14 @@ for cx in xrange(0, int(math.ceil(REALM_WIDTH / float(CHUNK_STRIDE)))):
                 num_tiles += 1
 
                 if not num_tiles % 1000:
-                    meta.session.flush_all()
                     print "Generated tiles: %d/%d\r" % (num_tiles, MAX_TILES),
                     sys.stdout.flush()
 
                 if x == SPAWN_X and y == SPAWN_Y:
                     spawntile = tile
 
-print "Generated tiles: %d/%d" % (num_tiles, num_tiles)
+print "Generated tiles: %d/%d, flusing..." % (num_tiles, num_tiles)
+meta.session.flush_all()
 
 print "Rendering chunks..."
 

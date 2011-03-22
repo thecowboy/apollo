@@ -35,6 +35,7 @@ from tornado.web import Application
 from ming.datastore import DataStore
 
 from apollo.server.protocol.transport import Transport
+from apollo.server.render.supervisor import RendererSupervisor
 from apollo.server.web import FrontendHandler, SessionHandler, ActionHandler, EventsHandler, DylibHandler
 from apollo.server.cron import CronScheduler
 from apollo.server.dylib.meta import DylibDispatcher
@@ -73,9 +74,13 @@ class Core(Application):
 
         self.connections = {}
 
-        self.setupCron()
+        self.cron = CronScheduler(self)
+        self.cron.go()
 
         self.bus = Bus(self)
+
+        self.rendervisor = RendererSupervisor()
+        self.rendervisor.go()
 
     # setup
     def setupSession(self):
@@ -99,13 +104,6 @@ class Core(Application):
             "",
             ""
         )), database=options.mongodb_database))
-
-    def setupCron(self):
-        """
-        Kickstart the cron scheduler.
-        """
-        self.cron = CronScheduler(self)
-        self.cron.go()
 
     # transport related stuff
     def createTransport(self):
