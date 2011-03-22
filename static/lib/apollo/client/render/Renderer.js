@@ -34,14 +34,13 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
     {
         this.chunkCache = {};
         this.canvas = dojo.byId("surface");
+        this.redraw = function() { };
         this.autofit();
 
         dojo.connect(window, "onresize", dojo.hitch(this, function()
         {
             this.autofit();
         }));
-
-        this.redraw = function() { };
     },
 
     autofit : function()
