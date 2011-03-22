@@ -111,7 +111,7 @@ class EventsHandler(RequestHandler):
         try:
             transport = self.application.getTransport(token)
         except KeyError:
-            self.send(PacketError(msg="bad session"))
+            self.finish(json.dumps(PacketError(msg="bad session").dump()))
         else:
             transport.bind(self)
             self.transport = transport

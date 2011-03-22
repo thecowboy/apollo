@@ -100,8 +100,8 @@ class Renderer(object):
             chunk_img.paste(
                 tile_img,
                 (
-                    int(tx * TILE_WIDTH + CHUNK_WIDTH / 2 - TILE_WIDTH / 2),
-                    int(ty * TILE_HEIGHT - CHUNK_HEIGHT + CHUNK_HEIGHT)
+                    int(round(tx * TILE_WIDTH + CHUNK_WIDTH / 2 - TILE_WIDTH / 2)),
+                    int(round(ty * TILE_HEIGHT))
                 ),
                 tile_img
             )

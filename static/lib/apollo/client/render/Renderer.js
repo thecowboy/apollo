@@ -70,34 +70,43 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
             y : pos.y % this.CHUNK_STRIDE
         };
 
-        // now draw the current chunk
-        if(this.chunkCache[ccoords] == undefined)
+        for(var cx = 0; cx < 2; ++cx)
         {
-            var img;
-            var that = this;
-
-            this.chunkCache[ccoords.x + "," + ccoords.y] = img = new Image();
-            dojo.connect(img, "onload", function()
+            for(var cy = 0; cy < 2; ++cy)
             {
-                this.loaded = true;
-                that.chunkDrawCallback(img, rcoords);
-            });
-            img.src = "static/chunks/" + ccoords.x + "." + ccoords.y + ".png?" + this.getUnixTimestamp();
-        } else {
-            this.chunkDrawCallback(this.chunkCache[ccoords.x + "," + ccoords.y], rcoords);
+                var tcoords = apollo.client.util.mathhelper.isometricTransform(cx, cy);
+
+                // now draw the chunks
+                if(this.chunkCache[cx + "." + cy] == undefined)
+                {
+                    var img;
+
+                    this.chunkCache[cx + "." + cy] = img = new Image();
+                    dojo.connect(img, "onload", dojo.hitch(this, function()
+                    {
+                        this.chunkDrawCallback(img, tcoords, pos);
+                    }));
+                    img.src = "static/chunks/" + cx + "." + cy + ".png?" + this.getUnixTimestamp();
+                } else {
+                    this.chunkDrawCallback(this.chunkCache[cx + "." + cy], tcoords, pos);
+                }
+            }
         }
 
         // now make a redraw function (partial application)
         this.redraw = function() { this.draw(pos, size); }
     },
 
-    chunkDrawCallback : function(img, rcoords)
+    chunkDrawCallback : function(img, tcoords, rcoords)
     {
+        var CHUNK_HEIGHT = this.CHUNK_STRIDE * this.TILE_HEIGHT;
+        var CHUNK_WIDTH = this.CHUNK_STRIDE * this.TILE_WIDTH;
+
         var ctx = this.canvas.getContext("2d");
         ctx.drawImage(
             img,
-            this.canvas.width / 2 - (rcoords.x + 1) * this.TILE_WIDTH,
-            this.canvas.height / 2 - (rcoords.y + 0.5) * this.TILE_HEIGHT
+            Math.round((tcoords.x - (rcoords.x - 0.5) / this.CHUNK_STRIDE) * CHUNK_WIDTH + this.canvas.width / 2 - CHUNK_WIDTH / 2),
+            Math.round((tcoords.y - (rcoords.y - 0.5) / this.CHUNK_STRIDE) * CHUNK_HEIGHT + this.canvas.height / 2 - CHUNK_HEIGHT / 2)
         );
     },
 

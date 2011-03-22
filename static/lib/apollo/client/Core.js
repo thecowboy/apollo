@@ -59,13 +59,11 @@ dojo.declare("apollo.client.Core", null, {
 
     ready : function()
     {
-        dijit.byId("loadingDialog").hide();
         dijit.byId("loginDialog").show();
     },
 
     go : function()
     {
-        dijit.byId("loadingDialog").show();
         this.transport.go();
     },
 

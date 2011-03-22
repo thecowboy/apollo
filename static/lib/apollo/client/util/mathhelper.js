@@ -49,5 +49,8 @@ apollo.client.util.mathhelper.ISOMETRIC_TO_CARTESIAN_MATRIX = ISOMETRIC_TO_CARTE
 apollo.client.util.mathhelper.isometricTransform = function(x, y)
 {
     var vec = dojox.gfx.matrix.multiplyPoint(CARTESIAN_TO_ISOMETRIC_MATRIX, x, y);
-    return [vec.x, vec.y];
+    return {
+        x: vec.x,
+        y: vec.y
+    };
 }
