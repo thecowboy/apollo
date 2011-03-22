@@ -23,5 +23,12 @@ var core;
 dojo.addOnLoad(function()
 {
     dojo.parser.parse();
+    dojo.fadeOut({
+        node: "loadingOverlay",
+        onEnd : function()
+        {
+            dojo.destroy(dojo.byId("loadingOverlay"));
+        }
+    }).play();
     (core = new apollo.client.Core()).go();
 });

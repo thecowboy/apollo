@@ -31,6 +31,7 @@ dojo.declare("apollo.client.protocol.packet.PacketInfo", apollo.client.protocol.
 
     dispatch : function(transport, core)
     {
-        apollo.client.util.ui.setInfoData(this.location, this.tileinfo, this.things);
+        apollo.client.util.ui.setInfoData(this.location, this.terrain, this.things);
+        core.renderer.draw(this.location, this.size);
     }
 });

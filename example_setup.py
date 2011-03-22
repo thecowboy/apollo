@@ -24,7 +24,7 @@ from apollo.server.models.tile import Tile
 logging.basicConfig(level=logging.INFO)
 setup_options()
 
-core = Core()
+core = Core(no_rendervise=True)
 
 # clear out the old database (while breaking many, many layers of encapsulation)
 meta.session.impl.bind.bind._conn.drop_database(meta.session.impl.bind.database)
@@ -78,7 +78,7 @@ for cx in xrange(0, realm.size.cw):
                         "ry" : ry
                     },
                     chunk_id=chunk._id,
-                    terrain_id=terrains[random.randrange(0, len(terrains))]._id
+                    terrain_id=(terrains[1] if x == SPAWN_X and y == SPAWN_Y else terrains[0])._id
                 )
                 num_tiles += 1
 
@@ -89,7 +89,7 @@ for cx in xrange(0, realm.size.cw):
                 if x == SPAWN_X and y == SPAWN_Y:
                     spawntile = tile
 
-print "Generated tiles: %d/%d, flusing..." % (num_tiles, num_tiles)
+print "Generated tiles: %d/%d, flushing..." % (num_tiles, num_tiles)
 meta.session.flush_all()
 
 print "Rendering chunks..."

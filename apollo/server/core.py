@@ -47,7 +47,7 @@ class Core(Application):
     """
     The very core of Apollo. Everything depends on this.
     """
-    def __init__(self):
+    def __init__(self, no_rendervise=False):
         logging.getLogger().setLevel(options.logging_level)
 
         # apollo distribution root
@@ -74,13 +74,15 @@ class Core(Application):
 
         self.connections = {}
 
+        self.bus = Bus(self)
+
         self.cron = CronScheduler(self)
         self.cron.go()
 
-        self.bus = Bus(self)
-
         self.rendervisor = RendererSupervisor()
-        self.rendervisor.go()
+
+        if not no_rendervise:
+            self.rendervisor.go()
 
     # setup
     def setupSession(self):

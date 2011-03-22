@@ -82,7 +82,7 @@ apollo.client.util.ui.setUserData = function(name, level, profession, hp, ap, xp
     xpfield.update({ progress : xp.now, maximum : xp.max });
 }
 
-apollo.client.util.ui.setInfoData = function(location, tileinfo, things)
+apollo.client.util.ui.setInfoData = function(location, terrain, things)
 {
     var realmfield = dojo.byId("infoThisTileRealm");
     var xfield = dojo.byId("infoThisTileXCoordinate");
@@ -95,9 +95,9 @@ apollo.client.util.ui.setInfoData = function(location, tileinfo, things)
     xfield.innerHTML = location.x;
     yfield.innerHTML = location.y;
 
-    tile.src = "static/tiles/" + tileinfo.img + ".png";
-    tile.alt = tileinfo.name;
-    tile.title = tileinfo.name;
+    tile.src = "static/tiles/" + terrain.img + ".png";
+    tile.alt = terrain.name;
+    tile.title = terrain.name;
 
     if(things.length == 0)
     {

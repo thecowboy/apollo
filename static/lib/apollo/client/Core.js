@@ -23,6 +23,7 @@
 dojo.provide("apollo.client.Core");
 
 dojo.require("apollo.client.ActionDispatcher");
+dojo.require("apollo.client.render.Renderer");
 dojo.require("apollo.client.protocol.Transport");
 
 dojo.require("apollo.client.protocol.packet.PacketUser");
@@ -32,6 +33,7 @@ dojo.declare("apollo.client.Core", null, {
     constructor : function()
     {
         this.transport = new apollo.client.protocol.Transport(this);
+        this.renderer = new apollo.client.render.Renderer(this);
         this.actions = new apollo.client.ActionDispatcher(this.transport);
     },
 
