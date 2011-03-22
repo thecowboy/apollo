@@ -24,7 +24,7 @@
 Various mathematical utilities.
 """
 
-from math import pi, sin, cos
+from math import pi, sin, cos, sqrt
 from numpy import matrix
 from numpy.linalg import inv
 
@@ -45,12 +45,17 @@ TAU_OVER_EIGHT = pi / 4.0
 Just the number tau divided by 8.
 """
 
+SCALING_CONSTANT = 1 / sqrt(2)
+"""
+Constant for scaling tiles into isometric display.
+"""
+
 CARTESIAN_TO_ISOMETRIC_MATRIX = matrix([
+    [SCALING_CONSTANT, 0 ],                         # shrink vertically to scale
+    [0, SCALING_CONSTANT ]
+]) * matrix([
     [cos(TAU_OVER_EIGHT), -sin(TAU_OVER_EIGHT)],    # do a 45 degree rotation
     [sin(TAU_OVER_EIGHT),  cos(TAU_OVER_EIGHT)]
-]) * matrix([
-    [1, 0  ],                                       # shrink vertically by .5
-    [0, 0.5]
 ])
 """
 Matrix for converting Cartesian coordinates to isometric in Cartesian space.
@@ -63,13 +68,13 @@ Matrix for converting isometric coordinates in Cartesian space back to
 Cartesian coordinates.
 """
 
-def isometricTransform(x, y, width, height):
+def isometricTransform(x, y):
     """
     Transform Cartesian coordinates to isometric coordinates in Cartesian space
     using ``CARTESIAN_TO_ISOMETRIC_MATRIX``.
     """
     transformed_vec = CARTESIAN_TO_ISOMETRIC_MATRIX * matrix([[x],[y]])
     return (
-        transformed_vec[0, 0] + width / 2,
-        transformed_vec[1, 0] + height
+        transformed_vec[0, 0],
+        transformed_vec[1, 0]
     )

@@ -88,16 +88,19 @@ class Renderer(object):
 
         chunk = meta.session.get(Chunk, chunk_id)
 
-        for tile in meta.session.find(Tile, { "chunk_id" : chunk._id }):
+        for tile in meta.session.find(Tile, { "chunk_id" : chunk._id }).sort([ ("location.rx", 1), ("location.ry", 1) ]):
             terrain = meta.session.get(Terrain, tile.terrain_id)
-            coords = isometricTransform(tile.location.rx, tile.location.ry, CHUNK_STRIDE, CHUNK_STRIDE)
+            tx, ty = isometricTransform(tile.location.rx, tile.location.ry)
 
             if terrain.img not in img_cache:
                 img_cache[terrain.img] = Image.open(os.path.join(STATIC_TILE_PATH, "%s.png" % terrain.img))
             tile_img = img_cache[terrain.img]
             chunk_img.paste(
                 tile_img,
-                (coords[0] * TILE_WIDTH, coords[1] * TILE_HEIGHT - CHUNK_HEIGHT),
+                (
+                    int(tx * TILE_WIDTH + CHUNK_WIDTH / 2 - TILE_WIDTH / 2),
+                    int(ty * TILE_HEIGHT - CHUNK_HEIGHT + CHUNK_HEIGHT)
+                ),
                 tile_img
             )
 
