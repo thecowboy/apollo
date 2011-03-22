@@ -26,13 +26,14 @@ from tornado.options import parse_command_line, parse_config_file, options
 
 from zmq.eventloop.ioloop import IOLoop
 
-from apollo.server import setup_options
+from apollo.server import setupOptions, setupDBSession
 from apollo.server.core import Core
 
 if __name__ == "__main__":
-    setup_options()
+    setupOptions()
     parse_config_file("apollod.conf")
     parse_command_line()
+    setupDBSession()
 
     io_loop = IOLoop.instance()
     server = HTTPServer(Core(), io_loop=io_loop)

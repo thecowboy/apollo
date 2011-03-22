@@ -20,11 +20,16 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.util.EvaluationContext");
+dojo.provide("apollo.client.protocol.packet.PacketClobber");
 
-dojo.declare("apollo.client.util.EvaluationContext", null, {
-    eval : function(code)
+dojo.require("apollo.client.protocol.packet.Packet");
+
+dojo.declare("apollo.client.protocol.packet.PacketClobber", apollo.client.protocol.packet.Packet, {
+    name    : "clobber",
+
+    dispatch : function(transport, core)
     {
-        eval(code);
+        core.renderer.clobber(this.cx, this.cy);
+        core.renderer.redraw();
     }
 });

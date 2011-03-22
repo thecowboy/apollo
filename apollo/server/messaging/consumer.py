@@ -29,7 +29,7 @@ from zmq.eventloop.ioloop import IOLoop
 
 from tornado.options import options
 
-from apollo.server.protocol.packet.meta import deserialize_packet
+from apollo.server.protocol.packet.meta import deserializePacket
 
 class Consumer(object):
     def __init__(self, bus, transport):
@@ -93,7 +93,7 @@ class Consumer(object):
                 Message body.
         """
         logging.debug("Sending cross message packet: %s" % message)
-        deserialize_packet(message).dispatch(self.transport, self.transport.core)
+        deserializePacket(message).dispatch(self.transport, self.transport.core)
 
     def on_user_message(self, message):
         """
@@ -104,4 +104,4 @@ class Consumer(object):
                 Message body.
         """
         logging.debug("Sending user message packet: %s" % message)
-        self.transport.sendEvent(deserialize_packet(message))
+        self.transport.sendEvent(deserializePacket(message))

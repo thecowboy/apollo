@@ -22,22 +22,18 @@
 
 from apollo.server.protocol.packet import Packet
 
-from apollo.server.util.decorators import requireAuthentication
-
-class PacketLogout(Packet):
+class PacketClobber(Packet):
     """
-    Log out of the server, or inform the client a user has logged out.
+    Request that the client clobbers a chunk and reloads it.
 
     :Direction of Transfer:
-        Bidirectional.
+        Server to client only.
 
     :Data Members:
-         * ``username``
-           Username of user who has logged out (empty if it is the connected
-           client's packet).
-    """
-    name = "logout"
+         * ``cx``
+           Chunk x coordinate.
 
-    @requireAuthentication
-    def dispatch(self, transport, core):
-        transport.shutdown("User logout: " + self.msg)
+         * ``cy``
+           Chunk y coordinate.
+    """
+    name = "clobber"

@@ -24,11 +24,16 @@
 Apollo server core package.
 """
 
+import urlparse
 import logging
 
-from tornado.options import define
+from ming.datastore import DataStore
 
-def setup_options():
+from apollo.server.models.meta import bindSession
+
+from tornado.options import define, options
+
+def setupOptions():
     """
     Initialize options for use with Tornado.
     """
@@ -51,3 +56,25 @@ def setup_options():
     define("zmq_host", default="apollo", help="zmq host", metavar="HOST")
 
     define("logging_level", default=logging.WARN, help="logging level", type=int, metavar="LEVEL")
+
+def setupDBSession():
+    """
+    Set up the session for Ming (MongoDB).
+    """
+    # netloc for mongodb
+    mongodb_netloc = options.mongodb_host
+    if options.mongodb_port:
+        mongodb_netloc += ":%d" % options.mongodb_port
+    if options.mongodb_username:
+        mongodb_auth = options.mongodb_username
+        if options.mongodb_password:
+            mongodb_auth += ":%s" % options.mongodb_password
+        mongodb_netloc = mongodb_auth + "@" + mongodb_netloc
+
+    bindSession(DataStore(urlparse.urlunsplit((
+        "mongodb",
+        mongodb_netloc,
+        "",
+        "",
+        ""
+    )), database=options.mongodb_database))

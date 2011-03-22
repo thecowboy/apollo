@@ -33,7 +33,7 @@ from ming.orm import ThreadLocalORMSession
 doc_session = Session()
 session = ThreadLocalORMSession(doc_session=doc_session)
 
-def bind_session(bind):
+def bindSession(bind):
     """
     Bind the session to a database connection.
 

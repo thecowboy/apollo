@@ -47,7 +47,7 @@ def autodiscover():
 
 autodiscover()
 
-def deserialize_packet(payload):
+def deserializePacket(payload):
     """
     Deserialize a packet into the appropriate packet object.
 

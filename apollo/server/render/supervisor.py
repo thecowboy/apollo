@@ -53,8 +53,9 @@ class RendererSupervisor(object):
         """
         workerData["renderer"] = Renderer()
 
-    def renderChunk(self, chunk_id):
-        self.pool.apply_async(self._renderChunk)
+    def renderChunk(self, chunk_id, callback=None):
+        callback = callback or (lambda: None)
+        self.pool.apply_async(self._renderChunk, callback=callback)
 
     def _renderChunk(self, chunk_id):
         workerData["renderer"].render(chunk_id)

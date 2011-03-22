@@ -40,6 +40,8 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         {
             this.autofit();
         }));
+
+        this.redraw = function() { };
     },
 
     autofit : function()
@@ -47,7 +49,12 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         var pos = dojo.position("gameSurface");
         this.canvas.width = pos.w;
         this.canvas.height = pos.h;
-        if(this.redraw) this.redraw();
+        this.redraw();
+    },
+
+    getUnixTimestamp : function()
+    {
+        return Math.floor((new Date()).getTime() / 1000);
     },
 
     draw : function(pos, size)
@@ -76,7 +83,7 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
                 this.loaded = true;
                 that.chunkDrawCallback(img, rcoords);
             });
-            img.src = "static/chunks/" + ccoords.x + "." + ccoords.y + ".png";
+            img.src = "static/chunks/" + ccoords.x + "." + ccoords.y + ".png?" + this.getUnixTimestamp();
         } else {
             this.chunkDrawCallback(this.chunkCache[ccoords.x + "," + ccoords.y], rcoords);
         }
@@ -93,5 +100,10 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
             this.canvas.width / 2 - (rcoords.x + 1) * this.TILE_WIDTH,
             this.canvas.height / 2 - (rcoords.y + 0.5) * this.TILE_HEIGHT
         );
+    },
+
+    clobber : function(cx, cy)
+    {
+        if(this.chunkCache[cx + "," + cy]) delete this.chunkCache[cx + "," + cy];
     }
 });

@@ -26,13 +26,12 @@ The heart of the Apollo server.
 
 import logging
 import os
-import urlparse
 
 from tornado.options import options
 from tornado.template import Loader
 from tornado.web import Application
 
-from ming.datastore import DataStore
+from apollo.server import setupDBSession
 
 from apollo.server.protocol.transport import Transport
 from apollo.server.render.supervisor import RendererSupervisor
@@ -41,13 +40,11 @@ from apollo.server.cron import CronScheduler
 from apollo.server.dylib.meta import DylibDispatcher
 from apollo.server.messaging.bus import Bus
 
-from apollo.server.models.meta import bind_session
-
 class Core(Application):
     """
     The very core of Apollo. Everything depends on this.
     """
-    def __init__(self, no_rendervise=False):
+    def __init__(self):
         logging.getLogger().setLevel(options.logging_level)
 
         # apollo distribution root
@@ -68,7 +65,7 @@ class Core(Application):
 
         self.loader = Loader(os.path.join(dist_root, "template"))
 
-        self.setupSession()
+        setupDBSession()
 
         self.dylib_dispatcher = DylibDispatcher(self)
 
@@ -80,32 +77,7 @@ class Core(Application):
         self.cron.go()
 
         self.rendervisor = RendererSupervisor()
-
-        if not no_rendervise:
-            self.rendervisor.go()
-
-    # setup
-    def setupSession(self):
-        """
-        Set up the session for Ming (MongoDB).
-        """
-        # netloc for mongodb
-        mongodb_netloc = options.mongodb_host
-        if options.mongodb_port:
-            mongodb_netloc += ":%d" % options.mongodb_port
-        if options.mongodb_username:
-            mongodb_auth = options.mongodb_username
-            if options.mongodb_password:
-                mongodb_auth += ":%s" % options.mongodb_password
-            mongodb_netloc = mongodb_auth + "@" + mongodb_netloc
-
-        bind_session(DataStore(urlparse.urlunsplit((
-            "mongodb",
-            mongodb_netloc,
-            "",
-            "",
-            ""
-        )), database=options.mongodb_database))
+        self.rendervisor.go()
 
     # transport related stuff
     def createTransport(self):

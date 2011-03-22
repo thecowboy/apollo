@@ -33,6 +33,9 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from apollo.server.models import meta
 from apollo.server.models.group import Group
+from apollo.server.models.profession import Profession
+
+from apollo.server.util.compilers import CurveCompiler
 
 class User(MappedClass):
     """
@@ -91,7 +94,10 @@ class User(MappedClass):
     ID of the group the user belongs to.
     """
 
+    #
     # rpg stuff
+    #
+
     level = FieldProperty(int, if_missing=1)
     """
     User's level.
@@ -112,15 +118,39 @@ class User(MappedClass):
     User's HP.
     """
 
+    @property
+    def hpmax(self):
+        """
+        User's max HP, according to their ``profession.hpcurve``.
+        """
+        profession = meta.session.get(Profession, self.profession_id)
+        return CurveCompiler(profession.hpcurve)(self)
+
     ap = FieldProperty(int, if_missing=0)
     """
     User's AP.
     """
 
+    @property
+    def apmax(self):
+        """
+        User's max AP, according to their ``profession.apcurve``.
+        """
+        profession = meta.session.get(Profession, self.profession_id)
+        return CurveCompiler(profession.apcurve)(self)
+
     xp = FieldProperty(int, if_missing=0)
     """
     User's XP.
     """
+
+    @property
+    def apmax(self):
+        """
+        User's max AP, according to their ``profession.apcurve``.
+        """
+        profession = meta.session.get(Profession, self.profession_id)
+        return CurveCompiler(profession.apcurve)(self)
 
     stats = FieldProperty(schema.Anything)
     """

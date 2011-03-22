@@ -31,6 +31,11 @@ The following packets are implemented:
    :inherited-members:
    :undoc-members:
 
+.. automodule:: apollo.server.protocol.packet.packetclobber
+   :members:
+   :inherited-members:
+   :undoc-members:
+
 .. automodule:: apollo.server.protocol.packet.packeterror
    :members:
    :inherited-members:

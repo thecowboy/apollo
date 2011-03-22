@@ -4,7 +4,9 @@ import logging
 import random
 import math
 
-from apollo.server import setup_options
+from tornado.options import parse_command_line, parse_config_file
+
+from apollo.server import setupOptions, setupDBSession
 from apollo.server.core import Core
 
 from apollo.server.render.renderer import Renderer
@@ -22,11 +24,14 @@ from apollo.server.models.tile import Tile
 
 # initialize
 logging.basicConfig(level=logging.INFO)
-setup_options()
 
-core = Core(no_rendervise=True)
+setupOptions()
+parse_config_file("apollod.conf")
+parse_command_line()
+setupDBSession()
 
 # clear out the old database (while breaking many, many layers of encapsulation)
+meta.session.get(User, "") # connect to the database
 meta.session.impl.bind.bind._conn.drop_database(meta.session.impl.bind.database)
 
 # set spawn
