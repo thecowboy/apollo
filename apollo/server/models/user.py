@@ -145,12 +145,12 @@ class User(MappedClass):
     """
 
     @property
-    def apmax(self):
+    def xpmax(self):
         """
-        User's max AP, according to their ``profession.apcurve``.
+        User's max XP, according to their ``profession.xpcurve``.
         """
         profession = meta.session.get(Profession, self.profession_id)
-        return CurveCompiler(profession.apcurve)(user=self)
+        return CurveCompiler(profession.xpcurve)(user=self)
 
     stats = FieldProperty(schema.Anything)
     """
