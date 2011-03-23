@@ -70,9 +70,9 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
             y : pos.y % this.CHUNK_STRIDE
         };
 
-        for(var cx = 0; cx < 3; ++cx)
+        for(var cx = 0; cx < size.cw; ++cx)
         {
-            for(var cy = 0; cy < 3; ++cy)
+            for(var cy = 0; cy < size.ch; ++cy)
             {
                 var tcoords = apollo.client.util.mathhelper.isometricTransform(
                     (cx - ccoords.x) * this.CHUNK_STRIDE - rcoords.x,
