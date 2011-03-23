@@ -70,11 +70,14 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
             y : pos.y % this.CHUNK_STRIDE
         };
 
-        for(var cx = 0; cx < 2; ++cx)
+        for(var cx = 0; cx < 3; ++cx)
         {
-            for(var cy = 0; cy < 2; ++cy)
+            for(var cy = 0; cy < 3; ++cy)
             {
-                var tcoords = apollo.client.util.mathhelper.isometricTransform(cx, cy);
+                var tcoords = apollo.client.util.mathhelper.isometricTransform(
+                    (cx - ccoords.x) * this.CHUNK_STRIDE - rcoords.x,
+                    (cy - ccoords.y) * this.CHUNK_STRIDE - rcoords.y
+                );
 
                 // now draw the chunks
                 if(this.chunkCache[cx + "." + cy] == undefined)
@@ -84,11 +87,11 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
                     this.chunkCache[cx + "." + cy] = img = new Image();
                     dojo.connect(img, "onload", dojo.hitch(this, function()
                     {
-                        this.chunkDrawCallback(img, tcoords, pos);
+                        this.chunkDrawCallback(img, tcoords, rcoords);
                     }));
                     img.src = "static/chunks/" + cx + "." + cy + ".png?" + this.getUnixTimestamp();
                 } else {
-                    this.chunkDrawCallback(this.chunkCache[cx + "." + cy], tcoords, pos);
+                    this.chunkDrawCallback(this.chunkCache[cx + "." + cy], tcoords, rcoords);
                 }
             }
         }
@@ -97,21 +100,22 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         this.redraw = function() { this.draw(pos, size); }
     },
 
-    chunkDrawCallback : function(img, tcoords, rcoords)
+    chunkDrawCallback : function(img, coords)
     {
         var CHUNK_HEIGHT = this.CHUNK_STRIDE * this.TILE_HEIGHT;
         var CHUNK_WIDTH = this.CHUNK_STRIDE * this.TILE_WIDTH;
 
         var ctx = this.canvas.getContext("2d");
+        console.log(coords);
         ctx.drawImage(
             img,
-            Math.round((tcoords.x - (rcoords.x - 0.5) / this.CHUNK_STRIDE) * CHUNK_WIDTH + this.canvas.width / 2 - CHUNK_WIDTH / 2),
-            Math.round((tcoords.y - (rcoords.y - 0.5) / this.CHUNK_STRIDE) * CHUNK_HEIGHT + this.canvas.height / 2 - CHUNK_HEIGHT / 2)
+            Math.round(coords.x * this.TILE_WIDTH + this.canvas.width / 2 - CHUNK_WIDTH / 2),
+            Math.round(coords.y * this.TILE_HEIGHT + this.canvas.height / 2 - this.TILE_HEIGHT)
         );
     },
 
     clobber : function(cx, cy)
     {
-        if(this.chunkCache[cx + "," + cy]) delete this.chunkCache[cx + "," + cy];
+        if(this.chunkCache[cx + "." + cy]) delete this.chunkCache[cx + "." + cy];
     }
 });

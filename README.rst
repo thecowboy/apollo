@@ -35,11 +35,11 @@ information on the options.
 License
 -------
 
-Apollo is licensed under the MIT license. The text can be found in the COPYING
-file.
+The Apollo source code is licensed under the MIT license. The text can be found
+in the COPYING file.
 
 All sample graphical assets (sprites, tiles, etc.) are graciously put together
-by Henry de Chabert, and are licensed under `Creative Commons
+by Henry de Chabert, and are licensed separately under `Creative Commons
 Attribution-NonCommercial 3.0`_.
 
 .. _`Creative Commons Attribution-NonCommercial 3.0`:

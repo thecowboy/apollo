@@ -35,8 +35,8 @@ meta.session.get(User, "") # connect to the database
 meta.session.impl.bind.bind._conn.drop_database(meta.session.impl.bind.database)
 
 # set spawn
-SPAWN_X = 0
-SPAWN_Y = 1
+SPAWN_X = 10
+SPAWN_Y = 23
 
 # create terrain
 print "Generating terrain information..."
