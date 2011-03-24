@@ -25,10 +25,20 @@ dojo.provide("apollo.client.render.Renderer");
 dojo.require("apollo.client.Component");
 dojo.require("apollo.client.util.mathhelper");
 
+var CHUNK_STRIDE = 8;
+var TILE_HEIGHT = 32;
+var TILE_WIDTH = 64;
+
+var CHUNK_HEIGHT = CHUNK_STRIDE * TILE_HEIGHT;
+var CHUNK_WIDTH = CHUNK_STRIDE * TILE_WIDTH;
+
 dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
-    CHUNK_STRIDE : 8,
-    TILE_HEIGHT : 32,
-    TILE_WIDTH : 64,
+    CHUNK_STRIDE : CHUNK_STRIDE,
+    TILE_HEIGHT : TILE_HEIGHT,
+    TILE_WIDTH : TILE_WIDTH,
+
+    CHUNK_HEIGHT : CHUNK_HEIGHT,
+    CHUNK_WIDTH : CHUNK_WIDTH,
 
     constructor : function(core)
     {
@@ -58,6 +68,9 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
 
     draw : function(pos, size)
     {
+        // get the context as it may have changed
+        var ctx = this.canvas.getContext("2d");
+
         // first, resolve the position into chunk coordinates
         var ccoords = {
             x : Math.floor(pos.x / this.CHUNK_STRIDE),
@@ -70,9 +83,24 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
             y : pos.y % this.CHUNK_STRIDE
         };
 
-        for(var cx = 0; cx < size.cw; ++cx)
+        // chunk limit coordinates
+        var lcoords = apollo.client.util.mathhelper.cartesianTransform(
+            this.canvas.width / this.CHUNK_WIDTH,
+            this.canvas.height / this.CHUNK_HEIGHT
+        );
+
+        console.log(lcoords);
+        for(
+            var cx = Math.floor(apollo.client.util.mathhelper.clamp(Math.abs(ccoords.x - lcoords.x / 2), 0, size.cw));
+            cx < Math.ceil(apollo.client.util.mathhelper.clamp(Math.abs(ccoords.x + lcoords.x / 2), 0, size.cw));
+            ++cx
+        )
         {
-            for(var cy = 0; cy < size.ch; ++cy)
+            for(
+                var cy = Math.floor(apollo.client.util.mathhelper.clamp(Math.abs(ccoords.y - lcoords.y / 2), 0, size.ch));
+                cy < Math.ceil(apollo.client.util.mathhelper.clamp(Math.abs(ccoords.y + lcoords.y / 2), 0, size.ch));
+                ++cy
+            )
             {
                 var tcoords = apollo.client.util.mathhelper.isometricTransform(
                     (cx - ccoords.x) * this.CHUNK_STRIDE - rcoords.x,
@@ -87,11 +115,11 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
                     this.chunkCache[cx + "." + cy] = img = new Image();
                     dojo.connect(img, "onload", dojo.hitch(this, function()
                     {
-                        this.chunkDrawCallback(img, tcoords, rcoords);
+                        this.chunkDrawCallback(ctx, img, tcoords);
                     }));
                     img.src = "static/chunks/" + cx + "." + cy + ".png?" + this.getUnixTimestamp();
                 } else {
-                    this.chunkDrawCallback(this.chunkCache[cx + "." + cy], tcoords, rcoords);
+                    this.chunkDrawCallback(ctx, this.chunkCache[cx + "." + cy], tcoords);
                 }
             }
         }
@@ -100,16 +128,11 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         this.redraw = function() { this.draw(pos, size); }
     },
 
-    chunkDrawCallback : function(img, coords)
+    chunkDrawCallback : function(ctx, img, coords)
     {
-        var CHUNK_HEIGHT = this.CHUNK_STRIDE * this.TILE_HEIGHT;
-        var CHUNK_WIDTH = this.CHUNK_STRIDE * this.TILE_WIDTH;
-
-        var ctx = this.canvas.getContext("2d");
-        console.log(coords);
         ctx.drawImage(
             img,
-            Math.round(coords.x * this.TILE_WIDTH + this.canvas.width / 2 - CHUNK_WIDTH / 2),
+            Math.round(coords.x * this.TILE_WIDTH + this.canvas.width / 2 - this.CHUNK_WIDTH / 2),
             Math.round(coords.y * this.TILE_HEIGHT + this.canvas.height / 2 - this.TILE_HEIGHT)
         );
     },

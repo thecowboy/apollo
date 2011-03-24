@@ -54,3 +54,17 @@ apollo.client.util.mathhelper.isometricTransform = function(x, y)
         y: vec.y
     };
 }
+
+apollo.client.util.mathhelper.cartesianTransform = function(x, y)
+{
+    var vec = dojox.gfx.matrix.multiplyPoint(ISOMETRIC_TO_CARTESIAN_MATRIX, x, y);
+    return {
+        x: vec.x,
+        y: vec.y
+    };
+}
+
+apollo.client.util.mathhelper.clamp = function(val, min, max)
+{
+    return Math.max(Math.min(val, max), min);
+}
