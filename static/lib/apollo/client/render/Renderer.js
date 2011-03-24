@@ -88,17 +88,24 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
             this.canvas.width / this.CHUNK_WIDTH,
             this.canvas.height / this.CHUNK_HEIGHT
         );
+        
+        // number of chunks that need to be rendered
+        var drawlengths = {
+            x : Math.ceil(Math.sqrt(Math.pow(lcoords.x, 2) + Math.pow(lcoords.y, 2))), //Probably a neater way to do this, mathhelper?
+            y : Math.ceil(Math.sqrt(Math.pow(lcoords.x, 2) + Math.pow(lcoords.y, 2)))  //An isometric square containing each corner
+        };
+        
+        console.log(drawlengths);
 
-        console.log(lcoords);
         for(
-            var cx = Math.floor(apollo.client.util.mathhelper.clamp(Math.abs(ccoords.x - lcoords.x / 2), 0, size.cw));
-            cx < Math.ceil(apollo.client.util.mathhelper.clamp(Math.abs(ccoords.x + lcoords.x / 2), 0, size.cw));
+            var cx = Math.floor(apollo.client.util.mathhelper.clamp((ccoords.x - drawlengths.x / 2), 0, size.cw));
+            cx <= Math.ceil(apollo.client.util.mathhelper.clamp((ccoords.x + drawlengths.x / 2), 0, size.cw));
             ++cx
         )
         {
             for(
-                var cy = Math.floor(apollo.client.util.mathhelper.clamp(Math.abs(ccoords.y - lcoords.y / 2), 0, size.ch));
-                cy < Math.ceil(apollo.client.util.mathhelper.clamp(Math.abs(ccoords.y + lcoords.y / 2), 0, size.ch));
+                var cy = Math.floor(apollo.client.util.mathhelper.clamp((ccoords.y - drawlengths.y / 2), 0, size.ch));
+                cy <= Math.ceil(apollo.client.util.mathhelper.clamp((ccoords.y + drawlengths.y / 2), 0, size.ch));
                 ++cy
             )
             {
