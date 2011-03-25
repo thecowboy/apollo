@@ -25,8 +25,6 @@ Various mathematical utilities.
 """
 
 from math import pi, sin, cos, sqrt
-from numpy import matrix
-from numpy.linalg import inv
 
 PI = pi
 """
@@ -50,31 +48,15 @@ SCALING_CONSTANT = 1 / sqrt(2)
 Constant for scaling tiles into isometric display.
 """
 
-CARTESIAN_TO_ISOMETRIC_MATRIX = matrix([
-    [SCALING_CONSTANT, 0 ],                         # shrink vertically to scale
-    [0, SCALING_CONSTANT ]
-]) * matrix([
-    [cos(TAU_OVER_EIGHT), -sin(TAU_OVER_EIGHT)],    # do a 45 degree rotation
-    [sin(TAU_OVER_EIGHT),  cos(TAU_OVER_EIGHT)]
-])
-"""
-Matrix for converting Cartesian coordinates to isometric in Cartesian space.
-Does not perform any translations.
-"""
-
-ISOMETRIC_TO_CARTESIAN_MATRIX = inv(CARTESIAN_TO_ISOMETRIC_MATRIX)
-"""
-Matrix for converting isometric coordinates in Cartesian space back to
-Cartesian coordinates.
-"""
-
 def isometricTransform(x, y):
     """
-    Transform Cartesian coordinates to isometric coordinates in Cartesian space
-    using ``CARTESIAN_TO_ISOMETRIC_MATRIX``.
+    Transform Cartesian coordinates to isometric coordinates in Cartesian space.
+
+    This is the simplified form of a matrix multiplication or complex number
+    spiral enlargement that scales by ``SCALING_CONSTANT`` and rotates by
+    ``TAU_OVER_EIGHT``.
     """
-    transformed_vec = CARTESIAN_TO_ISOMETRIC_MATRIX * matrix([[x],[y]])
     return (
-        transformed_vec[0, 0],
-        transformed_vec[1, 0]
+        (x - y) / 2.0,
+        (x + y) / 2.0
     )
