@@ -88,13 +88,13 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
             this.canvas.width / this.CHUNK_WIDTH,
             this.canvas.height / this.CHUNK_HEIGHT
         );
-        
+
         // number of chunks that need to be rendered
         var drawlengths = {
-            x : Math.ceil(Math.sqrt(Math.pow(lcoords.x, 2) + Math.pow(lcoords.y, 2))), //Probably a neater way to do this, mathhelper?
-            y : Math.ceil(Math.sqrt(Math.pow(lcoords.x, 2) + Math.pow(lcoords.y, 2)))  //An isometric square containing each corner
+            x : Math.ceil(apollo.client.util.mathhelper.hypot(lcoords.x, lcoords.y)), //Probably a neater way to do this, mathhelper?
+            y : Math.ceil(apollo.client.util.mathhelper.hypot(lcoords.x, lcoords.y))  //An isometric square containing each corner
         };
-        
+
         console.log(drawlengths);
 
         for(

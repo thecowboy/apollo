@@ -68,3 +68,9 @@ apollo.client.util.mathhelper.clamp = function(val, min, max)
 {
     return Math.max(Math.min(val, max), min);
 }
+
+
+apollo.client.util.mathhelper.hypot = function(x, y)
+{
+    return Math.sqrt(x * x + y * y);
+}
