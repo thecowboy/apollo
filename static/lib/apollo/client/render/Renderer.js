@@ -108,8 +108,8 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
                 );
 
                 tcoords = {
-                    x: tcoords.x * this.TILE_WIDTH + this.canvas.width / 2 - this.CHUNK_WIDTH / 2,
-                    y: tcoords.y * this.TILE_HEIGHT + this.canvas.height / 2 - this.TILE_HEIGHT
+                    x: Math.round(tcoords.x * this.TILE_WIDTH + this.canvas.width / 2 - this.CHUNK_WIDTH / 2),
+                    y: Math.round(tcoords.y * this.TILE_HEIGHT + this.canvas.height / 2 - this.TILE_HEIGHT)
                 };
 
                 if(
@@ -135,26 +135,17 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
                     // to make it less retarded.
                     dojo.connect(img, "onload", dojo.partial(function(tcoords)
                     {
-                        that.chunkDrawCallback(this, tcoords);
+                        that.context.drawImage(this, tcoords.x, tcoords.y);
                     }, tcoords));
                     img.src = "static/chunks/" + cx + "." + cy + ".png?" + this.getUnixTimestamp();
                 } else {
-                    this.chunkDrawCallback(img, tcoords);
+                    this.context.drawImage(img, tcoords.x, tcoords.y);
                 }
             }
         }
 
         // now make a redraw function (partial application)
         this.redraw = dojo.partial(this.draw, pos, size);
-    },
-
-    chunkDrawCallback : function(img, coords)
-    {
-        this.context.drawImage(
-            img,
-            Math.round(coords.x),
-            Math.round(coords.y)
-        );
     },
 
     clobber : function(cx, cy)
