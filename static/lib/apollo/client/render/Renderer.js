@@ -58,6 +58,7 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         var pos = dojo.position("gameSurface");
         this.canvas.width = pos.w;
         this.canvas.height = pos.h;
+        this.context = this.canvas.getContext("2d");
         this.redraw();
     },
 
@@ -68,9 +69,6 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
 
     draw : function(pos, size)
     {
-        // get the context as it may have changed
-        var ctx = this.canvas.getContext("2d");
-
         // first, resolve the position into chunk coordinates
         var ccoords = {
             x : Math.floor(pos.x / this.CHUNK_STRIDE),
@@ -95,17 +93,15 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
             y : Math.ceil(apollo.client.util.mathhelper.hypot(lcoords.x, lcoords.y))  //An isometric square containing each corner
         };
 
-        console.log(drawlengths);
-
         for(
-            var cx = Math.floor(apollo.client.util.mathhelper.clamp((ccoords.x - drawlengths.x / 2), 0, size.cw));
-            cx <= Math.ceil(apollo.client.util.mathhelper.clamp((ccoords.x + drawlengths.x / 2), 0, size.cw));
+            var cx = Math.floor(apollo.client.util.mathhelper.clamp((ccoords.x - drawlengths.x / 2), 0, size.cw - 1));
+            cx <= Math.ceil(apollo.client.util.mathhelper.clamp((ccoords.x + drawlengths.x / 2), 0, size.cw - 1));
             ++cx
         )
         {
             for(
-                var cy = Math.floor(apollo.client.util.mathhelper.clamp((ccoords.y - drawlengths.y / 2), 0, size.ch));
-                cy <= Math.ceil(apollo.client.util.mathhelper.clamp((ccoords.y + drawlengths.y / 2), 0, size.ch));
+                var cy = Math.floor(apollo.client.util.mathhelper.clamp((ccoords.y - drawlengths.y / 2), 0, size.ch - 1));
+                cy <= Math.ceil(apollo.client.util.mathhelper.clamp((ccoords.y + drawlengths.y / 2), 0, size.ch - 1));
                 ++cy
             )
             {
@@ -114,19 +110,24 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
                     (cy - ccoords.y) * this.CHUNK_STRIDE - rcoords.y
                 );
 
-                // now draw the chunks
-                if(this.chunkCache[cx + "." + cy] == undefined)
-                {
-                    var img;
+                var img = this.chunkCache[cx + "." + cy];
 
+                // now draw the chunks
+                if(img == undefined)
+                {
+                    var that = this;
                     this.chunkCache[cx + "." + cy] = img = new Image();
-                    dojo.connect(img, "onload", dojo.hitch(this, function()
+
+                    dojo.connect(img, "onload", function(tcoords)
                     {
-                        this.chunkDrawCallback(ctx, img, tcoords);
-                    }));
+                        return function() // LOL JAVASCRIPT CLOSURES
+                        {
+                            that.chunkDrawCallback(this, tcoords);
+                        }
+                    }(tcoords));
                     img.src = "static/chunks/" + cx + "." + cy + ".png?" + this.getUnixTimestamp();
                 } else {
-                    this.chunkDrawCallback(ctx, this.chunkCache[cx + "." + cy], tcoords);
+                    this.chunkDrawCallback(img, tcoords);
                 }
             }
         }
@@ -135,9 +136,9 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         this.redraw = function() { this.draw(pos, size); }
     },
 
-    chunkDrawCallback : function(ctx, img, coords)
+    chunkDrawCallback : function(img, coords)
     {
-        ctx.drawImage(
+        this.context.drawImage(
             img,
             Math.round(coords.x * this.TILE_WIDTH + this.canvas.width / 2 - this.CHUNK_WIDTH / 2),
             Math.round(coords.y * this.TILE_HEIGHT + this.canvas.height / 2 - this.TILE_HEIGHT)

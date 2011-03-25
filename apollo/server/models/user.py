@@ -157,6 +157,11 @@ class User(MappedClass):
     User's stats.
     """
 
+    inventory = FieldProperty([schema.ObjectId])
+    """
+    User's on-hand items.
+    """
+
     def hasPermission(self, permission):
         """
         Check if the user has the specified permission.
