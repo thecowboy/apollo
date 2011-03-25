@@ -118,13 +118,18 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
                     var that = this;
                     this.chunkCache[cx + "." + cy] = img = new Image();
 
-                    dojo.connect(img, "onload", function(tcoords)
+                    // why is dojo.partial required below?
+                    // see: http://stackoverflow.com/questions/3258930/drawing-multiple-images-to-a-canvas-using-image-onload
+                    //
+                    // basically, if tcoords is used directly, a reference to it
+                    // is passed rather than the value.
+                    //
+                    // to get around this, a closure is made (with dojo.partial)
+                    // to make it less retarded.
+                    dojo.connect(img, "onload", dojo.partial(function(tcoords)
                     {
-                        return function() // LOL JAVASCRIPT CLOSURES
-                        {
-                            that.chunkDrawCallback(this, tcoords);
-                        }
-                    }(tcoords));
+                        that.chunkDrawCallback(this, tcoords);
+                    }, tcoords));
                     img.src = "static/chunks/" + cx + "." + cy + ".png?" + this.getUnixTimestamp();
                 } else {
                     this.chunkDrawCallback(img, tcoords);
@@ -133,7 +138,7 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         }
 
         // now make a redraw function (partial application)
-        this.redraw = function() { this.draw(pos, size); }
+        this.redraw = dojo.partial(this.draw, pos, size);
     },
 
     chunkDrawCallback : function(img, coords)
