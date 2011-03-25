@@ -42,7 +42,7 @@ def setupOptions():
 
     define("render_process_num", default=4, help="number of renderer processes to run", type=int, metavar="NUM")
 
-    define("cron_interval", default=3600, help="run cron every specified seconds", type=int, metavar="INTERVAL")
+    define("cron_interval", default=360, help="run cron every specified seconds", type=int, metavar="INTERVAL")
 
     define("session_expiry", default=3600, help="expire inactive sessions after specified seconds", type=int, metavar="EXPIRY")
 
