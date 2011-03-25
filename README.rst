@@ -20,9 +20,6 @@ Depends
  * ZeroMQ
    http://www.zeromq.org
 
- * numpy
-   http://numpy.scipy.org
-
  * PIL
    http://www.pythonware.com/products/pil
 
