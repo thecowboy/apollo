@@ -87,21 +87,18 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
             this.canvas.height / this.CHUNK_HEIGHT
         );
 
-        // number of chunks that need to be rendered
-        var drawlengths = {
-            x : Math.ceil(apollo.client.util.mathhelper.hypot(lcoords.x, lcoords.y)), //Probably a neater way to do this, mathhelper?
-            y : Math.ceil(apollo.client.util.mathhelper.hypot(lcoords.x, lcoords.y))  //An isometric square containing each corner
-        };
+        // number of chunks that need to be rendered (first pass)
+        var drawlength = Math.ceil(apollo.client.util.mathhelper.hypot(lcoords.x, lcoords.y));
 
         for(
-            var cx = Math.floor(apollo.client.util.mathhelper.clamp((ccoords.x - drawlengths.x / 2), 0, size.cw - 1));
-            cx <= Math.ceil(apollo.client.util.mathhelper.clamp((ccoords.x + drawlengths.x / 2), 0, size.cw - 1));
+            var cx = Math.floor(apollo.client.util.mathhelper.clamp((ccoords.x - drawlength / 2), 0, size.cw - 1));
+            cx <= Math.ceil(apollo.client.util.mathhelper.clamp((ccoords.x + drawlength / 2), 0, size.cw - 1));
             ++cx
         )
         {
             for(
-                var cy = Math.floor(apollo.client.util.mathhelper.clamp((ccoords.y - drawlengths.y / 2), 0, size.ch - 1));
-                cy <= Math.ceil(apollo.client.util.mathhelper.clamp((ccoords.y + drawlengths.y / 2), 0, size.ch - 1));
+                var cy = Math.floor(apollo.client.util.mathhelper.clamp((ccoords.y - drawlength / 2), 0, size.ch - 1));
+                cy <= Math.ceil(apollo.client.util.mathhelper.clamp((ccoords.y + drawlength / 2), 0, size.ch - 1));
                 ++cy
             )
             {
@@ -109,6 +106,16 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
                     (cx - ccoords.x) * this.CHUNK_STRIDE - rcoords.x,
                     (cy - ccoords.y) * this.CHUNK_STRIDE - rcoords.y
                 );
+
+                tcoords = {
+                    x: tcoords.x * this.TILE_WIDTH + this.canvas.width / 2 - this.CHUNK_WIDTH / 2,
+                    y: tcoords.y * this.TILE_HEIGHT + this.canvas.height / 2 - this.TILE_HEIGHT
+                };
+
+                if(
+                    tcoords.x < -this.CHUNK_WIDTH || tcoords.x > this.canvas.width ||
+                    tcoords.y < -this.CHUNK_HEIGHT || tcoords.y > this.canvas.height
+                ) continue;
 
                 var img = this.chunkCache[cx + "." + cy];
 
@@ -145,8 +152,8 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
     {
         this.context.drawImage(
             img,
-            Math.round(coords.x * this.TILE_WIDTH + this.canvas.width / 2 - this.CHUNK_WIDTH / 2),
-            Math.round(coords.y * this.TILE_HEIGHT + this.canvas.height / 2 - this.TILE_HEIGHT)
+            Math.round(coords.x),
+            Math.round(coords.y)
         );
     },
 
