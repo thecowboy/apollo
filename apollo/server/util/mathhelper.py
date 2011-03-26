@@ -60,3 +60,19 @@ def isometricTransform(x, y):
         (x - y) / 2.0,
         (x + y) / 2.0
     )
+
+def absolve(x, y, s):
+    """
+    Resolve absolute coordinates into chunk and relative coordinates.
+
+    :Parameters:
+         * ``x``
+           Absolute x coordinate.
+
+         * ``y``
+           Absolute y coordinate.
+
+         * ``s``
+           Chunk stride.
+    """
+    return (x // s, y // s), (x % s, y % s)

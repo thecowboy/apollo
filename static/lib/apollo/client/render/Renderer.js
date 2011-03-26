@@ -25,11 +25,14 @@ dojo.provide("apollo.client.render.Renderer");
 dojo.require("apollo.client.Component");
 dojo.require("apollo.client.util.mathhelper");
 
+dojo.require("apollo.client.protocol.packet.PacketMove");
+
 var CHUNK_STRIDE = 8;
 var TILE_HEIGHT = 32;
 var TILE_WIDTH = 64;
 
 var CHUNK_HEIGHT = CHUNK_STRIDE * TILE_HEIGHT;
+var CHUNK_MAXHEIGHT = CHUNK_HEIGHT + TILE_HEIGHT;
 var CHUNK_WIDTH = CHUNK_STRIDE * TILE_WIDTH;
 
 dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
@@ -38,6 +41,7 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
     TILE_WIDTH : TILE_WIDTH,
 
     CHUNK_HEIGHT : CHUNK_HEIGHT,
+    CHUNK_MAXHEIGHT : CHUNK_MAXHEIGHT,
     CHUNK_WIDTH : CHUNK_WIDTH,
 
     constructor : function(core)
@@ -67,19 +71,53 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         return Math.floor((new Date()).getTime() / 1000);
     },
 
-    draw : function(pos, size)
+    handleClick : function(pos, evt)
     {
-        // first, resolve the position into chunk coordinates
-        var ccoords = {
-            x : Math.floor(pos.x / this.CHUNK_STRIDE),
-            y : Math.floor(pos.y / this.CHUNK_STRIDE)
+        var canvaspos = dojo.position(this.canvas);
+
+        var x = evt.clientX - canvaspos.x;
+        var y = evt.clientY - canvaspos.y;
+
+        // resolve coordinates
+        var rcoords = apollo.client.util.mathhelper.absolve(pos.x, pos.y, this.CHUNK_STRIDE);
+
+        // calculate the coordinates in terms isometric map coordinates (normalize first)
+        var isocoords = {
+            x : (x + this.CHUNK_WIDTH / 2 - this.canvas.width / 2) / this.TILE_WIDTH,
+            y : (y + this.TILE_HEIGHT - this.canvas.height / 2) / this.TILE_HEIGHT
         };
 
-        // extract the relative position data
-        var rcoords = {
-            x : pos.x % this.CHUNK_STRIDE,
-            y : pos.y % this.CHUNK_STRIDE
+        isocoords = apollo.client.util.mathhelper.cartesianTransform(isocoords.x, isocoords.y);
+
+        // finally round it off
+        isocoords = {
+            x : Math.round(isocoords.x + 0.5),
+            y : Math.round(isocoords.y + 0.5)
         };
+
+        // realpos
+        //
+        // XXX: why are the numbers -6 and 2 required ? probably something wrong
+        //      with my math :(
+        //
+        realpos = {
+            x : isocoords.x - 6 + pos.x,
+            y : isocoords.y + 2 + pos.y
+        }
+
+        console.log(realpos.x + ", " + realpos.y);
+        this.core.transport.sendAction(new apollo.client.protocol.packet.PacketMove(realpos));
+    },
+
+    draw : function(pos, size)
+    {
+        var surfdim = dojo.position("gameSurface");
+
+        // clear the screen
+        this.context.clearRect(0, 0, surfdim.w, surfdim.h);
+
+        // resolve coordinates
+        var rcoords = apollo.client.util.mathhelper.absolve(pos.x, pos.y, this.CHUNK_STRIDE);
 
         // chunk limit coordinates
         var lcoords = apollo.client.util.mathhelper.cartesianTransform(
@@ -91,20 +129,20 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         var drawlength = Math.ceil(apollo.client.util.mathhelper.hypot(lcoords.x, lcoords.y));
 
         for(
-            var cx = Math.floor(apollo.client.util.mathhelper.clamp((ccoords.x - drawlength / 2), 0, size.cw - 1));
-            cx <= Math.ceil(apollo.client.util.mathhelper.clamp((ccoords.x + drawlength / 2), 0, size.cw - 1));
+            var cx = Math.floor(apollo.client.util.mathhelper.clamp((rcoords.c.x - drawlength / 2), 0, size.cw - 1));
+            cx <= Math.ceil(apollo.client.util.mathhelper.clamp((rcoords.c.x + drawlength / 2), 0, size.cw - 1));
             ++cx
         )
         {
             for(
-                var cy = Math.floor(apollo.client.util.mathhelper.clamp((ccoords.y - drawlength / 2), 0, size.ch - 1));
-                cy <= Math.ceil(apollo.client.util.mathhelper.clamp((ccoords.y + drawlength / 2), 0, size.ch - 1));
+                var cy = Math.floor(apollo.client.util.mathhelper.clamp((rcoords.c.y - drawlength / 2), 0, size.ch - 1));
+                cy <= Math.ceil(apollo.client.util.mathhelper.clamp((rcoords.c.y + drawlength / 2), 0, size.ch - 1));
                 ++cy
             )
             {
                 var tcoords = apollo.client.util.mathhelper.isometricTransform(
-                    (cx - ccoords.x) * this.CHUNK_STRIDE - rcoords.x,
-                    (cy - ccoords.y) * this.CHUNK_STRIDE - rcoords.y
+                    (cx - rcoords.c.x) * this.CHUNK_STRIDE - rcoords.r.x,
+                    (cy - rcoords.c.y) * this.CHUNK_STRIDE - rcoords.r.y
                 );
 
                 tcoords = {
@@ -112,6 +150,7 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
                     y: Math.round(tcoords.y * this.TILE_HEIGHT + this.canvas.height / 2 - this.TILE_HEIGHT)
                 };
 
+                // cull chunks that lie outside of screen space (second pass)
                 if(
                     tcoords.x < -this.CHUNK_WIDTH || tcoords.x > this.canvas.width ||
                     tcoords.y < -this.CHUNK_HEIGHT || tcoords.y > this.canvas.height
@@ -146,6 +185,10 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
 
         // now make a redraw function (partial application)
         this.redraw = dojo.partial(this.draw, pos, size);
+
+        // and reconnect onclick
+        if(this.clickHandle) dojo.disconnect(this.clickHandle);
+        this.clickHandle = dojo.connect(this.canvas, "onclick", dojo.hitch(this, dojo.partial(this.handleClick, pos)));
     },
 
     clobber : function(cx, cy)

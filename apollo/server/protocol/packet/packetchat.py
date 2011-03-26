@@ -48,6 +48,8 @@ class PacketChat(Packet):
     def dispatch(self, transport, core):
         if not self.msg.strip(): return
 
+        origin = transport.session().getUser()
+
         if self.target:
             try:
                 user = User.getUserByName(self.target)
@@ -60,19 +62,19 @@ class PacketChat(Packet):
                 return
 
             core.bus.broadcast("user.%s" % user._id, PacketChat(
-                origin=transport.session().getUser().name,
+                origin=origin.name,
                 target=self.target,
                 msg=self.msg
             ))
 
             transport.sendEvent(PacketChat(
-                origin=transport.session().getUser().name,
+                origin=origin.name,
                 target=self.target,
                 msg=self.msg
             ))
             return
 
         core.bus.broadcast("user.*", PacketChat(
-            origin=transport.session().getUser().name,
+            origin=origin.name,
             msg=self.msg
         ))

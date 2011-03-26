@@ -20,54 +20,17 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.util.mathhelper");
- 
-apollo.client.util.mathhelper.PI = PI = Math.PI;
+dojo.provide("apollo.client.protocol.packet.PacketMove");
 
-apollo.client.util.mathhelper.TAU = TAU = PI * 2;
+dojo.require("apollo.client.protocol.packet.Packet");
 
-apollo.client.util.mathhelper.TAU_OVER_EIGHT = TAU_OVER_EIGHT = Math.PI / 4;
+dojo.require("apollo.client.util.ui");
 
-apollo.client.util.mathhelper.SCALING_CONSTANT = SCALING_CONSTANT = 1 / Math.sqrt(2);
+dojo.declare("apollo.client.protocol.packet.PacketMove", apollo.client.protocol.packet.Packet, {
+    name    : "move",
 
-apollo.client.util.mathhelper.isometricTransform = function(x, y)
-{
-    return {
-        x: (x - y) / 2,
-        y: (x + y) / 2
-    };
-}
-
-apollo.client.util.mathhelper.cartesianTransform = function(x, y)
-{
-    return {
-        x: x + y,
-        y: y - x
-    };
-}
-
-apollo.client.util.mathhelper.clamp = function(val, min, max)
-{
-    return Math.max(Math.min(val, max), min);
-}
-
-
-apollo.client.util.mathhelper.hypot = function(x, y)
-{
-    return Math.sqrt(x * x + y * y);
-}
-
-apollo.client.util.mathhelper.absolve = function(x, y, s) // absolute coordinate resolution
-{
-    return {
-        r : { // relative
-            x : x % s,
-            y : y % s
-        },
-
-        c : { // chunk
-            x : Math.floor(x / s),
-            y : Math.floor(y / s)
-        }
+    dispatch : function(transport, core)
+    {
+        // TODO: implement!
     }
-}
+});
