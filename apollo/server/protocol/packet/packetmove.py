@@ -34,6 +34,21 @@ from apollo.server.util.mathhelper import absolve
 from apollo.server.protocol.packet.packetinfo import PacketInfo
 
 class PacketMove(Packet):
+    """
+    Request the server to move the client, or inform a client that another
+    client has moved.
+
+    :Direction of Transfer:
+        Bidirectional.
+
+    :Data Members:
+         * ``x``
+           x-coordinate to move to.
+
+         * ``y``
+           y-coordinate to move to.
+    """
+
     name = "move"
 
     @requireAuthentication

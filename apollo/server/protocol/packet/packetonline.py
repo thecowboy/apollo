@@ -28,6 +28,16 @@ from apollo.server.models.user import User
 from apollo.server.util.decorators import requireAuthentication
 
 class PacketOnline(Packet):
+    """
+    Request a list of online users.
+
+    :Direction of Transfer:
+        Bidirectional.
+
+    :Data Members:
+        None.
+    """
+
     name = "online"
 
     @requireAuthentication

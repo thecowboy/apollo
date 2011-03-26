@@ -66,6 +66,11 @@ The following packets are implemented:
    :inherited-members:
    :undoc-members:
 
+.. automodule:: apollo.server.protocol.packet.packetmove
+   :members:
+   :inherited-members:
+   :undoc-members:
+
 .. automodule:: apollo.server.protocol.packet.packetonline
    :members:
    :inherited-members:
