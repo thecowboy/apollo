@@ -153,7 +153,7 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
                 // cull chunks that lie outside of screen space (second pass)
                 if(
                     tcoords.x < -this.CHUNK_WIDTH || tcoords.x > this.canvas.width ||
-                    tcoords.y < -this.CHUNK_HEIGHT || tcoords.y > this.canvas.height
+                    tcoords.y < -this.CHUNK_MAXHEIGHT || tcoords.y > this.canvas.height
                 ) continue;
 
                 var img = this.chunkCache[cx + "." + cy];

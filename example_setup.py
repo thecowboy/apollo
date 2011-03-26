@@ -83,7 +83,7 @@ for cx in xrange(0, realm.size.cw):
                         "ry" : ry
                     },
                     chunk_id=chunk._id,
-                    terrain_id=(terrains[1] if x == SPAWN_X and y == SPAWN_Y else terrains[0])._id
+                    terrain_id=terrains[random.randrange(0, len(terrains))]._id
                 )
                 num_tiles += 1
 
