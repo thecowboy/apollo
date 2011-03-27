@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 by Tony Young
+ *                       Ryan Lewis
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +30,11 @@ dojo.require("apollo.client.util.ui");
 dojo.require("apollo.client.protocol.packet.PacketLogin");
 dojo.require("apollo.client.protocol.packet.PacketLogout");
 dojo.require("apollo.client.protocol.packet.PacketChat");
-dojo.require("apollo.client.protocol.packet.PacketOnline");
 
-dojo.require("apollo.client.protocol.packet.PacketKick");
+dojo.require("apollo.client.command.KickCommand");
+dojo.require("apollo.client.command.LogoutCommand");
+dojo.require("apollo.client.command.WhisperCommand");
+dojo.require("apollo.client.command.OnlineCommand");
 
 dojo.declare("apollo.client.ActionDispatcher", null, {
     constructor : function(transport)
@@ -71,54 +74,37 @@ dojo.declare("apollo.client.ActionDispatcher", null, {
             {
                 var parts = msg.split(" ");
                 var rest = parts.slice(1);
+                var command;
 
                 switch(parts[0].substring(1).toLowerCase())
                 {
                     case "logout":
                     case "camp":
-                        this.transport.sendAction(new apollo.client.protocol.packet.PacketLogout({
-                            msg    : rest.join(" ")
-                        }));
-                    case "kick":
-                        if(rest.length < 1)
-                        {
-                            apollo.client.util.ui.addConsoleMessage("Incorrect number of arguments.");
-                            return;
-                        }
-                        this.transport.sendAction(new apollo.client.protocol.packet.PacketKick({
-                            target : rest[0],
-                            msg    : rest.slice(1).join(" ")
-                        }));
+                        command = new apollo.client.command.LogoutCommand();
                         break;
-                    
+                    case "kick":
+                        command = new apollo.client.command.KickCommand();
+                        break;
                     case "w":
                     case "tell":
                     case "msg":
                     case "whisper":
-                        if(rest.length < 1)
-                        {
-                            apollo.client.util.ui.addConsoleMessage("Incorrect number of arguments.");
-                            return;
-                        }
-                        this.transport.sendAction(new apollo.client.protocol.packet.PacketChat({
-                            target : rest[0],
-                            msg    : rest.slice(1).join(" ")
-                        }));
+                        command = new apollo.client.command.WhisperCommand();
                         break;
-                
                     case "list":
                     case "online":
-                        this.transport.sendAction(new apollo.client.protocol.packet.PacketOnline());
+                        command = new apollo.client.command.OnlineCommand();
                         break;
-
                     default:
                         apollo.client.util.ui.addConsoleMessage("Command not recognized.");
+                        return;
                 }
 
+                command.execute.apply(command, [ this.transport ].concat(rest));
                 return;
             }
             msg = msg.substring(1);
         }
         this.transport.sendAction(new apollo.client.protocol.packet.PacketChat({ msg: msg }));
-    },
+    }
 });

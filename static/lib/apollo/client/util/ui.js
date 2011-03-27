@@ -24,6 +24,15 @@ dojo.provide("apollo.client.util.ui");
 
 dojo.require("dijit.MenuItem");
 
+apollo.client.util.ui.sanitize = function(data)
+{
+    // let's do the angle bracket dance!
+    return data
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+};
+
 apollo.client.util.ui.addChatMessage = function(origin, message)
 {
     var row = dojo.create("tr", null, "chatLog");
@@ -35,13 +44,7 @@ apollo.client.util.ui.addChatMessage = function(origin, message)
 
     var chatMessage = dojo.create("span");
     dojo.addClass(chatMessage, "chatMessage");
-    // let's do the angle bracket dance!
-    chatMessage.innerHTML = apollo.client.util.ui.linkify(
-        message
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-    );
+    chatMessage.innerHTML = apollo.client.util.ui.linkify(apollo.client.util.ui.sanitize(message));
 
     dojo.place(chatOrigin, col);
     dojo.place(chatMessage, col);
@@ -49,7 +52,7 @@ apollo.client.util.ui.addChatMessage = function(origin, message)
     // do scroll
     var chatPane = dojo.byId("chatPane");
     chatPane.scrollTop = chatPane.scrollHeight;
-}
+};
 
 apollo.client.util.ui.addConsoleMessage = function(message)
 {
@@ -57,14 +60,14 @@ apollo.client.util.ui.addConsoleMessage = function(message)
 
     var chatConsole = dojo.create("td");
     dojo.addClass(chatConsole, "chatConsole");
-    chatConsole.innerHTML = apollo.client.util.ui.linkify(message);
+    chatConsole.innerHTML = apollo.client.util.ui.linkify(apollo.client.util.ui.sanitize(message));
 
     dojo.place(chatConsole, row);
 
     // do scroll
     var chatPane = dojo.byId("chatPane");
     chatPane.scrollTop = chatPane.scrollHeight;
-}
+};
 
 apollo.client.util.ui.setUserData = function(name, level, profession, hp, ap, xp)
 {
@@ -87,7 +90,7 @@ apollo.client.util.ui.setUserData = function(name, level, profession, hp, ap, xp
     apfield.label.innerHTML = ap.now + " / " + ap.max;
 
     xpfield.update({ progress : xp.now, maximum : xp.max });
-}
+};
 
 apollo.client.util.ui.setInfoData = function(location, terrain, things)
 {
@@ -132,11 +135,11 @@ apollo.client.util.ui.setInfoData = function(location, terrain, things)
             thingsMenu.addChild(dijit.MenuItem({ "label" : thingChild.innerHTML }));
         }
     }
-}
+};
 
 var linkExpr = /(\b(https?|ftp):\/\/[\-A-Z0-9+&@#\/%?=~_|!:,.;]*[\-A-Z0-9+&@#\/%=~_|])/ig;
 
 apollo.client.util.ui.linkify = function(text)
 {
     return text.replace(linkExpr, "<a href=\"$1\">$1</a>");
-}
+};
