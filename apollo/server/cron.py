@@ -31,7 +31,7 @@ from zmq.eventloop.ioloop import PeriodicCallback
 from apollo.server.component import Component
 
 from apollo.server.models import meta
-from apollo.server.models.auth import Session
+from apollo.server.models.auth import Session, User
 
 class CronScheduler(Component):
     """
@@ -59,6 +59,11 @@ class CronScheduler(Component):
             if session.token in self.core.connections:
                 self.core.connections[session.token].shutdown("Heartbeat timeout")
                 logging.info("Dropped active connection %s." % session.token)
+            else:
+                user = meta.session.get(User, session.user_id)
+                if user is not None:
+                    user.online = False
+                meta.session.flush_all()
             meta.session.remove(Session, { "_id" : session._id })
 
         logging.info("Purged %d expired session(s)." % num_rows)
