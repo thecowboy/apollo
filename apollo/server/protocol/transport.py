@@ -132,7 +132,7 @@ class Transport(Component):
             user.online = False
 
             # send packetinfo to relevant people
-            self.core.bus.broadcast("cross.loc.*" % user.location_id, PacketInfo())
+            self.core.bus.broadcast("cross.loc.%s" % user.location_id, PacketInfo())
 
         meta.session.remove(Session, { "token" : self.token })
 

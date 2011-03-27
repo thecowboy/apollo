@@ -26,6 +26,7 @@ from apollo.server.protocol.packet import Packet
 
 from apollo.server.models import meta
 from apollo.server.models.auth import User
+from apollo.server.protocol.packet.packetinfo import PacketInfo
 
 from apollo.server.protocol.packet.packetlogout import PacketLogout
 
@@ -78,5 +79,9 @@ class PacketLogin(Packet):
         transport.consume()
 
         core.bus.broadcast("user.*", PacketLogin(username=user.name))
+
+        # cross cast this info packet
+        core.bus.broadcast("cross.loc.%s" % user.location_id, PacketInfo())
+
         user.online = True
         meta.session.flush_all()

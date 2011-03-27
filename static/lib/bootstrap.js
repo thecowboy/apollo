@@ -12,6 +12,11 @@ dojo.require("dijit.TitlePane");
 dojo.require("dijit.layout.BorderContainer");
 dojo.require("dijit.layout.ContentPane");
 
+dojo.require("dijit.TooltipDialog");
+
+dojo.require("dijit.Menu");
+dojo.require("dijit.MenuItem");
+
 dojo.baseUrl = "static/lib/dojo/"; // dojo WOULD be here
 
 dojo.registerModulePath("apollo.client.dylib", "../../../dylib"); // for dynamic libraries

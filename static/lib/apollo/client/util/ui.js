@@ -22,6 +22,8 @@
 
 dojo.provide("apollo.client.util.ui");
 
+dojo.require("dijit.MenuItem");
+
 apollo.client.util.ui.addChatMessage = function(origin, message)
 {
     var row = dojo.create("tr", null, "chatLog");
@@ -94,9 +96,8 @@ apollo.client.util.ui.setInfoData = function(location, terrain, things)
     var yfield = dojo.byId("infoThisTileYCoordinate");
 
     var tile = dojo.byId("infoThisTileImg");
-    var thingsdiv = dojo.byId("infoThisTileThings");
-
-    dojo.query("*", thingsdiv).forEach(dojo.destroy);
+    var thingsMenu = dijit.byId("infoThisTileThings");
+    thingsMenu.destroyDescendants();
 
     realmfield.innerHTML = location.realm;
     xfield.innerHTML = location.x;
@@ -108,22 +109,27 @@ apollo.client.util.ui.setInfoData = function(location, terrain, things)
 
     if(things.length == 0)
     {
-        var msg = dojo.create("div");
-        msg.style.fontStyle = "italic";
-        dojo.addClass(msg, "infoThing");
-        msg.innerHTML = "There is nothing of interest here. -tumbleweed-";
-
-        dojo.place(msg, thingsdiv);
+        var tumbleweed = new dijit.MenuItem({ "label" : "There is nothing of interest here. -tumbleweed-" });
+        tumbleweed.domNode.style.fontStyle = "italic";
+        thingsMenu.addChild(tumbleweed);
     } else {
         for(var i = 0; i < things.length; ++i)
         {
             var thing = things[i];
 
-            var thingContainer = dojo.create("div");
-            dojo.addClass(thingContainer, "infoThing");
-            thingContainer.innerHTML = thing.name + " " + thing.type;
+            var thingChild = dojo.create("div");
+            thingChild.style.display = "inline";
 
-            dojo.place(thingContainer, thingsdiv);
+            var thingName = dojo.create("div");
+            thingName.innerHTML = thing.name;
+            thingName.style.fontWeight = "bold";
+            dojo.place(thingName, thingChild);
+
+            var thingType = dojo.create("div");
+            thingType.innerHTML = thing.type;
+            dojo.place(thingType, thingChild);
+
+            thingsMenu.addChild(dijit.MenuItem({ "label" : thingChild.innerHTML }));
         }
     }
 }

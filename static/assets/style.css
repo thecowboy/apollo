@@ -57,3 +57,13 @@ th
     font-weight: bold !important;
     padding-right: 10px !important;
 }
+
+#infoThisTile .dijitTitlePaneContentInner
+{
+    padding: 0 0 1px !important;
+}
+
+#infoThisTile .dijitMenuItemLabel
+{
+    padding: 10px !important;
+}
