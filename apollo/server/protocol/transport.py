@@ -34,6 +34,7 @@ from apollo.server.component import Component
 from apollo.server.models import meta
 from apollo.server.models.auth import Session
 
+from apollo.server.protocol.packet.packetinfo import PacketInfo
 from apollo.server.protocol.packet.packetlogout import PacketLogout
 
 from apollo.server.messaging.consumer import Consumer
@@ -121,9 +122,17 @@ class Transport(Component):
 
         user = self.session().getUser()
         if user is not None:
+            # tell user logout was successful
             self.sendEvent(PacketLogout(msg=msg))
+
+            # broadcast the logout
             self.core.bus.broadcast("user.*", PacketLogout(username=user.name, msg=msg))
+
+            # unset online
             user.online = False
+
+            # send packetinfo to relevant people
+            self.core.bus.broadcast("cross.loc.*" % user.location_id, PacketInfo())
 
         meta.session.remove(Session, { "token" : self.token })
 

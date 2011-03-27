@@ -106,7 +106,6 @@ class Core(Application):
             * ``token``
               Unique token that identifies a transport.
         """
-        transport = self.connections[token]
         del self.connections[token]
 
         logging.info("Lost transport: %s" % token)
