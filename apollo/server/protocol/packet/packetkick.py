@@ -59,4 +59,4 @@ class PacketKick(Packet):
 
         self.msg = self.msg or "(no reason given)"
 
-        core.bus.broadcast("cross.%s" % user._id, PacketLogout(msg="Kicked by server: %s" % self.msg))
+        transport.shutdown("Kicked by server: %s" % self.msg)
