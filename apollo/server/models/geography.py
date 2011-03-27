@@ -32,6 +32,63 @@ Stride of a chunk, i.e. how many tiles it can contain both horizontally and
 vertically.
 """
 
+TILE_WIDTH = 64
+"""
+Width of a single tile.
+"""
+
+TILE_HEIGHT = 32
+"""
+Height of a single tile (top half not counted).
+"""
+
+class Terrain(MappedClass):
+    """
+    Terrain type.
+    """
+
+    class __mongometa__:
+        name = "terrain"
+        session = meta.session
+
+    _id = FieldProperty(schema.ObjectId)
+
+    name = FieldProperty(str, required=True)
+    """
+    Name of the terrain type.
+    """
+
+    img = FieldProperty(str, required=True)
+    """
+    Image of the terrain type.
+    """
+
+class Realm(MappedClass):
+    """
+    The representation of a "world".
+    """
+
+    class __mongometa__:
+        name = "realm"
+        session = meta.session
+
+    _id = FieldProperty(schema.ObjectId)
+
+    name = FieldProperty(str, required=True)
+    """
+    The name of the realm.
+    """
+
+    size = FieldProperty({ "cw" : int, "ch" : int }, required=True)
+    """
+    The size of the realm, in chunk coordinates.
+    """
+
+    chunks = RelationProperty("Chunk")
+    """
+    The chunks contained in this world.
+    """
+
 class Chunk(MappedClass):
     """
     A region of the map ``CHUNK_STRIDE`` high and wide. These are rendered for
@@ -64,4 +121,35 @@ class Chunk(MappedClass):
     realm_id = ForeignIdProperty("Realm", required=True)
     """
     ID of the realm the chunk belongs to.
+    """
+
+class Tile(MappedClass):
+    """
+    A tile in the world.
+    """
+
+    class __mongometa__:
+        name = "tile"
+        session = meta.session
+
+    _id = FieldProperty(schema.ObjectId)
+
+    location = FieldProperty({
+        "rx" : int,
+        "ry" : int
+    }, required=True)
+    """
+    Location of the tile. These are in coordinates relative to the chunk. They
+    have the same scale as aboslute coordinates, and can be calculated with the
+    expressions ``ax % CHUNK_STRIDE`` and ``ay % CHUNK_STRIDE``.
+    """
+
+    chunk_id = ForeignIdProperty("Chunk", required=True)
+    """
+    ID of the chunk this tile belongs to.
+    """
+
+    terrain_id = ForeignIdProperty("Terrain", required=True)
+    """
+    ID of the terrain type this tile is.
     """

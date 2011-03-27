@@ -33,7 +33,6 @@ if __name__ == "__main__":
     setupOptions()
     parse_config_file("apollod.conf")
     parse_command_line()
-    setupDBSession()
 
     io_loop = IOLoop.instance()
     server = HTTPServer(Core(), io_loop=io_loop)

@@ -21,7 +21,7 @@
 #
 
 from apollo.server.models import meta
-from apollo.server.models.user import User
+from apollo.server.models.auth import User
 
 from apollo.server.protocol.packet import Packet
 from apollo.server.protocol.packet.packeterror import PacketError

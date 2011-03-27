@@ -71,7 +71,7 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         return Math.floor((new Date()).getTime() / 1000);
     },
 
-    handleClick : function(pos, evt)
+    handleClick : function(pos, size, evt)
     {
         var canvaspos = dojo.position(this.canvas);
 
@@ -105,7 +105,12 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
             y : isocoords.y + 2 + pos.y
         }
 
-        console.log(realpos.x + ", " + realpos.y);
+        // don't allow clicking outside the map
+        if(
+            realpos.x < 0 || realpos.x >= size.cw * this.CHUNK_STRIDE ||
+            realpos.y < 0 || realpos.y >= size.ch * this.CHUNK_STRIDE
+        ) return;
+
         this.core.transport.sendAction(new apollo.client.protocol.packet.PacketMove(realpos));
     },
 
@@ -188,7 +193,7 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
 
         // and reconnect onclick
         if(this.clickHandle) dojo.disconnect(this.clickHandle);
-        this.clickHandle = dojo.connect(this.canvas, "onclick", dojo.hitch(this, dojo.partial(this.handleClick, pos)));
+        this.clickHandle = dojo.connect(this.canvas, "onclick", dojo.hitch(this, dojo.partial(this.handleClick, pos, size)));
     },
 
     clobber : function(cx, cy)

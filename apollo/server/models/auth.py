@@ -19,10 +19,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+import os
 
 import re
-
-from pymongo.objectid import ObjectId
 
 from hashlib import sha256
 from datetime import datetime
@@ -32,8 +31,7 @@ from ming.orm import MappedClass
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from apollo.server.models import meta
-from apollo.server.models.group import Group
-from apollo.server.models.profession import Profession
+from apollo.server.models.rpg import Profession
 
 from apollo.server.util.compilers import CurveCompiler
 
@@ -191,3 +189,60 @@ class User(MappedClass):
                Username.
         """
         return meta.session.find(User, { "name" : { "$regex" : "^%s$" % re.escape(name.lower()), "$options" : "i" } }).one()
+
+class Session(MappedClass):
+    """
+    A session that is established when a user makes a connection.
+    """
+
+    class __mongometa__:
+        name = "session"
+        session = meta.session
+
+    _id = FieldProperty(schema.ObjectId)
+
+    token = FieldProperty(str, if_missing=lambda: sha256(os.urandom(64)).hexdigest())
+    """
+    Unique session identifier.
+    """
+
+    last_active = FieldProperty(datetime, if_missing=datetime.utcnow)
+    """
+    Last active session time.
+    """
+
+    user_id = ForeignIdProperty("User")
+    """
+    ID of the user connected to this session.
+    """
+
+    def getUser(self):
+        """
+        Get the user connected to this session (if any).
+        """
+        return meta.session.get(User, self.user_id)
+
+class Group(MappedClass):
+    """
+    A permission group.
+    """
+    class __mongometa__:
+        name = "group"
+        session = meta.session
+
+    _id = FieldProperty(schema.ObjectId)
+
+    name = FieldProperty(str, required=True)
+    """
+    Name of the group, e.g. `Administrator`.
+    """
+
+    permissions = FieldProperty([str])
+    """
+    List of permissions the group has. The wildcard character ``*`` is allowed.
+    """
+
+    users = RelationProperty("User")
+    """
+    Users that are members of this group.
+    """

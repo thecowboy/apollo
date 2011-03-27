@@ -23,7 +23,7 @@
 from apollo.server.protocol.packet import Packet
 
 from apollo.server.models import meta
-from apollo.server.models.profession import Profession
+from apollo.server.models.rpg import Profession
 
 from apollo.server.util.decorators import requireAuthentication
 from apollo.server.util.compilers import CurveCompiler

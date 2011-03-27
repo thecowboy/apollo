@@ -33,7 +33,7 @@ from ming.orm import Query
 from apollo.server.component import Component
 
 from apollo.server.models import meta
-from apollo.server.models.session import Session
+from apollo.server.models.auth import Session
 
 class CronScheduler(Component):
     """

@@ -2,25 +2,19 @@ import sys
 import logging
 
 import random
-import math
 
 from tornado.options import parse_command_line, parse_config_file
 
 from apollo.server import setupOptions, setupDBSession
-from apollo.server.core import Core
 
 from apollo.server.render.renderer import Renderer
 
 from apollo.server.models import meta
 
-from apollo.server.models.user import User
-from apollo.server.models.group import Group
-from apollo.server.models.profession import Profession
+from apollo.server.models.auth import User, Group
+from apollo.server.models.rpg import Profession
 
-from apollo.server.models.terrain import Terrain
-from apollo.server.models.realm import Realm
-from apollo.server.models.chunk import Chunk, CHUNK_STRIDE
-from apollo.server.models.tile import Tile
+from apollo.server.models.geography import Terrain, Realm, Chunk, CHUNK_STRIDE, Tile
 
 # initialize
 logging.basicConfig(level=logging.INFO)

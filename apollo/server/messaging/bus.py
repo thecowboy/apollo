@@ -25,8 +25,6 @@ import urlparse
 
 from tornado.options import options
 
-from apollo.server.component import Component
-
 import zmq
 
 class Bus(object):

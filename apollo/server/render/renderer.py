@@ -29,9 +29,7 @@ from apollo.server.util.mathhelper import isometricTransform
 
 from apollo.server.models import meta
 
-from apollo.server.models.chunk import Chunk, CHUNK_STRIDE
-from apollo.server.models.tile import Tile, TILE_WIDTH, TILE_HEIGHT
-from apollo.server.models.terrain import Terrain
+from apollo.server.models.geography import Chunk, CHUNK_STRIDE, Tile, TILE_WIDTH, TILE_HEIGHT, Terrain
 
 STATIC_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "..", "static")
 """

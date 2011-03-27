@@ -20,15 +20,14 @@
 # THE SOFTWARE.
 #
 
-# I stole this idea from Pylons
-
+import logging
 import os
 
 from apollo.server.util.importlib import import_module
 
 from ming import Session
-from ming.orm import MappedClass
-from ming.orm import ThreadLocalORMSession
+from ming.orm import MappedClass, ThreadLocalORMSession
+from ming.orm.base import mapper
 
 doc_session = Session()
 session = ThreadLocalORMSession(doc_session=doc_session)
@@ -56,9 +55,12 @@ def autodiscover():
                 continue
 
             module = import_module(".%s" % module_name, "apollo.server.models")
+
             for member_name in dir(module):
                 member = getattr(module, member_name)
-                if isinstance(member, MappedClass):
-                    locals()[member.__name__] = member
-
-    MappedClass.compile_all()
+                try:
+                    if issubclass(member, MappedClass) and member is not MappedClass:
+                        mapper(member).compile()
+                except TypeError:
+                    pass
+    logging.info("Compiled Ming models for use.")

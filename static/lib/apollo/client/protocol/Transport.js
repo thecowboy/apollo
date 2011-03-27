@@ -33,28 +33,29 @@ dojo.require("apollo.client.dylib.config");
 dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
     eventComet : function()
     {
-        var that = this;
-
         dojo.xhrGet({
             url         : "events",
             content     : {
                 s       : this.token
             },
             handleAs    : "json",
-            load        : function(packet)
+            load        : dojo.hitch(this, function(packet)
             {
                 // do stuff
                 try
                 {
-                    that.processEvent(packet);
+                    this.processEvent(packet);
                 } catch(e) {
                     core.die("Internal error (transport event): " + e);
                     throw e;
                 }
 
                 // start the comet loop again (if we want to)
-                if(!that.shutdowned) that.eventComet();
-            },
+                if(!this.shutdowned)
+                {
+                    setTimeout(dojo.hitch(this, this.eventComet), 100);
+                }
+            }),
             error       : function(e)
             {
                 core.die("Transport error (event): " + e);
@@ -90,19 +91,21 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
 
     acquireSession : function()
     {
-        var that = this;
-
         dojo.xhrGet({
             url         : "session",
             handleAs    : "json",
-            load        : function(packet)
+            load        : dojo.hitch(this, function(packet)
             {
-                that.token = packet.s;
-                that.nonce = packet.n;
+                this.token = packet.s;
+                this.nonce = packet.n;
 
-                that.core.ready();
-                that.startHeartbeat();
-                that.eventComet();
+                this.core.ready();
+                this.startHeartbeat();
+                this.eventComet();
+            }),
+            error       : function(e)
+            {
+                core.die("Session acquisition error: " + e);
             }
         });
     },
@@ -114,11 +117,10 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
 
     startHeartbeat : function()
     {
-        var that = this;
-        this.heartbeat = setInterval(function()
+        this.heartbeat = setInterval(dojo.hitch(this, function()
         {
-            that.sendAction(new apollo.client.protocol.packet.PacketHeartbeat());
-        }, apollo.client.dylib.config.session_expiry * 1000 / 30);
+            this.sendAction(new apollo.client.protocol.packet.PacketHeartbeat());
+        }), apollo.client.dylib.config.session_expiry * 1000 / 30);
     },
 
     stopHeartbeat : function()

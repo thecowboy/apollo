@@ -23,9 +23,7 @@
 from apollo.server.protocol.packet import Packet
 
 from apollo.server.models import meta
-from apollo.server.models.user import User
-from apollo.server.models.chunk import Chunk, CHUNK_STRIDE
-from apollo.server.models.tile import Tile
+from apollo.server.models.geography import Chunk, CHUNK_STRIDE, Tile
 
 from apollo.server.util.decorators import requireAuthentication
 

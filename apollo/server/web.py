@@ -32,7 +32,7 @@ from tornado.options import options
 from tornado.web import RequestHandler, asynchronous, HTTPError
 
 from apollo.server.models import meta
-from apollo.server.models.session import Session
+from apollo.server.models.auth import Session
 
 from apollo.server.protocol.transport import Transport
 from apollo.server.protocol.packet.meta import deserializePacket
