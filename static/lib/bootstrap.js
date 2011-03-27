@@ -15,6 +15,8 @@ dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.TooltipDialog");
 
 dojo.require("dijit.Menu");
+dojo.require("dijit.MenuBar");
+dojo.require("dijit.PopupMenuBarItem");
 dojo.require("dijit.MenuItem");
 
 dojo.baseUrl = "static/lib/dojo/"; // dojo WOULD be here

@@ -1,3 +1,39 @@
+<div dojoType="dijit.MenuBar" region="top">
+    <div style="float: left;">
+        <div dojoType="dijit.PopupMenuBarItem">
+            <span>
+                <strong id="infoUserName">?</strong> the level <strong id="infoUserLevel">?</strong> <strong id="infoUserProfession">?</strong>
+            </span>
+            <div dojoType="dijit.Menu">
+                <div dojoType="dijit.MenuItem">
+                    Stats
+                </div>
+                <div dojoType="dijit.MenuItem">
+                    Inventory
+                </div>
+                <div dojoType="dijit.MenuItem">
+                    Logout
+                    <script type="dojo/action" event="onClick">
+                        core.transport.sendAction(new apollo.client.protocol.packet.PacketLogout());
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="float: right; padding: 2px; padding-right: 10px;">
+        <strong>HP:</strong>
+        <div dojoType="dijit.ProgressBar" style="width: 100px; display: inline-block;" id="infoUserHP"></div>
+
+        <strong>AP:</strong>
+        <div dojoType="dijit.ProgressBar" style="width: 100px; display: inline-block;" id="infoUserAP"></div>
+
+        <strong>XP:</strong>
+        <div dojoType="dijit.ProgressBar" style="width: 100px; display: inline-block;" id="infoUserXP" places="2"></div>
+    </div>
+</div>
+
+<!--
 <div dojoType="dijit.layout.ContentPane" region="top" style="padding: 0;">
     <div style="float: right; padding: 5px; padding-right: 10px;">
         <a href="#" id="infoUserName">
@@ -14,3 +50,4 @@
         <div dojoType="dijit.ProgressBar" style="width: 100px; display: inline-block;" id="infoUserXP" places="2"></div>
     </div>
 </div>
+-->

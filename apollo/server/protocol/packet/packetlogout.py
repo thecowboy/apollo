@@ -40,4 +40,4 @@ class PacketLogout(Packet):
 
     @requireAuthentication
     def dispatch(self, transport, core):
-        transport.shutdown("User logout: " + self.msg)
+        transport.shutdown("User logout: " + (self.msg or "(no reason given)"))
