@@ -45,17 +45,29 @@ class Consumer(object):
             ""
         )))
 
+        user = transport.session().getUser()
+
         # subscribe to cross channel
-        self.subscriber.setsockopt(zmq.SUBSCRIBE, "cross.*")
-        self.subscriber.setsockopt(zmq.SUBSCRIBE, "cross.%s" % transport.session().getUser()["_id"])
+        self.subscribe("cross.*")
+        self.subscribe("cross.%s" % user._id)
 
         # subscribe to user channel
-        self.subscriber.setsockopt(zmq.SUBSCRIBE, "user.*")
-        self.subscriber.setsockopt(zmq.SUBSCRIBE, "user.%s" % transport.session().getUser()["_id"])
+        self.subscribe("user.*")
+        self.subscribe("user.%s" % user._id)
+
+        # subscribe to location channels
+        self.subscribe("cross.loc.%s" % user.location_id)
+        self.subscribe("user.loc.%s" % user.location_id)
 
         logging.debug("Created subscriber")
 
         IOLoop.instance().add_handler(self.subscriber, lambda *args: self.on_message(self.subscriber), zmq.POLLIN)
+
+    def subscribe(self, channel):
+        self.subscriber.setsockopt(zmq.SUBSCRIBE, channel)
+
+    def unsubscribe(self, channel):
+        self.subscriber.setsockopt(zmq.UNSUBSCRIBE, channel)
 
     def shutdown(self):
         """

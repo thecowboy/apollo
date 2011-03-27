@@ -1,34 +1,37 @@
-<div dojoType="dijit.layout.ContentPane" region="trailing" style="width: 400px">
-    <img
-        id="infoThisTileImg"
-        src="static/tiles/unknown.png"
-        title="Unknown"
-        alt="Unknown"
-        style="width: 64px; height: 64px; float: left"
-    />
+<div dojoType="dijit.layout.ContentPane" region="trailing" style="width: 400px; padding: 0; border: 0;">
+    <div dojoType="dijit.TitlePane" title="Tile Info">
+        <img
+            id="infoThisTileImg"
+            src="static/tiles/unknown.png"
+            title="Unknown"
+            alt="Unknown"
+            style="width: 64px; height: 64px; float: left"
+        />
 
-    <table style="float: left">
-        <tr>
-            <th>Realm:</th>
-            <td id="infoThisTileRealm">?</td>
-        </tr>
-        <tr>
-            <th>X:</th>
-            <td id="infoThisTileXCoordinate">?</td>
-        </tr>
-        <tr>
-            <th>Y:</th>
-            <td id="infoThisTileYCoordinate">?</td>
-        </tr>
-    </table>
+        <table style="float: left">
+            <tr>
+                <th>Realm:</th>
+                <td id="infoThisTileRealm">?</td>
+            </tr>
+            <tr>
+                <th>X:</th>
+                <td id="infoThisTileXCoordinate">?</td>
+            </tr>
+            <tr>
+                <th>Y:</th>
+                <td id="infoThisTileYCoordinate">?</td>
+            </tr>
+        </table>
+        <div style="clear: both;"></div>
+    </div>
 
-    <div style="clear: both"></div>
+    <div style="margin-top: 10px;"></div>
 
-    <table id="infoThisTileThings" style="margin-top: 20px">
-        <tr>
-            <td colspan="2" style="font-style: italic">
+    <div dojoType="dijit.TitlePane" title="At This Location">
+        <div id="infoThisTileThings">
+            <div class="infoThing" style="font-style: italic">
                 There is nothing of interest here. -tumbleweed-
-            </td>
-        </tr>
-    </table>
+            </div>
+        </div>
+    </div>
 </div>

@@ -94,7 +94,9 @@ apollo.client.util.ui.setInfoData = function(location, terrain, things)
     var yfield = dojo.byId("infoThisTileYCoordinate");
 
     var tile = dojo.byId("infoThisTileImg");
-    var things = dojo.byId("infoThisTileThings");
+    var thingsdiv = dojo.byId("infoThisTileThings");
+
+    dojo.query("*", thingsdiv).forEach(dojo.destroy);
 
     realmfield.innerHTML = location.realm;
     xfield.innerHTML = location.x;
@@ -106,6 +108,23 @@ apollo.client.util.ui.setInfoData = function(location, terrain, things)
 
     if(things.length == 0)
     {
+        var msg = dojo.create("div");
+        msg.style.fontStyle = "italic";
+        dojo.addClass(msg, "infoThing");
+        msg.innerHTML = "There is nothing of interest here. -tumbleweed-";
+
+        dojo.place(msg, thingsdiv);
+    } else {
+        for(var i = 0; i < things.length; ++i)
+        {
+            var thing = things[i];
+
+            var thingContainer = dojo.create("div");
+            dojo.addClass(thingContainer, "infoThing");
+            thingContainer.innerHTML = thing.name + " " + thing.type;
+
+            dojo.place(thingContainer, thingsdiv);
+        }
     }
 }
 

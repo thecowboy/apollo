@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    intro
+   geography
    api/index
 
 Indices and tables

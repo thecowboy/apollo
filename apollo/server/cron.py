@@ -28,8 +28,6 @@ from tornado.options import options
 
 from zmq.eventloop.ioloop import PeriodicCallback
 
-from ming.orm import Query
-
 from apollo.server.component import Component
 
 from apollo.server.models import meta

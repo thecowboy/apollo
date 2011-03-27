@@ -19,6 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+from apollo.server.models.auth import User
 
 from apollo.server.protocol.packet import Packet
 
@@ -68,15 +69,15 @@ class PacketMove(Packet):
         except ValueError:
             return # XXX: maybe raise an error?
 
+        old_loc = user.location_id
+        transport.consumer.unsubscribe("cross.loc.%s" % old_loc)
+
         user.location_id = tile._id
+        transport.consumer.subscribe("cross.loc.%s" % tile._id)
 
         meta.session.save(user)
         meta.session.flush_all()
 
-        # inform everyone that the user has moved
-        core.bus.broadcast("user.*", PacketMove(
-            origin=user.name,
-        ))
-
-        # implicitly dispatch a PacketInfo for the calling client
-        PacketInfo().dispatch(transport, core)
+        # some users may require additional info (including this one!)
+        core.bus.broadcast("cross.loc.%s" % tile._id, PacketInfo())
+        core.bus.broadcast("cross.loc.%s" % old_loc, PacketInfo())

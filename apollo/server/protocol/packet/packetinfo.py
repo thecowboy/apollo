@@ -24,6 +24,7 @@ from apollo.server.protocol.packet import Packet
 
 from apollo.server.models import meta
 from apollo.server.models.geography import Tile, Chunk, CHUNK_STRIDE, Terrain, Realm
+from apollo.server.models.auth import User
 
 from apollo.server.util.decorators import requireAuthentication
 
@@ -62,6 +63,22 @@ class PacketInfo(Packet):
 
         realm = meta.session.get(Realm, chunk.realm_id)
 
+        # get the players here
+        things = []
+
+        users_raw = meta.session.find(User, {
+            "location_id" : tile._id,
+            "online" : True
+        })
+
+        for user_raw in users_raw:
+            if user._id == user_raw._id: continue
+            things.append({
+                "name"  : user_raw.name,
+                "level" : user_raw.level,
+                "type"  : "user"
+            })
+
         transport.sendEvent(PacketInfo(
             location={
                 "x"     : chunk.location.cx * CHUNK_STRIDE + tile.location.rx,
@@ -76,5 +93,5 @@ class PacketInfo(Packet):
                 "cw"    : realm.size.cw,
                 "ch"    : realm.size.ch
             },
-            things=[]
+            things=things
         ))
