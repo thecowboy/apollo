@@ -22,8 +22,8 @@
 
 from apollo.server.protocol.packet import Packet
 
-WARN = 0
-ERROR = 1
+SEVERITY_WARN = 0
+SEVERITY_ERROR = 1
 
 class PacketError(Packet):
     """

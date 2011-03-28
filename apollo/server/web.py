@@ -35,6 +35,7 @@ from apollo.server.models import meta
 from apollo.server.models.auth import Session
 
 from apollo.server.protocol.transport import Transport
+from apollo.server.protocol.packet import ORIGIN_WEB
 from apollo.server.protocol.packet.meta import deserializePacket
 from apollo.server.protocol.packet.packeterror import PacketError
 
@@ -84,6 +85,7 @@ class ActionHandler(RequestHandler):
 
         try:
             packet = deserializePacket(payload)
+            packet._origin = ORIGIN_WEB
         except ValueError:
             transport.sendEvent(PacketError(msg="bad packet payload"))
         else:

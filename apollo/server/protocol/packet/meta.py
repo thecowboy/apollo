@@ -55,7 +55,8 @@ def deserializePacket(payload):
          * ``payload``
            Packet payload that was transferred.
     """
-    depayload = json.loads(payload)
-    name = depayload.get("__name__")
+    raw_depayload = json.loads(payload)
+    name = raw_depayload.get("__name__")
+    depayload = dict((key, value) for key, value in raw_depayload.iteritems() if key[0] != "_")
     if name in packetlist:
         return packetlist[name](**depayload)

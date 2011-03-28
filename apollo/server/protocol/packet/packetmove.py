@@ -30,7 +30,7 @@ from apollo.server.util.decorators import requireAuthentication
 
 from apollo.server.util.mathhelper import absolve
 
-from apollo.server.protocol.packet.packeterror import PacketError, WARN
+from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
 from apollo.server.protocol.packet.packetinfo import PacketInfo
 
 class PacketMove(Packet):
@@ -62,14 +62,14 @@ class PacketMove(Packet):
         try:
             chunk = meta.session.find(Chunk, { "location" : { "cx" : ccoords[0], "cy" : ccoords[1] } }).one()
         except ValueError:
-            transport.sendEvent(PacketError(severity=WARN, msg="Cannot move there."))
+            transport.sendEvent(PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
             return
 
         # find the tile
         try:
             tile = meta.session.find(Tile, { "location" : { "rx" : rcoords[0], "ry" : rcoords[1] }, "chunk_id" : chunk._id }).one()
         except ValueError:
-            transport.sendEvent(PacketError(severity=WARN, msg="Cannot move there."))
+            transport.sendEvent(PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
             return
 
         old_loc = user.location_id

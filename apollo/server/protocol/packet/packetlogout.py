@@ -20,7 +20,7 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.protocol.packet import Packet
+from apollo.server.protocol.packet import Packet, ORIGIN_CROSS
 
 from apollo.server.util.decorators import requireAuthentication
 
@@ -40,4 +40,8 @@ class PacketLogout(Packet):
 
     @requireAuthentication
     def dispatch(self, transport, core):
-        transport.shutdown("User logout: " + (self.msg or "(no reason given)"))
+        if self._origin == ORIGIN_CROSS:
+            msg = self.msg or "Reason unknown"
+        else:
+            msg ="User logout: " + (self.msg or "(no reason given)")
+        transport.shutdown(msg)

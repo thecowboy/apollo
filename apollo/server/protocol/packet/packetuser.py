@@ -24,7 +24,7 @@ from apollo.server.models.auth import User
 from apollo.server.models.geography import Tile, Chunk, CHUNK_STRIDE, Realm
 
 from apollo.server.protocol.packet import Packet
-from apollo.server.protocol.packet.packeterror import PacketError, WARN
+from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
 
 from apollo.server.models import meta
 from apollo.server.models.rpg import Profession
@@ -75,12 +75,12 @@ class PacketUser(Packet):
             try:
                 user = meta.session.find(User, { "name" : self.target }).one()
             except ValueError:
-                transport.sendEvent(PacketError(severity=WARN, msg="User not found."))
+                transport.sendEvent(PacketError(severity=SEVERITY_WARN, msg="User not found."))
                 return
 
         if not user.online:
             # lie about it and pretend the user doesn't exist
-            transport.sendEvent(PacketError(severity=WARN, msg="User not found."))
+            transport.sendEvent(PacketError(severity=SEVERITY_WARN, msg="User not found."))
             return
 
         profession = meta.session.get(Profession, user.profession_id)

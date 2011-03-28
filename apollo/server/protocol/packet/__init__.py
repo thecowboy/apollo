@@ -22,6 +22,9 @@
 
 import json
 
+ORIGIN_WEB = 1
+ORIGIN_CROSS = 2
+
 class Packet(object):
     """
     Base packet class. Implements the command pattern.

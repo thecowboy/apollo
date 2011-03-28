@@ -29,6 +29,7 @@ from zmq.eventloop.ioloop import IOLoop
 
 from tornado.options import options
 
+from apollo.server.protocol.packet import ORIGIN_CROSS
 from apollo.server.protocol.packet.meta import deserializePacket
 
 class Consumer(object):
@@ -105,7 +106,9 @@ class Consumer(object):
                 Message body.
         """
         logging.debug("Sending cross message packet: %s" % message)
-        deserializePacket(message).dispatch(self.transport, self.transport.core)
+        packet = deserializePacket(message)
+        packet._origin = ORIGIN_CROSS
+        packet.dispatch(self.transport, self.transport.core)
 
     def on_user_message(self, message):
         """
