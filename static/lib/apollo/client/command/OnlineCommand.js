@@ -29,13 +29,11 @@ dojo.require("apollo.client.util.ui");
 dojo.require("apollo.client.command.Command");
 
 dojo.declare("apollo.client.command.OnlineCommand", apollo.client.command.Command, {
+    name : "online",
+    description : "/online - Lists all players online",
+
     execute : function(transport)
     {
         transport.sendAction(new apollo.client.protocol.packet.PacketOnline());
-    },
-
-    describe : function()
-    {
-        apollo.client.util.ui.addConsoleMessage("/online - Lists all players online");
     }
 });

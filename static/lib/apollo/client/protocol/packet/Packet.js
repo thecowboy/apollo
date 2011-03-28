@@ -23,8 +23,6 @@
 dojo.provide("apollo.client.protocol.packet.Packet");
 
 dojo.declare("apollo.client.protocol.packet.Packet", null, {
-    name : "packet",
-
     constructor : function(payload)
     {
         dojo.safeMixin(this, payload);

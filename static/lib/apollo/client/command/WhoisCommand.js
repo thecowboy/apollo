@@ -20,29 +20,27 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.command.TeleportCommand");
+dojo.provide("apollo.client.command.WhoisCommand");
 
-dojo.require("apollo.client.protocol.packet.PacketMove");
+dojo.require("apollo.client.protocol.packet.PacketUser");
 
 dojo.require("apollo.client.util.ui");
 
 dojo.require("apollo.client.command.Command");
 
-dojo.declare("apollo.client.command.TeleportCommand", apollo.client.command.Command, {
-    name : "teleport",
-    description : "/teleport x y - Teleport to the given position",
+dojo.declare("apollo.client.command.WhoisCommand", apollo.client.command.Command, {
+    name : "whois",
+    description : "/whois user - Display information about a user",
 
-    execute : function(transport, x, y)
+    execute : function(transport, user)
     {
-        if (x === undefined || y === undefined)
+        if (user === undefined)
         {
             apollo.client.util.ui.addConsoleMessage("Incorrect number of arguments.");
             return;
         }
-
-        transport.sendAction(new apollo.client.protocol.packet.PacketMove({
-            x : Number(x),
-            y : Number(y)
+        transport.sendAction(new apollo.client.protocol.packet.PacketUser({
+            target : user
         }));
     }
 });

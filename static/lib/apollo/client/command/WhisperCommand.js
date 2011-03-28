@@ -29,6 +29,9 @@ dojo.require("apollo.client.util.ui");
 dojo.require("apollo.client.command.Command");
 
 dojo.declare("apollo.client.command.WhisperCommand", apollo.client.command.Command, {
+    name : "whisper",
+    description : "/whisper user message - Sends a private message to user",
+
     execute : function(transport, user)
     {
         var rest = Array.prototype.splice.call(arguments, 1);
@@ -38,13 +41,8 @@ dojo.declare("apollo.client.command.WhisperCommand", apollo.client.command.Comma
             return;
         }
         transport.sendAction(new apollo.client.protocol.packet.PacketChat({
-            target : rest[0],
+            target : user,
             msg    : rest.slice(1).join(" ")
         }));
-    },
-
-    describe : function()
-    {
-        apollo.client.util.ui.addConsoleMessage("/whisper user message - Sends a private message to user");
     }
 });

@@ -26,8 +26,6 @@ class Packet(object):
     """
     Base packet class. Implements the command pattern.
     """
-    name = "packet"
-
     def __init__(self, **payload):
         self.__dict__.update(payload)
 

@@ -29,6 +29,9 @@ dojo.require("apollo.client.util.ui");
 dojo.require("apollo.client.command.Command");
 
 dojo.declare("apollo.client.command.KickCommand", apollo.client.command.Command, {
+    name : "kick",
+    description : "/kick user [reason] - Kicks user for [reason]",
+
     execute : function(transport)
     {
         var rest = Array.prototype.splice.call(arguments, 1);
@@ -42,10 +45,5 @@ dojo.declare("apollo.client.command.KickCommand", apollo.client.command.Command,
             msg    : rest.slice(1).join(" ")
         }));
 
-    },
-
-    describe : function()
-    {
-        apollo.client.util.ui.addConsoleMessage("/kick user [reason] - Kicks user for [reason]");
     }
 });

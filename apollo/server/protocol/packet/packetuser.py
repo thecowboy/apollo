@@ -20,13 +20,18 @@
 # THE SOFTWARE.
 #
 
+from apollo.server.models.auth import User
+from apollo.server.models.geography import Tile, Chunk, CHUNK_STRIDE, Realm
+
 from apollo.server.protocol.packet import Packet
+from apollo.server.protocol.packet.packeterror import PacketError, WARN
 
 from apollo.server.models import meta
 from apollo.server.models.rpg import Profession
 
 from apollo.server.util.decorators import requireAuthentication
 from apollo.server.util.compilers import CurveCompiler
+from apollo.server.util.mathhelper import dissolve
 
 class PacketUser(Packet):
     """
@@ -64,14 +69,39 @@ class PacketUser(Packet):
 
     @requireAuthentication
     def dispatch(self, transport, core):
-        user = transport.session().getUser()
+        if self.target is None:
+            user = transport.session().getUser()
+        else:
+            try:
+                user = meta.session.find(User, { "name" : self.target }).one()
+            except ValueError:
+                transport.sendEvent(PacketError(severity=WARN, msg="User not found."))
+                return
+
         profession = meta.session.get(Profession, user.profession_id)
 
-        transport.sendEvent(PacketUser(
+        tile = meta.session.get(Tile, user.location_id)
+        chunk = meta.session.get(Chunk, tile.chunk_id)
+
+        realm = meta.session.get(Realm, chunk.realm_id)
+
+        acoords = dissolve(chunk.location.cx, chunk.location.cy, tile.location.rx, tile.location.ry, CHUNK_STRIDE)
+
+        packet = PacketUser(
             name=user.name,
             level=user.level,
             profession=profession.name,
+            location={
+                "x"     : acoords[0],
+                "y"     : acoords[1],
+                "realm" : realm.name
+            },
             hp={ "now" : user.hp, "max" : CurveCompiler(profession.hpcurve)(user=user) },
             ap={ "now" : user.ap, "max" : CurveCompiler(profession.apcurve)(user=user) },
             xp={ "now" : user.xp, "max" : CurveCompiler(profession.xpcurve)(user=user) }
-        ))
+        )
+
+        if self.target is not None:
+            packet.target = user.name
+
+        transport.sendEvent(packet)

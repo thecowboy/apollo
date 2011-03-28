@@ -20,29 +20,23 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.command.TeleportCommand");
-
-dojo.require("apollo.client.protocol.packet.PacketMove");
+dojo.provide("apollo.client.command.HelpCommand");
 
 dojo.require("apollo.client.util.ui");
 
 dojo.require("apollo.client.command.Command");
 
-dojo.declare("apollo.client.command.TeleportCommand", apollo.client.command.Command, {
-    name : "teleport",
-    description : "/teleport x y - Teleport to the given position",
+dojo.declare("apollo.client.command.HelpCommand", apollo.client.command.Command, {
+    name : "help",
+    description : "/help - Display help about commands",
 
-    execute : function(transport, x, y)
+    execute : function(transport)
     {
-        if (x === undefined || y === undefined)
+        apollo.client.util.ui.addConsoleMessage("Help on commands:");
+        for(var commandName in apollo.client.command)
         {
-            apollo.client.util.ui.addConsoleMessage("Incorrect number of arguments.");
-            return;
+            var command = apollo.client.command[commandName];
+            if(command.prototype.description) apollo.client.util.ui.addConsoleMessage(command.prototype.description);
         }
-
-        transport.sendAction(new apollo.client.protocol.packet.PacketMove({
-            x : Number(x),
-            y : Number(y)
-        }));
     }
 });

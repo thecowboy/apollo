@@ -74,5 +74,34 @@ def absolve(x, y, s):
 
          * ``s``
            Chunk stride.
+
+   :Returns:
+        A tuple containing the chunk coordinates and a tuple containing the
+        relative coordinates, in that order.
     """
     return (x // s, y // s), (x % s, y % s)
+
+def dissolve(cx, cy, rx, ry, s):
+    """
+    Dissolve chunk and relative coordinates into absolute coordinates.
+
+    :Parameters:
+         * ``cx``
+           Chunk x coordinate.
+
+         * ``cy``
+           Chunk y coordinate.
+
+         * ``rx``
+           Relative x coordinate.
+
+         * ``ry``
+           Relative y coordinate.
+
+         * ``s``
+           Chunk stride.
+
+   :Returns:
+        A tuple containing absolute coordinates.
+    """
+    return (cx * s + rx, cy * s + ry)

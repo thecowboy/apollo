@@ -27,6 +27,7 @@ from apollo.server.models.geography import Tile, Chunk, CHUNK_STRIDE, Terrain, R
 from apollo.server.models.auth import User
 
 from apollo.server.util.decorators import requireAuthentication
+from apollo.server.util.mathhelper import dissolve
 
 class PacketInfo(Packet):
     """
@@ -79,10 +80,12 @@ class PacketInfo(Packet):
                 "type"  : "user"
             })
 
+        acoords = dissolve(chunk.location.cx, chunk.location.cy, tile.location.rx, tile.location.ry, CHUNK_STRIDE)
+
         transport.sendEvent(PacketInfo(
             location={
-                "x"     : chunk.location.cx * CHUNK_STRIDE + tile.location.rx,
-                "y"     : chunk.location.cy * CHUNK_STRIDE + tile.location.ry,
+                "x"     : acoords[0],
+                "y"     : acoords[1],
                 "realm" : realm.name,
             },
             terrain={

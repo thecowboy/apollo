@@ -25,9 +25,5 @@ dojo.provide("apollo.client.command.Command");
 dojo.declare("apollo.client.command.Command", null, {
     execute : function()
     {
-    },
-
-    describe : function()
-    {
     }
 });

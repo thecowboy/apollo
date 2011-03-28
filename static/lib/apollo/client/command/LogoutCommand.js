@@ -29,15 +29,13 @@ dojo.require("apollo.client.util.ui");
 dojo.require("apollo.client.command.Command");
 
 dojo.declare("apollo.client.command.LogoutCommand", apollo.client.command.Command, {
+    name : "logout",
+    description : "/logout [reason] - Logs you out of the game, with [reason]",
+
     execute : function(transport)
     {
         transport.sendAction(new apollo.client.protocol.packet.PacketLogout({
             msg    : Array.prototype.splice.call(arguments, 1).join(" ")
         }));
-    },
-
-    describe : function()
-    {
-        apollo.client.util.ui.addConsoleMessage("/camp [reason] - Logs you out of the game, with [reason]");
     }
 });

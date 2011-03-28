@@ -31,11 +31,13 @@ dojo.require("apollo.client.protocol.packet.PacketLogin");
 dojo.require("apollo.client.protocol.packet.PacketLogout");
 dojo.require("apollo.client.protocol.packet.PacketChat");
 
+dojo.require("apollo.client.command.HelpCommand");
 dojo.require("apollo.client.command.KickCommand");
 dojo.require("apollo.client.command.LogoutCommand");
 dojo.require("apollo.client.command.WhisperCommand");
 dojo.require("apollo.client.command.OnlineCommand");
 dojo.require("apollo.client.command.TeleportCommand");
+dojo.require("apollo.client.command.WhoisCommand");
 
 dojo.declare("apollo.client.ActionDispatcher", null, {
     constructor : function(transport)
@@ -67,6 +69,22 @@ dojo.declare("apollo.client.ActionDispatcher", null, {
         this.transport.sendAction(new apollo.client.protocol.packet.PacketLogout());
     },
 
+    commandMappings : {
+        help    : apollo.client.command.HelpCommand,
+        logout  : apollo.client.command.LogoutCommand,
+        camp    : apollo.client.command.LogoutCommand,
+        kick    : apollo.client.command.KickCommand,
+        w       : apollo.client.command.WhisperCommand,
+        whisper : apollo.client.command.WhisperCommand,
+        tell    : apollo.client.command.WhisperCommand,
+        msg     : apollo.client.command.WhisperCommand,
+        list    : apollo.client.command.OnlineCommand,
+        online  : apollo.client.command.OnlineCommand,
+        teleport: apollo.client.command.TeleportCommand,
+        tp      : apollo.client.command.TeleportCommand,
+        whois   : apollo.client.command.WhoisCommand
+    },
+
     chat : function(msg)
     {
         if(msg[0] == "/")
@@ -75,37 +93,15 @@ dojo.declare("apollo.client.ActionDispatcher", null, {
             {
                 var parts = msg.split(" ");
                 var rest = parts.slice(1);
-                var command;
+                var command = this.commandMappings[parts[0].substring(1).toLowerCase()];
 
-                switch(parts[0].substring(1).toLowerCase())
+                if(command === undefined)
                 {
-                    case "logout":
-                    case "camp":
-                        command = new apollo.client.command.LogoutCommand();
-                        break;
-                    case "kick":
-                        command = new apollo.client.command.KickCommand();
-                        break;
-                    case "w":
-                    case "tell":
-                    case "msg":
-                    case "whisper":
-                        command = new apollo.client.command.WhisperCommand();
-                        break;
-                    case "list":
-                    case "online":
-                        command = new apollo.client.command.OnlineCommand();
-                        break;
-                    case "teleport":
-                    case "tp":
-                        command = new apollo.client.command.TeleportCommand();
-                        break;
-                    default:
-                        apollo.client.util.ui.addConsoleMessage("Command not recognized.");
-                        return;
+                    apollo.client.util.ui.addConsoleMessage("Command not recognized.");
+                    return;
                 }
 
-                command.execute.apply(command, [ this.transport ].concat(rest));
+                command.prototype.execute.apply(new command, [ this.transport ].concat(rest));
                 return;
             }
             msg = msg.substring(1);

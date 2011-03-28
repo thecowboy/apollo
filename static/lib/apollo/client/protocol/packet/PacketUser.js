@@ -31,13 +31,24 @@ dojo.declare("apollo.client.protocol.packet.PacketUser", apollo.client.protocol.
 
     dispatch : function(transport, core)
     {
-        if(!this.target) apollo.client.util.ui.setUserData(
-            this.name,
-            this.level,
-            this.profession,
-            this.hp,
-            this.ap,
-            this.xp
-        );
+        if(this.target === undefined)
+        {
+            apollo.client.util.ui.setUserData(
+                this.name,
+                this.level,
+                this.profession,
+                this.hp,
+                this.ap,
+                this.xp
+            )
+        } else {
+            apollo.client.util.ui.addConsoleMessage(
+                    "About " + this.name + ", the level " + this.level + " " + this.profession + ":\n" +
+                    "HP: " + this.hp.now + "/" + this.hp.max + "\n" +
+                    "AP: " + this.ap.now + "/" + this.ap.max + "\n" +
+                    "XP: " + this.xp.now + "/" + this.xp.max + "\n" +
+                    "Location: (" + this.location.x + ", " + this.location.y + ")"
+            );
+        }
     }
 });

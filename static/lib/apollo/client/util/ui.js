@@ -56,17 +56,22 @@ apollo.client.util.ui.addChatMessage = function(origin, message)
 
 apollo.client.util.ui.addConsoleMessage = function(message)
 {
-    var row = dojo.create("tr", null, "chatLog");
+    var lines = message.split("\n");
 
-    var chatConsole = dojo.create("td");
-    dojo.addClass(chatConsole, "chatConsole");
-    chatConsole.innerHTML = apollo.client.util.ui.linkify(apollo.client.util.ui.sanitize(message));
+    for(var i = 0; i < lines.length; ++i)
+    {
+        var row = dojo.create("tr", null, "chatLog");
 
-    dojo.place(chatConsole, row);
+        var chatConsole = dojo.create("td");
+        dojo.addClass(chatConsole, "chatConsole");
+        chatConsole.innerHTML = apollo.client.util.ui.linkify(apollo.client.util.ui.sanitize(lines[i]));
 
-    // do scroll
-    var chatPane = dojo.byId("chatPane");
-    chatPane.scrollTop = chatPane.scrollHeight;
+        dojo.place(chatConsole, row);
+
+        // do scroll
+        var chatPane = dojo.byId("chatPane");
+        chatPane.scrollTop = chatPane.scrollHeight;
+    }
 };
 
 apollo.client.util.ui.setUserData = function(name, level, profession, hp, ap, xp)
