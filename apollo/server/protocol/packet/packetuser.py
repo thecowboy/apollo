@@ -78,6 +78,11 @@ class PacketUser(Packet):
                 transport.sendEvent(PacketError(severity=WARN, msg="User not found."))
                 return
 
+        if not user.online:
+            # lie about it and pretend the user doesn't exist
+            transport.sendEvent(PacketError(severity=WARN, msg="User not found."))
+            return
+
         profession = meta.session.get(Profession, user.profession_id)
 
         tile = meta.session.get(Tile, user.location_id)
