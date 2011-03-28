@@ -53,7 +53,7 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
                 // start the comet loop again (if we want to)
                 if(!this.shutdowned)
                 {
-                    dojo.hitch(this, this.eventComet);
+                    this.eventComet();
                 }
             }),
             error       : function(e)
