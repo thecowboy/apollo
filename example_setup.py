@@ -37,7 +37,7 @@ print "Generating terrain information..."
 
 terrains = [
     Terrain(name="Grass", img="grass"),
-    Terrain(name="Rocks", img="rocks")
+    Terrain(name="Unknown", img="unknown")
 ]
 
 # create realm

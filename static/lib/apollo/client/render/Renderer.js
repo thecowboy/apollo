@@ -32,7 +32,6 @@ var TILE_HEIGHT = 32;
 var TILE_WIDTH = 64;
 
 var CHUNK_HEIGHT = CHUNK_STRIDE * TILE_HEIGHT;
-var CHUNK_MAXHEIGHT = CHUNK_HEIGHT + TILE_HEIGHT;
 var CHUNK_WIDTH = CHUNK_STRIDE * TILE_WIDTH;
 
 dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
@@ -41,7 +40,6 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
     TILE_WIDTH : TILE_WIDTH,
 
     CHUNK_HEIGHT : CHUNK_HEIGHT,
-    CHUNK_MAXHEIGHT : CHUNK_MAXHEIGHT,
     CHUNK_WIDTH : CHUNK_WIDTH,
 
     constructor : function(core)
@@ -97,13 +95,15 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
 
         // realpos
         //
-        // XXX: why are the numbers -6 and 2 required ? probably something wrong
+        // XXX: why are the numbers 5 and -3 required ? probably something wrong
         //      with my math :(
         //
         realpos = {
-            x : isocoords.x - 6 + pos.x,
-            y : isocoords.y + 2 + pos.y
+            x : isocoords.x - 5 + pos.x,
+            y : isocoords.y + 3 + pos.y
         }
+
+        console.log(realpos.x + ", " + realpos.y);
 
         // don't allow clicking outside the map
         if(
@@ -158,7 +158,7 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
                 // cull chunks that lie outside of screen space (second pass)
                 if(
                     tcoords.x < -this.CHUNK_WIDTH || tcoords.x > this.canvas.width ||
-                    tcoords.y < -this.CHUNK_MAXHEIGHT || tcoords.y > this.canvas.height
+                    tcoords.y < -this.CHUNK_HEIGHT || tcoords.y > this.canvas.height
                 ) continue;
 
                 var img = this.chunkCache[cx + "." + cy];

@@ -74,13 +74,12 @@ class Renderer(object):
 
         CHUNK_WIDTH = CHUNK_STRIDE * TILE_WIDTH
         CHUNK_HEIGHT = CHUNK_STRIDE * TILE_HEIGHT
-        CHUNK_MAXHEIGHT = (CHUNK_STRIDE + 1) * TILE_HEIGHT
 
         chunk_img = Image.new(
             "RGBA",
             (
                 CHUNK_WIDTH,
-                CHUNK_MAXHEIGHT
+                CHUNK_HEIGHT
             ),
             (0, 0, 0, 0)
         )
