@@ -53,7 +53,7 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
                 // start the comet loop again (if we want to)
                 if(!this.shutdowned)
                 {
-                    setTimeout(dojo.hitch(this, this.eventComet), 100);
+                    dojo.hitch(this, this.eventComet);
                 }
             }),
             error       : function(e)
@@ -101,6 +101,11 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
 
                 this.core.ready();
                 this.startHeartbeat();
+
+                // start 4 event comet streams
+                this.eventComet();
+                this.eventComet();
+                this.eventComet();
                 this.eventComet();
             }),
             error       : function(e)

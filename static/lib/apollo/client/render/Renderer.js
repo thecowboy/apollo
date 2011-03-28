@@ -103,9 +103,7 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
             y : isocoords.y + 3 + pos.y
         }
 
-        console.log(realpos.x + ", " + realpos.y);
-
-        // don't allow clicking outside the map
+        // don't allow clicking outside the map (server will eat this anyway)
         if(
             realpos.x < 0 || realpos.x >= size.cw * this.CHUNK_STRIDE ||
             realpos.y < 0 || realpos.y >= size.ch * this.CHUNK_STRIDE

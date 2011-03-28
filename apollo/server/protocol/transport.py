@@ -48,7 +48,7 @@ class Transport(Component):
 
     def __init__(self, core, bound_handler=None):
         super(Transport, self).__init__(core)
-        self.bound_handler = bound_handler
+        self.bound_handlers = []
 
         session = Session()
         self.token = session.token
@@ -73,7 +73,7 @@ class Transport(Component):
             * ``bind``
               Handler to bind.
         """
-        self.bound_handler = bind
+        self.bound_handlers.append(bind)
         logging.debug("Binding %s: %s" % (self, bind))
         to_send = self.intermedq[:]
         self.intermedq = []
@@ -89,17 +89,16 @@ class Transport(Component):
             * ``packet``
               Packet to send.
         """
-        if self.bound_handler is None:
+        if not self.bound_handlers:
             logging.debug("Packet placed on intermediate queue: %s" % packet)
             logging.debug(self.core.connections)
             self.intermedq.append(packet)
             return
 
+        # pop a handler and use that
+        handler = self.bound_handlers.pop()
         logging.debug("Sending packet: %s" % packet)
-        self.bound_handler.finish(packet.dump())
-
-        # unbind immediately
-        self.bound_handler = None
+        handler.finish(packet.dump())
 
     def session(self):
         """
@@ -141,7 +140,8 @@ class Transport(Component):
         self.core.loseTransport(self.token)
 
     def __repr__(self):
+        num_handlers = len(self.bound_handlers)
         return "<Transport (%s): %s>" % (
-            self.bound_handler is None and "unbound" or "bound",
+            num_handlers and ("bound to %d streams" % num_handlers) or "unbound",
             self.token
         )
