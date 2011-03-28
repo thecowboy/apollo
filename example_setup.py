@@ -1,6 +1,5 @@
 import sys
 import logging
-
 import random
 
 from apollo.server import skeletonSetup
@@ -42,8 +41,8 @@ if __name__ == "__main__":
     realm = Realm(
         name="Best Realm Ever",
         size={
-            "cw" : 20,
-            "ch" : 20
+            "cw" : 10,
+            "ch" : 10
         }
     )
 
@@ -83,14 +82,13 @@ if __name__ == "__main__":
                     num_tiles += 1
 
                     if not num_tiles % 1000:
-                        meta.session.flush_all()
                         print "Generated tiles: %d/%d\r" % (num_tiles, MAX_TILES),
                         sys.stdout.flush()
 
                     if x == SPAWN_X and y == SPAWN_Y:
                         spawntile = tile
 
-    print "Generated tiles: %d/%d" % (num_tiles, num_tiles)
+    print "Generated tiles: %d/%d, flushing to database..." % (num_tiles, num_tiles)
     meta.session.flush_all()
 
     print "Rendering chunks..."
