@@ -22,6 +22,9 @@
 
 from apollo.server.protocol.packet import Packet
 
+WARN = 0
+ERROR = 1
+
 class PacketError(Packet):
     """
     Inform the client an error has occured.
@@ -34,11 +37,9 @@ class PacketError(Packet):
            Error message.
 
          * ``severity``
-           Severity of the error -- PacketError.WARN to emit only a console
-           message and PacketError.ERROR to close the client connection.
+           Severity of the error -- ``WARN`` to emit only a console message and
+           ``ERROR`` to close the client connection.
     """
 
     name = "error"
 
-    WARN = 0
-    ERROR = 1

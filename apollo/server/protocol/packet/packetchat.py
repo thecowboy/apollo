@@ -24,7 +24,7 @@ from apollo.server.models import meta
 from apollo.server.models.auth import User
 
 from apollo.server.protocol.packet import Packet
-from apollo.server.protocol.packet.packeterror import PacketError
+from apollo.server.protocol.packet.packeterror import PacketError, WARN
 
 from apollo.server.util.decorators import requireAuthentication
 
@@ -54,11 +54,11 @@ class PacketChat(Packet):
             try:
                 user = User.getUserByName(self.target)
             except ValueError:
-                transport.sendEvent(PacketError(severity=PacketError.WARN, msg="User does not exist."))
+                transport.sendEvent(PacketError(severity=WARN, msg="User does not exist."))
                 return
 
             if not user.online:
-                transport.sendEvent(PacketError(severity=PacketError.WARN, msg="User is not online."))
+                transport.sendEvent(PacketError(severity=WARN, msg="User is not online."))
                 return
 
             core.bus.broadcast("user.%s" % user._id, PacketChat(

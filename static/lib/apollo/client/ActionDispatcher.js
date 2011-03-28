@@ -35,6 +35,7 @@ dojo.require("apollo.client.command.KickCommand");
 dojo.require("apollo.client.command.LogoutCommand");
 dojo.require("apollo.client.command.WhisperCommand");
 dojo.require("apollo.client.command.OnlineCommand");
+dojo.require("apollo.client.command.TeleportCommand");
 
 dojo.declare("apollo.client.ActionDispatcher", null, {
     constructor : function(transport)
@@ -94,6 +95,10 @@ dojo.declare("apollo.client.ActionDispatcher", null, {
                     case "list":
                     case "online":
                         command = new apollo.client.command.OnlineCommand();
+                        break;
+                    case "teleport":
+                    case "tp":
+                        command = new apollo.client.command.TeleportCommand();
                         break;
                     default:
                         apollo.client.util.ui.addConsoleMessage("Command not recognized.");

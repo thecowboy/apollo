@@ -31,7 +31,13 @@ from ming.datastore import DataStore
 
 from apollo.server.models.meta import bindSession
 
-from tornado.options import define, options
+from tornado.options import define, options, parse_config_file, parse_command_line
+
+def skeletonSetup():
+    setupOptions()
+    parse_config_file("apollod.conf")
+    parse_command_line()
+    setupDBSession()
 
 def setupOptions():
     """

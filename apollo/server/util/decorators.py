@@ -24,7 +24,7 @@
 Apollo server authorization and authentication decorators.
 """
 
-from apollo.server.protocol.packet.packeterror import PacketError
+from apollo.server.protocol.packet.packeterror import PacketError, WARN
 
 def requirePermission(permission):
     """
@@ -39,7 +39,7 @@ def requirePermission(permission):
             if transport.session().getUser().hasPermission(permission):
                 fn(self, transport, core)
             else:
-                transport.sendEvent(PacketError(severity=PacketError.WARN, msg="Not permitted to perform action."))
+                transport.sendEvent(PacketError(severity=WARN, msg="Not permitted to perform action."))
         return _closure
     return _decorator
 

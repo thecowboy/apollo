@@ -23,8 +23,7 @@
 from apollo.server.models.auth import User
 
 from apollo.server.protocol.packet import Packet
-from apollo.server.protocol.packet.packeterror import PacketError
-from apollo.server.protocol.packet.packetlogout import PacketLogout
+from apollo.server.protocol.packet.packeterror import PacketError, WARN
 
 from apollo.server.util.decorators import requirePermission, requireAuthentication
 
@@ -50,11 +49,11 @@ class PacketKick(Packet):
         try:
             user = User.getUserByName(self.target)
         except ValueError:
-            transport.sendEvent(PacketError(severity=PacketError.WARN, msg="User does not exist."))
+            transport.sendEvent(PacketError(severity=WARN, msg="User does not exist."))
             return
 
         if not user.online:
-            transport.sendEvent(PacketError(severity=PacketError.WARN, msg="User is not online."))
+            transport.sendEvent(PacketError(severity=WARN, msg="User is not online."))
             return
 
         self.msg = self.msg or "(no reason given)"

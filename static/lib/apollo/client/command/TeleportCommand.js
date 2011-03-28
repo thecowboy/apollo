@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 by Ryan Lewis
+ * Copyright (C) 2011 by Tony Young
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,31 +20,31 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.command.WhisperCommand");
+dojo.provide("apollo.client.command.TeleportCommand");
 
-dojo.require("apollo.client.protocol.packet.PacketChat");
+dojo.require("apollo.client.protocol.packet.PacketMove");
 
 dojo.require("apollo.client.util.ui");
 
 dojo.require("apollo.client.command.Command");
 
-dojo.declare("apollo.client.command.WhisperCommand", apollo.client.command.Command, {
-    execute : function(transport, user)
+dojo.declare("apollo.client.command.TeleportCommand", apollo.client.command.Command, {
+    execute : function(transport, x, y)
     {
-        var rest = Array.prototype.splice.call(arguments, 1);
-        if (rest.length < 1)
+        if (x === undefined || y === undefined)
         {
             apollo.client.util.ui.addConsoleMessage("Incorrect number of arguments.");
             return;
         }
-        transport.sendAction(new apollo.client.protocol.packet.PacketChat({
-            target : rest[0],
-            msg    : rest.slice(1).join(" ")
+
+        transport.sendAction(new apollo.client.protocol.packet.PacketMove({
+            x : Number(x),
+            y : Number(y)
         }));
     },
 
     describe : function()
     {
-        apollo.client.util.ui.addConsoleMessage("/whisper user message - Sends a private message to user");
+        apollo.client.util.ui.addConsoleMessage("/teleport x y - Teleport to a given position");
     }
 });
