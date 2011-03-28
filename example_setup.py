@@ -26,7 +26,9 @@ setupDBSession()
 
 # clear out the old database (while breaking many, many layers of encapsulation)
 meta.session.get(User, "") # connect to the database
-meta.session.impl.bind.bind._conn.drop_database(meta.session.impl.bind.database)
+conn = meta.session.impl.bind.bind._conn
+conn.drop_database(meta.session.impl.bind.database)
+db = conn[meta.session.impl.bind.database]
 
 # set spawn
 SPAWN_X = 0
@@ -55,6 +57,9 @@ meta.session.flush_all()
 print "Generating realm..."
 
 MAX_TILES = realm.size.cw * CHUNK_STRIDE * realm.size.ch * CHUNK_STRIDE 
+
+db.chunk.create_index([ ("location.cx", 1), ("location.cy", 1) ], unique=True)
+db.tile.create_index([ ("location.rx", 1), ("location.ry", 1) ])
 
 num_tiles = 0
 for cx in xrange(0, realm.size.cw):
@@ -121,6 +126,8 @@ admins = Group(
 )
 
 # create users
+db.user.create_index([ ("name", 1) ], unique=True)
+
 user = User(
     name="rfw",
     group_id=admins._id,
