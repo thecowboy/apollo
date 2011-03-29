@@ -22,7 +22,7 @@
 
 from hashlib import sha256
 
-from apollo.server.protocol.packet import Packet
+from apollo.server.protocol.packet import Packet, ORIGIN_WEB, ORIGIN_CROSS
 
 from apollo.server.models import meta
 from apollo.server.models.auth import User
@@ -50,33 +50,36 @@ class PacketLogin(Packet):
     """
     name = "login"
 
-    def dispatch(self, transport, core):
+    def _dispatch_web(self, transport, core):
+        # stage 1 - perform credential checking
         try:
             user = User.getUserByName(self.username)
         except ValueError:
-            transport.sendEvent(PacketLogout())
+            transport.sendEvent(PacketLogout()) # nope, you don't even exist
             return
 
         if self.pwhash != sha256(self.nonce + sha256(user.pwhash + transport.nonce).hexdigest()).hexdigest():
-            transport.sendEvent(PacketLogout())
+            transport.sendEvent(PacketLogout()) # nope, your hash is incorrect
             return
 
+        # set all the sessions and stuff
         session = transport.session()
         session.user_id = user._id
         meta.session.save(session)
         meta.session.flush()
 
-        transport.sendEvent(PacketLogin())
+        # logout existing users
+        core.bus.broadcast("cross.%s" % user._id, PacketLogout(msg="Coexistence not permitted"))
 
-        # HACK: broadcasting to a cross channel does not work, as it will send
-        #       the logout packet after the login packet!
-        #
-        #       if anyone has a better idea tell me :(
-        for connection in core.connections.values():
-            if connection.session().user_id == user._id and connection is not transport:
-                connection.shutdown("Coexistence not permitted")
-
+        # kick off stage 2
         transport.consume()
+        core.bus.broadcast("cross.%s" % user._id, PacketLogin())
+
+    def _dispatch_cross(self, transport, core):
+        # stage 2 - perform authentication
+        user = transport.session().getUser()
+
+        transport.sendEvent(PacketLogin())
 
         core.bus.broadcast("user.*", PacketLogin(username=user.name))
 
@@ -84,4 +87,10 @@ class PacketLogin(Packet):
         core.bus.broadcast("cross.loc.%s" % user.location_id, PacketInfo())
 
         user.online = True
-        meta.session.flush_all()
+        meta.session.flush()
+
+    def dispatch(self, transport, core):
+        if self._origin == ORIGIN_WEB:
+            self._dispatch_web(transport, core)
+        elif self._origin == ORIGIN_CROSS:
+            self._dispatch_cross(transport, core)

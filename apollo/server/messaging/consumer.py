@@ -60,7 +60,7 @@ class Consumer(object):
         self.subscribe("cross.loc.%s" % user.location_id)
         self.subscribe("user.loc.%s" % user.location_id)
 
-        logging.debug("Created subscriber")
+        logging.debug("Created subscriber for %s" % user._id)
 
         IOLoop.instance().add_handler(self.subscriber, lambda *args: self.on_message(self.subscriber), zmq.POLLIN)
 
@@ -90,11 +90,11 @@ class Consumer(object):
         logging.debug("Got raw message: %s" % message)
 
         prefix, payload = message.split(":", 1)
-        prefixparts = prefix.split(".")
+        prefix_parts = prefix.split(".")
 
-        if prefixparts[0] == "cross":
+        if prefix_parts[0] == "cross":
             self.on_cross_message(payload)
-        elif prefixparts[0] == "user":
+        elif prefix_parts[0] == "user":
             self.on_user_message(payload)
 
     def on_cross_message(self, message):
@@ -105,7 +105,7 @@ class Consumer(object):
              * ``message``
                 Message body.
         """
-        logging.debug("Sending cross message packet: %s" % message)
+        logging.debug("Dispatching cross message packet: %s" % message)
         packet = deserializePacket(message)
         packet._origin = ORIGIN_CROSS
         packet.dispatch(self.transport, self.transport.core)
