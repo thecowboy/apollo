@@ -17,38 +17,14 @@ Models
 ------
 The following models exist:
 
-.. automodule:: apollo.server.models.chunk
+.. automodule:: apollo.server.models.auth
    :members:
    :undoc-members:
 
-.. automodule:: apollo.server.models.entity
+.. automodule:: apollo.server.models.geography
    :members:
    :undoc-members:
 
-.. automodule:: apollo.server.models.group
-   :members:
-   :undoc-members:
-
-.. automodule:: apollo.server.models.profession
-   :members:
-   :undoc-members:
-
-.. automodule:: apollo.server.models.realm
-   :members:
-   :undoc-members:
-
-.. automodule:: apollo.server.models.session
-   :members:
-   :undoc-members:
-
-.. automodule:: apollo.server.models.terrain
-   :members:
-   :undoc-members:
-
-.. automodule:: apollo.server.models.tile
-   :members:
-   :undoc-members:
-
-.. automodule:: apollo.server.models.user
+.. automodule:: apollo.server.models.rpg
    :members:
    :undoc-members:

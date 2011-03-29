@@ -181,7 +181,7 @@ htmlhelp_basename = 'Apollodoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'apollo.tex', u'Apollo Documentation',
-   u'Tony Young', 'manual'),
+   u'Tony Young, Ryan Lewis', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -214,5 +214,5 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'apollo', u'Apollo Documentation',
-     [u'Tony Young'], 1)
+     [u'Tony Young, Ryan Lewis'], 1)
 ]
