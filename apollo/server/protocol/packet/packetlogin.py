@@ -69,7 +69,12 @@ class PacketLogin(Packet):
         meta.session.flush()
 
         # logout existing users
-        core.bus.broadcast("cross.%s" % user._id, PacketLogout(msg="Coexistence not permitted"))
+        if user.online:
+            core.bus.broadcast("cross.%s" % user._id, PacketLogout(msg="Coexistence not permitted"))
+
+            # in case this is a stale client, we can set it forcibly to offline
+            user.online = False
+            meta.session.flush()
 
         # kick off stage 2
         transport.consume()
