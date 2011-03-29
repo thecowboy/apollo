@@ -61,42 +61,46 @@ def render(chunk_id):
          * ``chunk_id``
            The ID of the chunk.
     """
-    img_cache = {}
+    try:
+        img_cache = {}
 
-    CHUNK_WIDTH = CHUNK_STRIDE * TILE_WIDTH
-    CHUNK_HEIGHT = CHUNK_STRIDE * TILE_HEIGHT
+        CHUNK_WIDTH = CHUNK_STRIDE * TILE_WIDTH
+        CHUNK_HEIGHT = CHUNK_STRIDE * TILE_HEIGHT
 
-    chunk_img = Image.new(
-        "RGBA",
-        (
-            CHUNK_WIDTH,
-            CHUNK_HEIGHT
-        ),
-        (0, 0, 0, 0)
-    )
-
-    chunk = meta.session.get(Chunk, chunk_id)
-    logging.info("Rendering chunk at (%d, %d)" % (chunk.location.cx, chunk.location.cy))
-
-    for tile in meta.session.find(Tile, { "chunk_id" : chunk._id }).sort([ ("location.rx", 1), ("location.ry", 1) ]):
-        terrain = meta.session.get(Terrain, tile.terrain_id)
-        tx, ty = isometricTransform(tile.location.rx, tile.location.ry)
-
-        if terrain.img not in img_cache:
-            img_cache[terrain.img] = Image.open(os.path.join(STATIC_TILE_PATH, "%s.png" % terrain.img))
-        tile_img = img_cache[terrain.img]
-        chunk_img.paste(
-            tile_img,
+        chunk_img = Image.new(
+            "RGBA",
             (
-                int(round(tx * TILE_WIDTH + CHUNK_WIDTH / 2 - TILE_WIDTH / 2)),
-                int(round(ty * TILE_HEIGHT))
+                CHUNK_WIDTH,
+                CHUNK_HEIGHT
             ),
-            tile_img
+            (0, 0, 0, 0)
         )
 
-    chunk_img.save(os.path.join(STATIC_CHUNK_PATH, "%d.%d.png" % (chunk.location.cx, chunk.location.cy)))
-    chunk.fresh = True
-    meta.session.save(chunk)
+        chunk = meta.session.get(Chunk, chunk_id)
+
+        for tile in meta.session.find(Tile, { "chunk_id" : chunk._id }).sort([ ("location.rx", 1), ("location.ry", 1) ]):
+            terrain = meta.session.get(Terrain, tile.terrain_id)
+            tx, ty = isometricTransform(tile.location.rx, tile.location.ry)
+
+            if terrain.img not in img_cache:
+                img_cache[terrain.img] = Image.open(os.path.join(STATIC_TILE_PATH, "%s.png" % terrain.img))
+            tile_img = img_cache[terrain.img]
+            chunk_img.paste(
+                tile_img,
+                (
+                    int(round(tx * TILE_WIDTH + CHUNK_WIDTH / 2 - TILE_WIDTH / 2)),
+                    int(round(ty * TILE_HEIGHT))
+                ),
+                tile_img
+            )
+
+        chunk_img.save(os.path.join(STATIC_CHUNK_PATH, "%d.%d.png" % (chunk.location.cx, chunk.location.cy)))
+        chunk.fresh = True
+        meta.session.save(chunk)
+
+        logging.info("Rendered chunk at (%d, %d)" % (chunk.location.cx, chunk.location.cy))
+    except Exception, e:
+        logging.error("Got exception: %s: %s" % (e.__class__.__name__, e))
 
 class RendererSupervisor(object):
     def go(self):

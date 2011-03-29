@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     terrains = [
         Terrain(name="Grass", img="grass"),
-        Terrain(name="Unknown", img="unknown")
+        Terrain(name="Sand", img="sand")
     ]
 
     # create realm
