@@ -73,6 +73,10 @@ class Core(Application):
 
         self.bus = Bus(self)
 
+    def go(self):
+        """
+        Start the server proper.
+        """
         self.cron = CronScheduler(self)
         self.cron.go()
 

@@ -26,7 +26,7 @@ from tornado.options import parse_command_line, parse_config_file, options
 
 from zmq.eventloop.ioloop import IOLoop
 
-from apollo.server import setupOptions, setupDBSession
+from apollo.server import setupOptions
 from apollo.server.core import Core
 
 if __name__ == "__main__":
@@ -35,7 +35,9 @@ if __name__ == "__main__":
     parse_command_line()
 
     io_loop = IOLoop.instance()
-    server = HTTPServer(Core(), io_loop=io_loop)
+    core = Core()
+    server = HTTPServer(core, io_loop=io_loop)
     server.bind(options.port, options.address)
     server.start()
+    core.go()
     io_loop.start()
