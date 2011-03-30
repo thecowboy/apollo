@@ -33,7 +33,6 @@ from tornado.web import Application
 
 from apollo.server import setupDBSession
 
-from apollo.server.protocol.transport import Transport
 from apollo.server.render.supervisor import RendererSupervisor
 from apollo.server.web import FrontendHandler, SessionHandler, ActionHandler, EventsHandler, DylibHandler
 from apollo.server.cron import CronScheduler
@@ -82,34 +81,3 @@ class Core(Application):
 
         self.rendervisor = RendererSupervisor()
         self.rendervisor.go()
-
-    # transport related stuff
-    def createTransport(self):
-        """
-        Create a transport and register it.
-        """
-        transport = Transport(self)
-        self.connections[transport.token] = transport
-        return transport
-
-    def getTransport(self, token):
-        """
-        Get a transport by its unique session token.
-
-        :Parameters:
-            * ``token``
-              Unique token that identifies a transport.
-        """
-        return self.connections[token]
-
-    def loseTransport(self, token):
-        """
-        Forget a transport.
-
-        :Parameters:
-            * ``token``
-              Unique token that identifies a transport.
-        """
-        del self.connections[token]
-
-        logging.info("Lost transport: %s" % token)

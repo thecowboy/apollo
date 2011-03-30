@@ -25,7 +25,14 @@ import urlparse
 
 from tornado.options import options
 
+from pymongo.objectid import ObjectId
+
 import zmq
+from zmq.eventloop.ioloop import IOLoop
+
+from apollo.server.protocol.packet import deserializePacket
+from apollo.server.models import Meta
+from apollo.server.models.auth import FakeSession, User
 
 class Bus(object):
     """
@@ -41,6 +48,16 @@ class Bus(object):
             "",
             ""
         )))
+        self.consumer = self.zmqctx.socket(zmq.SUB)
+        self.consumer.bind(urlparse.urlunsplit((
+            options.zmq_transport,
+            options.zmq_host,
+            "",
+            "",
+            ""
+        )))
+        self.consumer.setsockopt(zmq.SUBSCRIBE, "inter")
+        IOLoop.instance().add_handler(self.consumer, lambda *args: self.on_inter_message(self.consumer), zmq.POLLIN)
 
     def broadcast(self, dest, packet):
         """
@@ -56,3 +73,18 @@ class Bus(object):
         """
         logging.debug("Sending to %s: %s" % (dest, packet.dump()))
         self.publisher.send("%s:%s" % (dest, packet.dump()))
+
+    def on_inter_message(self, socket):
+        """
+        Process an "inter" message.
+        """
+        message = socket.recv()
+        prefix, payload = message.split(":", 1)
+        prefixparts = prefix.split(".")
+        packet = deserializePacket(payload)
+
+        if prefixparts[1] == "user":
+            packet.dispatch(self.core, FakeSession(prefixparts[2]))
+        elif prefixparts[1] == "loc":
+            for user in meta.session.find(User, { "location_id" : ObjectId(prefixparts[2]) }):
+                packet.dispatch(self.core, FakeSession(user._id))

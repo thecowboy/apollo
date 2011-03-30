@@ -20,9 +20,11 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.protocol.packet import Packet, ORIGIN_CROSS
+from apollo.server.protocol.packet import Packet, ORIGIN_INTER
 
 from apollo.server.util.decorators import requireAuthentication
+
+from apollo.server.models import meta
 
 class PacketLogout(Packet):
     """
@@ -39,9 +41,26 @@ class PacketLogout(Packet):
     name = "logout"
 
     @requireAuthentication
-    def dispatch(self, transport, core):
-        if self._origin == ORIGIN_CROSS:
+    def dispatch(self, core, session):
+        if self._origin == ORIGIN_INTER:
             msg = self.msg or "Reason unknown"
         else:
             msg ="User logout: " + (self.msg or "(no reason given)")
-        transport.shutdown(msg)
+
+        user = session.getUser()
+
+        if user is not None:
+            # tell user logout was successful
+            core.bus.broadcast("ex.user.%s" % user._id, PacketLogout(msg=msg))
+
+            # broadcast the logout
+            core.bus.broadcast("ex.user.*", PacketLogout(username=user.name, msg=msg))
+
+            # unset online
+            user.online = False
+
+            # send packetinfo to relevant people
+            core.bus.broadcast("inter.loc.%s" % user.location_id, PacketInfo())
+
+            # delete the session
+            meta.session.remove(session._id)

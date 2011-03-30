@@ -31,11 +31,12 @@ import logging
 from tornado.options import options
 from tornado.web import RequestHandler, asynchronous, HTTPError
 
+from apollo.server.messaging.consumer import Consumer
+
 from apollo.server.models import meta
 from apollo.server.models.auth import Session
 
-from apollo.server.protocol.transport import Transport
-from apollo.server.protocol.packet import ORIGIN_WEB
+from apollo.server.protocol.packet import ORIGIN_EX
 from apollo.server.protocol.packet.meta import deserializePacket
 from apollo.server.protocol.packet.packeterror import PacketError
 
@@ -58,12 +59,14 @@ class SessionHandler(RequestHandler):
     def get(self, *args, **kwargs):
         self.set_header("Content-Type", "application/json")
 
-        transport = self.application.createTransport()
-        logging.info("Acquired session: %s" % transport.token)
+        session = Session()
+        meta.session.save(session)
+        meta.session.flush()
+
+        logging.info("Acquired session: %s" % session.token)
 
         self.write(json.dumps({
-            "s" :   transport.token,
-            "n":    transport.nonce
+            "s" :   session.token
         }))
 
 class ActionHandler(RequestHandler):
@@ -79,17 +82,12 @@ class ActionHandler(RequestHandler):
         payload = self.get_argument("p")
 
         try:
-            transport = self.application.getTransport(token)
-        except KeyError:
-            raise HTTPError(500)
-
-        try:
             packet = deserializePacket(payload)
-            packet._origin = ORIGIN_WEB
+            packet._origin = ORIGIN_EX
         except ValueError:
-            transport.sendEvent(PacketError(msg="bad packet payload"))
+            self.application.bus.broadcast("ex.session.%s" % token, PacketError(msg="bad packet payload"))
         else:
-            packet.dispatch(transport, self.application)
+            packet.dispatch(self.application, meta.session.get(Session, token))
 
         self.finish()
 
@@ -101,22 +99,18 @@ class EventsHandler(RequestHandler):
     SUPPORTED_METHODS = ("GET",)
 
     def on_connection_close(self):
-        if self.transport:
-            self.transport.shutdown()
+        session = meta.session.get(Session, self.token)
+        user = session.getUser()
+        if user:
+            self.application.bus.broadcast("ex.user.*", PacketLogout(username=user.name))
 
     @asynchronous
     def get(self, *args, **kwargs):
         self.set_header("Content-Type", "application/json")
 
-        token = self.get_argument("s")
+        self.token = self.get_argument("s")
 
-        try:
-            transport = self.application.getTransport(token)
-        except KeyError:
-            self.finish(json.dumps(PacketError(msg="bad session").dump()))
-        else:
-            transport.bind(self)
-            self.transport = transport
+        Consumer(self).eat()
 
 class DylibHandler(RequestHandler):
     """

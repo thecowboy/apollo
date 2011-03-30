@@ -45,36 +45,38 @@ class PacketChat(Packet):
     name = "chat"
 
     @requireAuthentication
-    def dispatch(self, transport, core):
+    def dispatch(self, core, session):
         if not self.msg.strip(): return
 
-        origin = transport.session().getUser()
+        origin = session.getUser()
 
         if self.target:
             try:
                 user = User.getUserByName(self.target)
             except ValueError:
-                transport.sendEvent(PacketError(severity=SEVERITY_WARN, msg="User does not exist."))
+                core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User does not exist."))
                 return
 
             if not user.online:
-                transport.sendEvent(PacketError(severity=SEVERITY_WARN, msg="User is not online."))
+                core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User is not online."))
                 return
 
-            core.bus.broadcast("user.%s" % user._id, PacketChat(
+            # send packet to target
+            core.bus.broadcast("ex.user.%s" % user._id, PacketChat(
                 origin=origin.name,
                 target=self.target,
                 msg=self.msg
             ))
 
-            transport.sendEvent(PacketChat(
+            # send packet to origin
+            core.bus.broadcast("ex.user.%s" % origin._id, PacketChat(
                 origin=origin.name,
                 target=self.target,
                 msg=self.msg
             ))
             return
 
-        core.bus.broadcast("user.*", PacketChat(
+        core.bus.broadcast("ex.user.*", PacketChat(
             origin=origin.name,
             msg=self.msg
         ))

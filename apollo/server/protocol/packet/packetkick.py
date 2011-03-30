@@ -22,7 +22,7 @@
 
 from apollo.server.models.auth import User
 
-from apollo.server.protocol.packet import Packet
+from apollo.server.protocol.packet import Packet, interWrap
 from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
 from apollo.server.protocol.packet.packetlogout import PacketLogout
 
@@ -46,17 +46,18 @@ class PacketKick(Packet):
 
     @requirePermission("moderator.kick")
     @requireAuthentication
-    def dispatch(self, transport, core):
+    def dispatch(self, core, session):
+        user = session.getUser()
         try:
-            user = User.getUserByName(self.target)
+            targetUser = User.getUserByName(self.target)
         except ValueError:
-            transport.sendEvent(PacketError(severity=SEVERITY_WARN, msg="User does not exist."))
+            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User does not exist."))
             return
 
         if not user.online:
-            transport.sendEvent(PacketError(severity=SEVERITY_WARN, msg="User is not online."))
+            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User is not online."))
             return
 
         self.msg = self.msg or "(no reason given)"
 
-        core.bus.broadcast("cross.%s" % user._id, PacketLogout(msg="Kicked by server: %s" % self.msg))
+        core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Kicked by server: %s" % self.msg))

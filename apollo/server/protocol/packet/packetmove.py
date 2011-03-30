@@ -52,8 +52,8 @@ class PacketMove(Packet):
     name = "move"
 
     @requireAuthentication
-    def dispatch(self, transport, core):
-        user = transport.session().getUser()
+    def dispatch(self, core, session):
+        user = session.getUser()
 
         # get the tile the user wants to move to
         ccoords, rcoords = absolve(self.x, self.y, CHUNK_STRIDE)
@@ -62,25 +62,19 @@ class PacketMove(Packet):
         try:
             chunk = meta.session.find(Chunk, { "location" : { "cx" : ccoords[0], "cy" : ccoords[1] } }).one()
         except ValueError:
-            transport.sendEvent(PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
+            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
             return
 
         # find the tile
         try:
             tile = meta.session.find(Tile, { "location" : { "rx" : rcoords[0], "ry" : rcoords[1] }, "chunk_id" : chunk._id }).one()
         except ValueError:
-            transport.sendEvent(PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
+            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
             return
-
-        old_loc = user.location_id
-        transport.consumer.unsubscribe("cross.loc.%s" % old_loc)
-
-        user.location_id = tile._id
-        transport.consumer.subscribe("cross.loc.%s" % tile._id)
 
         meta.session.save(user)
         meta.session.flush_all()
 
         # some users may require additional info (including this one!)
-        core.bus.broadcast("cross.loc.%s" % tile._id, PacketInfo())
-        core.bus.broadcast("cross.loc.%s" % old_loc, PacketInfo())
+        core.bus.broadcast("inter.loc.%s" % tile._id, PacketInfo())
+        core.bus.broadcast("inter.loc.%s" % old_loc, PacketInfo())

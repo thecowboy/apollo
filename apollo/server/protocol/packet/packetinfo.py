@@ -54,8 +54,8 @@ class PacketInfo(Packet):
     name = "info"
 
     @requireAuthentication
-    def dispatch(self, transport, core):
-        user = transport.session().getUser()
+    def dispatch(self, core, session):
+        user = session.getUser()
 
         tile = meta.session.get(Tile, user.location_id)
 
@@ -82,7 +82,7 @@ class PacketInfo(Packet):
 
         acoords = dissolve(chunk.location.cx, chunk.location.cy, tile.location.rx, tile.location.ry, CHUNK_STRIDE)
 
-        transport.sendEvent(PacketInfo(
+        core.bus.broadcast("ex.user.%s" % user._id, PacketInfo(
             location={
                 "x"     : acoords[0],
                 "y"     : acoords[1],

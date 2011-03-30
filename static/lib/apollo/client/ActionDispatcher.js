@@ -57,7 +57,7 @@ dojo.declare("apollo.client.ActionDispatcher", null, {
                     apollo.client.util.sha256.sha256(
                         username.toLowerCase() + ":" + password
                     ) +
-                    this.transport.nonce
+                    this.transport.token
                 )
             ),
             nonce       : nonce

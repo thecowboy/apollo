@@ -22,8 +22,8 @@
 
 import json
 
-ORIGIN_WEB = 1
-ORIGIN_CROSS = 2
+ORIGIN_EX = 1
+ORIGIN_INTER = 2
 
 class Packet(object):
     """
@@ -32,17 +32,17 @@ class Packet(object):
     def __init__(self, **payload):
         self.__dict__.update(payload)
 
-    def dispatch(self, transport, core):
+    def dispatch(self, core, session):
         """
         Dispatch the packet. Can be decorated with decorators from
         ``apollo.server.util.decorators``.
 
         :Parameters:
-            * ``transport``
-              The transport processing the packet.
-
             * ``core``
               The Core object.
+
+            * ``session``
+              The session processing the packet.
         """
         pass
 

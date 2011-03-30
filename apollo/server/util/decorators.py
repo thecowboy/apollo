@@ -24,6 +24,8 @@
 Apollo server authorization and authentication decorators.
 """
 
+from functools import wraps
+
 from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
 
 def requirePermission(permission):
@@ -35,11 +37,13 @@ def requirePermission(permission):
           Permission required.
     """
     def _decorator(fn):
-        def _closure(self, transport, core):
-            if transport.session().getUser().hasPermission(permission):
-                fn(self, transport, core)
+        @wraps(fn)
+        def _closure(self, core, session):
+            user = session.getUser()
+            if user.hasPermission(permission):
+                fn(self, core, session)
             else:
-                transport.sendEvent(PacketError(severity=SEVERITY_WARN, msg="Not permitted to perform action."))
+                core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Not permitted to perform action."))
         return _closure
     return _decorator
 
@@ -47,11 +51,12 @@ def requireAuthentication(fn):
     """
     Dispatch the packet only if logged in.
     """
-    def _closure(self, transport, core):
+    @wraps(fn)
+    def _closure(self, core, session):
         try:
-            transport.session().getUser()
+            user = session.getUser()
         except ValueError:
-            transport.sendEvent(PacketError(msg="not authenticated"))
+            core.bus.broadcast("ex.session.%s" % session._id, PacketError(msg="not authenticated"))
         else:
-            fn(self, transport, core)
+            fn(self, core, session)
     return _closure

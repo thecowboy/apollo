@@ -41,5 +41,6 @@ class PacketOnline(Packet):
     name = "online"
 
     @requireAuthentication
-    def dispatch(self, transport, core):
-        transport.sendEvent(PacketOnline(users=[ user.name for user in meta.session.find(User, { "online" : True }) ]))
+    def dispatch(self, core, session):
+        session = session.getUser()
+        core.bus.broadcast("ex.user.%s" % user._id, PacketOnline(users=[ ruser.name for ruser in meta.session.find(User, { "online" : True }) ]))

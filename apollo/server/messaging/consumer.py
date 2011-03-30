@@ -21,7 +21,6 @@
 #
 
 import logging
-
 import urlparse
 import zmq
 
@@ -29,15 +28,17 @@ from zmq.eventloop.ioloop import IOLoop
 
 from tornado.options import options
 
-from apollo.server.protocol.packet import ORIGIN_CROSS
+from apollo.server.models import meta
+from apollo.server.models.session import Session
+
+from apollo.server.protocol.packet import ORIGIN_INTER
 from apollo.server.protocol.packet.meta import deserializePacket
 
 class Consumer(object):
-    def __init__(self, bus, transport):
-        self.bus = bus
-        self.transport = transport
+    def __init__(self, handler):
+        self.handler = handler
 
-        self.subscriber = self.bus.zmqctx.socket(zmq.SUB)
+        self.subscriber = handler.application.zmqctx.socket(zmq.SUB)
         self.subscriber.connect(urlparse.urlunsplit((
             options.zmq_transport,
             options.zmq_host,
@@ -46,23 +47,29 @@ class Consumer(object):
             ""
         )))
 
-        user = transport.session().getUser()
+        self.session = meta.session.find(Session, { "token" : handler.token }).one()
 
-        # subscribe to cross channel
-        self.subscribe("cross.*")
-        self.subscribe("cross.%s" % user._id)
-
-        # subscribe to user channel
-        self.subscribe("user.*")
-        self.subscribe("user.%s" % user._id)
-
-        # subscribe to location channels
-        self.subscribe("cross.loc.%s" % user.location_id)
-        self.subscribe("user.loc.%s" % user.location_id)
+        # subscribe to session channel
+        self.subscribe("ex.session.%s" % self.session._id)
 
         logging.debug("Created subscriber for %s" % user._id)
 
+    def eat(self):
+        """
+        Begin consuming events.
+        """
+        if self.session.user_id:
+            self.userSubscribe()
         IOLoop.instance().add_handler(self.subscriber, lambda *args: self.on_message(self.subscriber), zmq.POLLIN)
+
+    def userSubscribe(self):
+        """
+        Subscribe to the user specific channels.
+        """
+        user = self.session.getUser()
+        self.subscribe("ex.user.*")
+        self.subscribe("ex.user.%s" % user._id)
+        self.subscribe("ex.loc.%s" % user.location_id)
 
     def subscribe(self, channel):
         self.subscriber.setsockopt(zmq.SUBSCRIBE, channel)
@@ -74,8 +81,7 @@ class Consumer(object):
         """
         Shut down the consumer.
         """
-        logging.debug("Shutting down consumer for %s" % self.transport)
-        IOLoop.instance().remove_handler(self.subscriber)
+        logging.debug("Shutting down consumer for %s" % self.user)
         self.subscriber.close()
 
     def on_message(self, socket):
@@ -88,35 +94,7 @@ class Consumer(object):
         """
         message = socket.recv()
         logging.debug("Got raw message: %s" % message)
+        packet, payload = message.split(":", 1)
 
-        prefix, payload = message.split(":", 1)
-        prefix_parts = prefix.split(".")
-
-        if prefix_parts[0] == "cross":
-            self.on_cross_message(payload)
-        elif prefix_parts[0] == "user":
-            self.on_user_message(payload)
-
-    def on_cross_message(self, message):
-        """
-        Handle a cross-server message.
-
-        :Parameters:
-             * ``message``
-                Message body.
-        """
-        logging.debug("Dispatching cross message packet: %s" % message)
-        packet = deserializePacket(message)
-        packet._origin = ORIGIN_CROSS
-        packet.dispatch(self.transport, self.transport.core)
-
-    def on_user_message(self, message):
-        """
-        Handle a direct message.
-
-        :Parameters:
-             * ``message``
-                Message body.
-        """
         logging.debug("Sending user message packet: %s" % message)
-        self.transport.sendEvent(deserializePacket(message))
+        self.handler.finish(payload)

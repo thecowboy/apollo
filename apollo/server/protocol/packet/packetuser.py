@@ -68,19 +68,19 @@ class PacketUser(Packet):
     name = "user"
 
     @requireAuthentication
-    def dispatch(self, transport, core):
+    def dispatch(self, core, session):
         if self.target is None:
-            user = transport.session().getUser()
+            user = session.getUser()
         else:
             try:
                 user = meta.session.find(User, { "name" : self.target }).one()
             except ValueError:
-                transport.sendEvent(PacketError(severity=SEVERITY_WARN, msg="User not found."))
+                core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User not found."))
                 return
 
         if not user.online:
             # lie about it and pretend the user doesn't exist
-            transport.sendEvent(PacketError(severity=SEVERITY_WARN, msg="User not found."))
+            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User not found."))
             return
 
         profession = meta.session.get(Profession, user.profession_id)
@@ -109,4 +109,4 @@ class PacketUser(Packet):
         if self.target is not None:
             packet.target = user.name
 
-        transport.sendEvent(packet)
+        core.bus.broadcast("ex.user.%s" % user._id, packet)
