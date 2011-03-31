@@ -22,7 +22,7 @@
 
 from hashlib import sha256
 
-from apollo.server.protocol.packet import Packet, ORIGIN_EX, ORIGIN_INTER
+from apollo.server.protocol.packet import Packet
 
 from apollo.server.models import meta
 from apollo.server.models.auth import User

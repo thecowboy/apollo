@@ -55,6 +55,8 @@ class PacketMove(Packet):
     def dispatch(self, core, session):
         user = session.getUser()
 
+        old_loc = user.location_id
+
         # get the tile the user wants to move to
         ccoords, rcoords = absolve(self.x, self.y, CHUNK_STRIDE)
 
@@ -72,7 +74,7 @@ class PacketMove(Packet):
             core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
             return
 
-        old_loc = tile._id
+        user.location_id = tile._id
 
         meta.session.save(user)
         meta.session.flush_all()
