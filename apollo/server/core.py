@@ -79,5 +79,5 @@ class Core(Application):
         self.cron = CronScheduler(self)
         self.cron.go()
 
-        self.rendervisor = RendererSupervisor()
-        self.rendervisor.go()
+        #self.rendervisor = RendererSupervisor()
+        #self.rendervisor.go()

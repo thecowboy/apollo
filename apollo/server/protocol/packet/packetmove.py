@@ -65,6 +65,8 @@ class PacketMove(Packet):
             core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
             return
 
+        old_loc = tile._id
+
         # find the tile
         try:
             tile = meta.session.find(Tile, { "location" : { "rx" : rcoords[0], "ry" : rcoords[1] }, "chunk_id" : chunk._id }).one()

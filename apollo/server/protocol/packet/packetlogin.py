@@ -50,8 +50,7 @@ class PacketLogin(Packet):
     """
     name = "login"
 
-    def _dispatch_web(self, core, session):
-        # stage 1 - perform credential checking
+    def dispatch(self, core, session):
         try:
             user = User.getUserByName(self.username)
         except ValueError:
@@ -67,33 +66,20 @@ class PacketLogin(Packet):
         meta.session.save(session)
         meta.session.flush()
 
-        # logout existing users
-        if user.online:
-            core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Coexistence not permitted"))
-
-            # in case this is a stale client, we can set it forcibly to offline
-            user.online = False
-            meta.session.flush()
-
-        # kick off stage 2
-        core.bus.broadcast("inter.user.%s" % user._id, PacketLogin())
-
-    def _dispatch_cross(self, core, session):
-        # stage 2 - perform authentication
-        user = session.getUser()
+        ## logout existing users
+        #if user.online:
+        #    core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Coexistence not permitted"))
+        #
+        #    # in case this is a stale client, we can set it forcibly to offline
+        #    user.online = False
+        #    meta.session.flush()
 
         core.bus.broadcast("ex.user.%s" % user._id, PacketLogin())
 
         core.bus.broadcast("ex.user.*", PacketLogin(username=user.name))
 
         # send this everywhere
-        core.bus.broadcast("ex.loc.%s" % user.location_id, PacketInfo())
+        core.bus.broadcast("inter.loc.%s" % user.location_id, PacketInfo())
 
         user.online = True
         meta.session.flush()
-
-    def dispatch(self, core, session):
-        if self._origin == ORIGIN_EX:
-            self._dispatch_web(core, session)
-        elif self._origin == ORIGIN_INTER:
-            self._dispatch_cross(core, session)

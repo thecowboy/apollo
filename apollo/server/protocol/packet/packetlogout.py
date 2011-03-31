@@ -26,6 +26,8 @@ from apollo.server.util.decorators import requireAuthentication
 
 from apollo.server.models import meta
 
+from apollo.server.protocol.packet.packetinfo import PacketInfo
+
 class PacketLogout(Packet):
     """
     Log out of the server, or inform the client a user has logged out.
@@ -63,4 +65,5 @@ class PacketLogout(Packet):
             core.bus.broadcast("inter.loc.%s" % user.location_id, PacketInfo())
 
             # delete the session
-            meta.session.remove(session._id)
+            session.delete()
+            meta.session.flush()

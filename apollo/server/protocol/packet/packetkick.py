@@ -22,7 +22,7 @@
 
 from apollo.server.models.auth import User
 
-from apollo.server.protocol.packet import Packet, interWrap
+from apollo.server.protocol.packet import Packet
 from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
 from apollo.server.protocol.packet.packetlogout import PacketLogout
 

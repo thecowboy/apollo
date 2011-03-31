@@ -87,7 +87,8 @@ class ActionHandler(RequestHandler):
         except ValueError:
             self.application.bus.broadcast("ex.session.%s" % token, PacketError(msg="bad packet payload"))
         else:
-            packet.dispatch(self.application, meta.session.get(Session, token))
+            session = meta.session.find(Session, { "token" : token }).one()
+            packet.dispatch(self.application, session)
 
         self.finish()
 

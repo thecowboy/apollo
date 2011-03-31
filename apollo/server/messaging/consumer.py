@@ -29,7 +29,7 @@ from zmq.eventloop.ioloop import IOLoop
 from tornado.options import options
 
 from apollo.server.models import meta
-from apollo.server.models.session import Session
+from apollo.server.models.auth import Session
 
 from apollo.server.protocol.packet import ORIGIN_INTER
 from apollo.server.protocol.packet.meta import deserializePacket
@@ -38,7 +38,7 @@ class Consumer(object):
     def __init__(self, handler):
         self.handler = handler
 
-        self.subscriber = handler.application.zmqctx.socket(zmq.SUB)
+        self.subscriber = handler.application.bus.zmqctx.socket(zmq.SUB)
         self.subscriber.connect(urlparse.urlunsplit((
             options.zmq_transport,
             options.zmq_host,
@@ -52,13 +52,13 @@ class Consumer(object):
         # subscribe to session channel
         self.subscribe("ex.session.%s" % self.session._id)
 
-        logging.debug("Created subscriber for %s" % user._id)
+        logging.debug("Created subscriber for %s" % self.session._id)
 
     def eat(self):
         """
         Begin consuming events.
         """
-        if self.session.user_id:
+        if self.session.getUser():
             self.userSubscribe()
         IOLoop.instance().add_handler(self.subscriber, lambda *args: self.on_message(self.subscriber), zmq.POLLIN)
 
@@ -81,7 +81,8 @@ class Consumer(object):
         """
         Shut down the consumer.
         """
-        logging.debug("Shutting down consumer for %s" % self.user)
+        logging.debug("Shutting down consumer for %s" % self.session._id)
+        IOLoop.instance().remove_handler(self.subscriber)
         self.subscriber.close()
 
     def on_message(self, socket):
@@ -98,3 +99,6 @@ class Consumer(object):
 
         logging.debug("Sending user message packet: %s" % message)
         self.handler.finish(payload)
+
+        # shut down now, because we most definitely don't want any more stuff
+        self.shutdown()
