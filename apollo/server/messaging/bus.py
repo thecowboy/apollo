@@ -20,15 +20,15 @@
 # THE SOFTWARE.
 #
 
+import uuid
 import logging
-import urlparse
 
 from tornado.options import options
+from tornado.ioloop import IOLoop
+
+from stompy import Stomp
 
 from pymongo.objectid import ObjectId
-
-import zmq
-from zmq.eventloop.ioloop import IOLoop
 
 from apollo.server.component import Component
 
@@ -44,26 +44,44 @@ class Bus(Component):
     """
     def __init__(self, core):
         super(Bus, self).__init__(core)
-        self.zmqctx = zmq.Context()
-        self.publisher = self.zmqctx.socket(zmq.PUB)
-        self.publisher.bind(urlparse.urlunsplit((
-            options.zmq_transport,
-            options.zmq_host,
-            "",
-            "",
-            ""
-        )))
-        self.consumer = self.zmqctx.socket(zmq.SUB)
-        self.consumer.connect(urlparse.urlunsplit((
-            options.zmq_transport,
-            options.zmq_host,
-            "",
-            "",
-            ""
-        )))
-        self.consumer.setsockopt(zmq.SUBSCRIBE, "inter")
-        IOLoop.instance().add_handler(self.consumer, lambda *args: self.on_inter_message(self.consumer), zmq.POLLIN)
 
+        self.pubsub = Stomp(options.stomp_host, options.stomp_port)
+        self.pubsub.connect(options.stomp_username, options.stomp_password, uuid.uuid4().hex)
+
+        self.subscribe("inter.>")
+        self.io_loop = IOLoop.instance()
+
+        self.handlers = []
+
+        self.registerHandler(self.on_inter_message)
+        self.io_loop.add_handler(self.pubsub.sock.fileno(), lambda *args: self.fireHandlers(), IOLoop.READ)
+
+    def subscribe(self, dest):
+        self.pubsub.subscribe({
+            "destination"   : "/topic/%s" % dest,
+            "ack"           : "client"
+        })
+
+    def unsubscribe(self, dest):
+        self.pubsub.unsubscribe({
+            "destination"   : "/topic/%s" % dest
+        })
+
+    def isSubscribed(self, dest):
+        return self.pubsub._subscribed_to.get("/topic/%s" % dest, False)
+
+    def registerHandler(self, handler):
+        """
+        Register a handler for IOLoop.
+        """
+        self.handlers.append(handler)
+
+    def unregisterHandler(self, handler):
+        """
+        Unregister a handler.
+        """
+        self.handlers.remove(handler)
+        
     def broadcast(self, dest, packet):
         """
         Broadcast a packet to a specific destination.
@@ -77,15 +95,34 @@ class Bus(Component):
                Packet to broadcast.
         """
         logging.debug("Sending to %s: %s" % (dest, packet.dump()))
-        self.publisher.send("%s:%s" % (dest, packet.dump()))
+        self.pubsub.send({
+            "destination"   : "/topic/%s" % dest,
+            "body"          : packet.dump(),
+            "persistent"    : True
+        })
 
-    def on_inter_message(self, socket):
+    def fireHandlers(self):
+        frame = self.pubsub.receive_frame(nonblocking=True)
+
+        if frame is None:
+            return
+
+        for handler in self.handlers:
+            handler(frame)
+
+    def on_inter_message(self, frame):
         """
         Process an "inter" message.
         """
-        message = socket.recv()
-        prefix, payload = message.split(":", 1)
-        prefixparts = prefix.split(".")
+        payload = frame.body
+        prefix = frame.headers["destination"]
+        dummy, destSpec, dest = prefix.split("/", 2)
+        prefixparts = dest.split(".")
+
+        if prefixparts[0] != "inter":
+            # this is not an inter frame
+            return
+
         packet = deserializePacket(payload)
         packet._origin = ORIGIN_INTER
 

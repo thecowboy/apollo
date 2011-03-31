@@ -26,7 +26,7 @@ from datetime import datetime, timedelta
 
 from tornado.options import options
 
-from zmq.eventloop.ioloop import PeriodicCallback
+from tornado.ioloop import PeriodicCallback
 
 from apollo.server.component import Component
 

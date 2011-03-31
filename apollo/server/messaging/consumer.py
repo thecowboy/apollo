@@ -22,9 +22,8 @@
 
 import logging
 import urlparse
-import zmq
 
-from zmq.eventloop.ioloop import IOLoop
+from tornado.ioloop import IOLoop
 
 from tornado.options import options
 
@@ -37,20 +36,17 @@ from apollo.server.protocol.packet.meta import deserializePacket
 class Consumer(object):
     def __init__(self, handler):
         self.handler = handler
+        self.io_loop = IOLoop.instance()
+        self.subscriptions = []
 
-        self.subscriber = handler.application.bus.zmqctx.socket(zmq.SUB)
-        self.subscriber.connect(urlparse.urlunsplit((
-            options.zmq_transport,
-            options.zmq_host,
-            "",
-            "",
-            ""
-        )))
+        self.bus = handler.application.bus
 
         self.session = meta.session.find(Session, { "token" : handler.token }).one()
 
         # subscribe to session channel
         self.subscribe("ex.session.%s" % self.session._id)
+
+        self.bus.registerHandler(self.on_message)
 
         logging.debug("Created subscriber for %s" % self.session._id)
 
@@ -60,7 +56,6 @@ class Consumer(object):
         """
         if self.session.getUser():
             self.userSubscribe()
-        IOLoop.instance().add_handler(self.subscriber, lambda *args: self.on_message(self.subscriber), zmq.POLLIN)
 
     def userSubscribe(self):
         """
@@ -72,20 +67,24 @@ class Consumer(object):
         self.subscribe("ex.loc.%s" % user.location_id)
 
     def subscribe(self, channel):
-        self.subscriber.setsockopt(zmq.SUBSCRIBE, channel)
+        # don't resubscribe or anything
+        if self.bus.isSubscribed(channel):
+            self.subscriptions.append(channel)
+        self.bus.subscribe(channel)
 
     def unsubscribe(self, channel):
-        self.subscriber.setsockopt(zmq.UNSUBSCRIBE, channel)
+        self.bus.unsubscribe(channel)
 
     def shutdown(self):
         """
         Shut down the consumer.
         """
         logging.debug("Shutting down consumer for %s" % self.session._id)
-        IOLoop.instance().remove_handler(self.subscriber)
-        self.subscriber.close()
+        self.bus.unregisterHandler(self.on_message)
+        for subscription in self.subscriptions:
+            self.bus.unsubscribe(subscription)
 
-    def on_message(self, socket):
+    def on_message(self, frame):
         """
         Handle a message.
 
@@ -93,12 +92,17 @@ class Consumer(object):
              * ``socket``
                 Socket message arrives on.
         """
-        message = socket.recv()
-        logging.debug("Got raw message: %s" % message)
-        packet, payload = message.split(":", 1)
+        payload = frame.body
+        prefix = frame.headers["destination"]
+        dummy, destSpec, dest = prefix.split("/", 2)
+        prefixparts = dest.split(".")
 
-        logging.debug("Sending user message packet: %s" % message)
+        if prefixparts[0] != "ex":
+            # this is not an ex frame
+            return
+
         self.handler.finish(payload)
+        print self.handler
 
         # shut down now, because we most definitely don't want any more stuff
         self.shutdown()

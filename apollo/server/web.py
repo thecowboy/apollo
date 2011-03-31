@@ -28,7 +28,6 @@ import json
 
 import logging
 
-from tornado.options import options
 from tornado.web import RequestHandler, asynchronous, HTTPError
 
 from apollo.server.messaging.consumer import Consumer
@@ -39,6 +38,7 @@ from apollo.server.models.auth import Session
 from apollo.server.protocol.packet import ORIGIN_EX
 from apollo.server.protocol.packet.meta import deserializePacket
 from apollo.server.protocol.packet.packeterror import PacketError
+from apollo.server.protocol.packet.packetlogout import PacketLogout
 
 class FrontendHandler(RequestHandler):
     """
@@ -101,9 +101,14 @@ class EventsHandler(RequestHandler):
 
     def on_connection_close(self):
         session = meta.session.get(Session, self.token)
+        if not session:
+            return
         user = session.getUser()
-        if user:
-            self.application.bus.broadcast("ex.user.*", PacketLogout(username=user.name))
+
+        if not user:
+            return
+
+        self.application.bus.broadcast("ex.user.*", PacketLogout(username=user.name))
 
     @asynchronous
     def get(self, *args, **kwargs):

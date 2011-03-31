@@ -19,9 +19,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-import os
 
 import re
+
+import uuid
 
 from hashlib import sha256
 from datetime import datetime
@@ -218,7 +219,7 @@ class Session(MappedClass):
 
     _id = FieldProperty(schema.ObjectId)
 
-    token = FieldProperty(str, if_missing=lambda: sha256(os.urandom(64)).hexdigest())
+    token = FieldProperty(str, if_missing=lambda: uuid.uuid4().hex)
     """
     Unique session identifier.
     """
