@@ -191,23 +191,6 @@ class User(MappedClass):
         """
         return meta.session.find(User, { "name" : { "$regex" : "^%s$" % re.escape(name.lower()), "$options" : "i" } }).one()
 
-class FakeSession(object):
-    """
-    A fake session object used to process inter packets.
-    """
-
-    def __init__(self, user_id):
-        """
-        Create a fake session.
-        """
-        self.user_id = user_id
-
-    def getUser(self):
-        """
-        Get the user connected to this session (if any).
-        """
-        return meta.session.get(User, self.user_id)
-
 class Session(MappedClass):
     """
     A session that is established when a user makes a connection.

@@ -24,10 +24,13 @@
 Apollo's HTTP frontend handlers.
 """
 
+from datetime import datetime, timedelta
+
 import json
 
 import logging
 
+from tornado.options import options
 from tornado.web import RequestHandler, asynchronous, HTTPError
 
 from apollo.server.messaging.consumer import Consumer
@@ -77,7 +80,7 @@ class ActionHandler(RequestHandler):
     SUPPORTED_METHODS = ("POST",)
 
     def post(self, *args, **kwargs):
-        token = self.get_argument("s")
+        self.token = self.get_argument("s")
 
         payload = self.get_argument("p")
 
@@ -85,9 +88,9 @@ class ActionHandler(RequestHandler):
             packet = deserializePacket(payload)
             packet._origin = ORIGIN_EX
         except ValueError:
-            self.application.bus.broadcast("ex.session.%s" % token, PacketError(msg="bad packet payload"))
+            self.application.bus.broadcast("/queue/ex.session.%s" % self.token, PacketError(msg="bad packet payload"))
         else:
-            session = meta.session.find(Session, { "token" : token }).one()
+            session = meta.session.find(Session, { "token" : self.token }).one()
             packet.dispatch(self.application, session)
 
         self.finish()
@@ -100,18 +103,26 @@ class EventsHandler(RequestHandler):
     SUPPORTED_METHODS = ("GET",)
 
     def on_connection_close(self):
-        session = meta.session.get(Session, self.token)
-        if not session:
+        try:
+            session = meta.session.find(Session, { "token" : self.token }).one()
+        except ValueError:
             return
-        user = session.getUser()
 
+        user = session.getUser()
         if not user:
             return
 
-        self.application.bus.broadcast("ex.user.*", PacketLogout(username=user.name))
+        if not self.clean:
+            self.application.bus.broadcast("/topic/ex.user.*", PacketLogout(username=user.name))
+
+    def finish(self, chunk=None):
+        super(EventsHandler, self).finish(chunk)
+        self.clean = True
 
     @asynchronous
     def get(self, *args, **kwargs):
+        self.clean = False
+
         self.set_header("Content-Type", "application/json")
 
         self.token = self.get_argument("s")

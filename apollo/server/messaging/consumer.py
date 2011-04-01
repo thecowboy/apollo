@@ -41,19 +41,23 @@ class Consumer(object):
 
         self.bus = handler.application.bus
 
-        self.session = meta.session.find(Session, { "token" : handler.token }).one()
+    def eat(self):
+        """
+        Begin consuming events.
+        """
+        try:
+            self.session = meta.session.find(Session, { "token" : self.handler.token }).one()
+        except ValueError:
+            logging.warn("Session %s does not exist; bailing" % self.handler.token)
+            return
 
-        # subscribe to session channel
-        self.subscribe("ex.session.%s" % self.session._id)
+        # subscribe to session queue
+        self.subscribe("/queue/ex.session.%s" % self.session._id)
 
         self.bus.registerHandler(self.on_message)
 
         logging.debug("Created subscriber for %s" % self.session._id)
 
-    def eat(self):
-        """
-        Begin consuming events.
-        """
         if self.session.getUser():
             self.userSubscribe()
 
@@ -62,9 +66,9 @@ class Consumer(object):
         Subscribe to the user specific channels.
         """
         user = self.session.getUser()
-        self.subscribe("ex.user.*")
-        self.subscribe("ex.user.%s" % user._id)
-        self.subscribe("ex.loc.%s" % user.location_id)
+        self.subscribe("/topic/ex.user.*")
+        self.subscribe("/queue/ex.user.%s" % user._id)
+        self.subscribe("/topic/ex.loc.%s" % user.location_id)
 
     def subscribe(self, channel):
         # don't resubscribe or anything
@@ -89,9 +93,10 @@ class Consumer(object):
         Handle a message.
 
         :Parameters:
-             * ``socket``
-                Socket message arrives on.
+             * ``frame``
+                Frame received.
         """
+
         payload = frame.body
         prefix = frame.headers["destination"]
         dummy, destSpec, dest = prefix.split("/", 2)
@@ -101,8 +106,10 @@ class Consumer(object):
             # this is not an ex frame
             return
 
-        self.handler.finish(payload)
-        print self.handler
+        try:
+            self.handler.finish(payload)
+        except IOError:
+            logging.warn("Dropped packet due to closed request: %s" % payload)
 
         # shut down now, because we most definitely don't want any more stuff
         self.shutdown()

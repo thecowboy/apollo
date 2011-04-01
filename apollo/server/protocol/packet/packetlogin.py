@@ -54,11 +54,11 @@ class PacketLogin(Packet):
         try:
             user = User.getUserByName(self.username)
         except ValueError:
-            core.bus.broadcast("ex.session.%s" % session._id, PacketLogout()) # nope, you don't even exist
+            core.bus.broadcast("/queue/ex.session.%s" % session._id, PacketLogout()) # nope, you don't even exist
             return
 
         if self.pwhash != sha256(self.nonce + sha256(user.pwhash + session.token).hexdigest()).hexdigest():
-            core.bus.broadcast("ex.session.%s" % session._id, PacketLogout()) # nope, your hash is incorrect
+            core.bus.broadcast("/queue/ex.session.%s" % session._id, PacketLogout()) # nope, your hash is incorrect
             return
 
         # set all the sessions and stuff
@@ -66,20 +66,23 @@ class PacketLogin(Packet):
         meta.session.save(session)
         meta.session.flush()
 
-        # logout existing users
-        if user.online:
-            core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Coexistence not permitted"))
+        ## logout existing users
+        #if user.online:
+        #    core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Coexistence not permitted"))
 
-            # in case this is a stale client, we can set it forcibly to offline
-            user.online = False
-            meta.session.flush()
+        #    # in case this is a stale client, we can set it forcibly to offline
+        #    user.online = False
+        #    meta.session.flush()
 
-        core.bus.broadcast("ex.session.%s" % session._id, PacketLogin())
+        # we don't have an ex.user subscription at this stage, so let's
+        # broadcast a packet about login explicitly to the player
+        core.bus.broadcast("/queue/ex.session.%s" % session._id, PacketLogin(username=user.name))
+        core.bus.broadcast("/queue/ex.session.%s" % session._id, PacketLogin())
 
-        core.bus.broadcast("ex.user.*", PacketLogin(username=user.name))
+        core.bus.broadcast("/topic/ex.user.*", PacketLogin(username=user.name))
 
         # send this everywhere
-        core.bus.broadcast("inter.loc.%s" % user.location_id, PacketInfo())
+        core.bus.broadcast("/topic/inter.loc.%s" % user.location_id, PacketInfo())
 
         user.online = True
         meta.session.flush()

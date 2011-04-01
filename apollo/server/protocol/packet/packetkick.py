@@ -51,13 +51,13 @@ class PacketKick(Packet):
         try:
             targetUser = User.getUserByName(self.target)
         except ValueError:
-            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User does not exist."))
+            core.bus.broadcast("/queue/ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User does not exist."))
             return
 
         if not user.online:
-            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User is not online."))
+            core.bus.broadcast("/queue/ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User is not online."))
             return
 
         self.msg = self.msg or "(no reason given)"
 
-        core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Kicked by server: %s" % self.msg))
+        core.bus.broadcast("/topic/inter.user.%s" % user._id, PacketLogout(msg="Kicked by server: %s" % self.msg))

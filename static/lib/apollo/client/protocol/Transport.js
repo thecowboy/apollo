@@ -97,6 +97,7 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
             load        : dojo.hitch(this, function(packet)
             {
                 this.token = packet.s;
+                console.log(packet.s);
 
                 this.core.ready();
                 this.startHeartbeat();

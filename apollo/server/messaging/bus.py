@@ -48,7 +48,7 @@ class Bus(Component):
         self.pubsub = Stomp(options.stomp_host, options.stomp_port)
         self.pubsub.connect(options.stomp_username, options.stomp_password, uuid.uuid4().hex)
 
-        self.subscribe("inter.>")
+        self.subscribe("/topic/inter.>")
         self.io_loop = IOLoop.instance()
 
         self.handlers = []
@@ -58,17 +58,17 @@ class Bus(Component):
 
     def subscribe(self, dest):
         self.pubsub.subscribe({
-            "destination"   : "/topic/%s" % dest,
+            "destination"   : dest,
             "ack"           : "client"
         })
 
     def unsubscribe(self, dest):
         self.pubsub.unsubscribe({
-            "destination"   : "/topic/%s" % dest
+            "destination"   : dest
         })
 
     def isSubscribed(self, dest):
-        return self.pubsub._subscribed_to.get("/topic/%s" % dest, False)
+        return self.pubsub._subscribed_to.get(dest, False)
 
     def registerHandler(self, handler):
         """
@@ -96,7 +96,7 @@ class Bus(Component):
         """
         logging.debug("Sending to %s: %s" % (dest, packet.dump()))
         self.pubsub.send({
-            "destination"   : "/topic/%s" % dest,
+            "destination"   : dest,
             "body"          : packet.dump(),
             "persistent"    : True
         })
