@@ -75,12 +75,12 @@ class PacketUser(Packet):
             try:
                 user = meta.session.find(User, { "name" : self.target }).one()
             except ValueError:
-                core.bus.broadcast("/queue/ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User not found."))
+                core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User not found."))
                 return
 
         if not user.online:
             # lie about it and pretend the user doesn't exist
-            core.bus.broadcast("/queue/ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User not found."))
+            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User not found."))
             return
 
         profession = meta.session.get(Profession, user.profession_id)
@@ -109,4 +109,4 @@ class PacketUser(Packet):
         if self.target is not None:
             packet.target = user.name
 
-        core.bus.broadcast("/queue/ex.user.%s" % user._id, packet)
+        core.bus.broadcast("ex.user.%s" % user._id, packet)

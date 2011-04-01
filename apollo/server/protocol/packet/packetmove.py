@@ -64,14 +64,14 @@ class PacketMove(Packet):
         try:
             chunk = meta.session.find(Chunk, { "location" : { "cx" : ccoords[0], "cy" : ccoords[1] } }).one()
         except ValueError:
-            core.bus.broadcast("/queue/ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
+            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
             return
 
         # find the tile
         try:
             tile = meta.session.find(Tile, { "location" : { "rx" : rcoords[0], "ry" : rcoords[1] }, "chunk_id" : chunk._id }).one()
         except ValueError:
-            core.bus.broadcast("/queue/ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
+            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
             return
 
         user.location_id = tile._id
@@ -80,5 +80,5 @@ class PacketMove(Packet):
         meta.session.flush_all()
 
         # some users may require additional info (including this one!)
-        core.bus.broadcast("/topic/inter.loc.%s" % tile._id, PacketInfo())
-        core.bus.broadcast("/topic/inter.loc.%s" % old_loc, PacketInfo())
+        core.bus.broadcast("inter.loc.%s" % tile._id, PacketInfo())
+        core.bus.broadcast("inter.loc.%s" % old_loc, PacketInfo())

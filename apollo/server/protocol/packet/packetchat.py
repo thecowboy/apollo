@@ -54,29 +54,29 @@ class PacketChat(Packet):
             try:
                 user = User.getUserByName(self.target)
             except ValueError:
-                core.bus.broadcast("/queue/ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User does not exist."))
+                core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User does not exist."))
                 return
 
             if not user.online:
-                core.bus.broadcast("/queue/ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User is not online."))
+                core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User is not online."))
                 return
 
             # send packet to target
-            core.bus.broadcast("/queue/ex.user.%s" % user._id, PacketChat(
+            core.bus.broadcast("ex.user.%s" % user._id, PacketChat(
                 origin=origin.name,
                 target=self.target,
                 msg=self.msg
             ))
 
             # send packet to origin
-            core.bus.broadcast("/queue/ex.user.%s" % origin._id, PacketChat(
+            core.bus.broadcast("ex.user.%s" % origin._id, PacketChat(
                 origin=origin.name,
                 target=self.target,
                 msg=self.msg
             ))
             return
 
-        core.bus.broadcast("/topic/ex.user.*", PacketChat(
+        core.bus.broadcast("ex.user.global", PacketChat(
             origin=origin.name,
             msg=self.msg
         ))

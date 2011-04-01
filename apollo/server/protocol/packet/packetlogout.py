@@ -53,16 +53,16 @@ class PacketLogout(Packet):
 
         if user is not None:
             # tell user logout was successful
-            core.bus.broadcast("/queue/ex.user.%s" % user._id, PacketLogout(msg=msg))
+            core.bus.broadcast("ex.user.%s" % user._id, PacketLogout(msg=msg))
 
             # broadcast the logout
-            core.bus.broadcast("/topic/ex.user.*", PacketLogout(username=user.name, msg=msg))
+            core.bus.broadcast("ex.user.global", PacketLogout(username=user.name, msg=msg))
 
             # unset online
             user.online = False
 
             # send packetinfo to relevant people
-            core.bus.broadcast("/topic/inter.loc.%s" % user.location_id, PacketInfo())
+            core.bus.broadcast("inter.loc.%s" % user.location_id, PacketInfo())
 
             # delete the session
             session.delete()

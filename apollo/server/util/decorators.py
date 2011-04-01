@@ -43,7 +43,7 @@ def requirePermission(permission):
             if user.hasPermission(permission):
                 fn(self, core, session)
             else:
-                core.bus.broadcast("/queue/ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Not permitted to perform action."))
+                core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Not permitted to perform action."))
         return _closure
     return _decorator
 
@@ -56,7 +56,7 @@ def requireAuthentication(fn):
         try:
             user = session.getUser()
         except ValueError:
-            core.bus.broadcast("/queue/ex.session.%s" % session._id, PacketError(msg="not authenticated"))
+            core.bus.broadcast("ex.session.%s" % session._id, PacketError(msg="not authenticated"))
         else:
             fn(self, core, session)
     return _closure

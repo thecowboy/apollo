@@ -54,11 +54,11 @@ class PacketLogin(Packet):
         try:
             user = User.getUserByName(self.username)
         except ValueError:
-            core.bus.broadcast("/queue/ex.session.%s" % session._id, PacketLogout()) # nope, you don't even exist
+            core.bus.broadcast("ex.session.%s" % session._id, PacketLogout()) # nope, you don't even exist
             return
 
         if self.pwhash != sha256(self.nonce + sha256(user.pwhash + session.token).hexdigest()).hexdigest():
-            core.bus.broadcast("/queue/ex.session.%s" % session._id, PacketLogout()) # nope, your hash is incorrect
+            core.bus.broadcast("ex.session.%s" % session._id, PacketLogout()) # nope, your hash is incorrect
             return
 
         # set all the sessions and stuff
@@ -76,13 +76,13 @@ class PacketLogin(Packet):
 
         # we don't have an ex.user subscription at this stage, so let's
         # broadcast a packet about login explicitly to the player
-        core.bus.broadcast("/queue/ex.session.%s" % session._id, PacketLogin(username=user.name))
-        core.bus.broadcast("/queue/ex.session.%s" % session._id, PacketLogin())
+        core.bus.broadcast("ex.session.%s" % session._id, PacketLogin(username=user.name))
+        core.bus.broadcast("ex.session.%s" % session._id, PacketLogin())
 
-        core.bus.broadcast("/topic/ex.user.*", PacketLogin(username=user.name))
+        core.bus.broadcast("ex.user.global", PacketLogin(username=user.name))
 
         # send this everywhere
-        core.bus.broadcast("/topic/inter.loc.%s" % user.location_id, PacketInfo())
+        core.bus.broadcast("inter.loc.%s" % user.location_id, PacketInfo())
 
         user.online = True
         meta.session.flush()

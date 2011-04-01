@@ -88,7 +88,7 @@ class ActionHandler(RequestHandler):
             packet = deserializePacket(payload)
             packet._origin = ORIGIN_EX
         except ValueError:
-            self.application.bus.broadcast("/queue/ex.session.%s" % self.token, PacketError(msg="bad packet payload"))
+            self.application.bus.broadcast("ex.session.%s" % self.token, PacketError(msg="bad packet payload"))
         else:
             session = meta.session.find(Session, { "token" : self.token }).one()
             packet.dispatch(self.application, session)
@@ -113,7 +113,7 @@ class EventsHandler(RequestHandler):
             return
 
         if not self.clean:
-            self.application.bus.broadcast("/topic/ex.user.*", PacketLogout(username=user.name))
+            self.application.bus.broadcast("ex.user.global", PacketLogout(username=user.name))
 
     def finish(self, chunk=None):
         super(EventsHandler, self).finish(chunk)

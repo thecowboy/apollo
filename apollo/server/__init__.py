@@ -66,10 +66,11 @@ def setupOptions():
     define("mongodb_password", default="", help="mongodb server password (put in apollod.conf)", metavar="PASSWORD")
     define("mongodb_database", default="apollo", help="mongodb database name", metavar="DATABASE")
 
-    define("stomp_host", default="localhost", help="stomp server host", metavar="HOST")
-    define("stomp_port", default=61613, help="stomp server port", type=int, metavar="PORT")
-    define("stomp_username", default="", help="stomp server username", metavar="USERNAME")
-    define("stomp_password", default="", help="stomp server password (put in apollod.conf)", metavar="PASSWORD")
+    define("amqp_host", default="localhost", help="amqp server host", metavar="HOST")
+    define("amqp_port", default=5672, help="amqp server port", type=int, metavar="PORT")
+    define("amqp_username", default="guest", help="amqp server username", metavar="USERNAME")
+    define("amqp_password", default="guest", help="amqp server password (put in apollod.conf)", metavar="PASSWORD")
+    define("amqp_vhost", default="/", help="amq vhost", metavar="VHOST")
 
     define("logging_level", default=logging.WARN, help="logging level", type=int, metavar="LEVEL")
 

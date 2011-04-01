@@ -52,9 +52,7 @@ class Consumer(object):
             return
 
         # subscribe to session queue
-        self.subscribe("/queue/ex.session.%s" % self.session._id)
-
-        self.bus.registerHandler(self.on_message)
+        self.subscribe("ex.session.%s" % self.session._id)
 
         logging.debug("Created subscriber for %s" % self.session._id)
 
@@ -66,29 +64,25 @@ class Consumer(object):
         Subscribe to the user specific channels.
         """
         user = self.session.getUser()
-        self.subscribe("/topic/ex.user.*")
-        self.subscribe("/queue/ex.user.%s" % user._id)
-        self.subscribe("/topic/ex.loc.%s" % user.location_id)
+        self.subscribe("ex.user.global")
+        self.subscribe("ex.user.%s" % user._id)
+        self.subscribe("ex.loc.%s" % user.location_id)
 
     def subscribe(self, channel):
         # don't resubscribe or anything
-        if self.bus.isSubscribed(channel):
-            self.subscriptions.append(channel)
-        self.bus.subscribe(channel)
+        self.bus.subscribe(channel, "ex-%s" % self.session._id, self.on_message)
 
     def unsubscribe(self, channel):
-        self.bus.unsubscribe(channel)
+        self.bus.unsubscribe(channel, "ex-%s" % self.session._id)
 
     def shutdown(self):
         """
         Shut down the consumer.
         """
         logging.debug("Shutting down consumer for %s" % self.session._id)
-        self.bus.unregisterHandler(self.on_message)
-        for subscription in self.subscriptions:
-            self.bus.unsubscribe(subscription)
+        self.bus.deleteQueue("ex-%s" % self.session._id)
 
-    def on_message(self, frame):
+    def on_message(self, method, header, body):
         """
         Handle a message.
 
@@ -96,20 +90,16 @@ class Consumer(object):
              * ``frame``
                 Frame received.
         """
-
-        payload = frame.body
-        prefix = frame.headers["destination"]
-        dummy, destSpec, dest = prefix.split("/", 2)
-        prefixparts = dest.split(".")
+        prefixparts = method.routing_key.split(".")
 
         if prefixparts[0] != "ex":
             # this is not an ex frame
             return
 
         try:
-            self.handler.finish(payload)
+            self.handler.finish(body)
         except IOError:
-            logging.warn("Dropped packet due to closed request: %s" % payload)
+            logging.warn("Dropped packet due to closed request: %s" % body)
 
         # shut down now, because we most definitely don't want any more stuff
         self.shutdown()
