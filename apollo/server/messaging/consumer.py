@@ -21,25 +21,23 @@
 #
 
 import logging
-import urlparse
 
 from tornado.ioloop import IOLoop
-
-from tornado.options import options
 
 from apollo.server.models import meta
 from apollo.server.models.auth import Session
 
-from apollo.server.protocol.packet import ORIGIN_INTER
-from apollo.server.protocol.packet.meta import deserializePacket
-
 class Consumer(object):
+    """
+    Consumer object. These are actually one-time use only.
+    """
+
     def __init__(self, handler):
         self.handler = handler
         self.io_loop = IOLoop.instance()
-        self.subscriptions = []
 
         self.bus = handler.application.bus
+        self.rejecting = False
 
     def eat(self):
         """
@@ -69,7 +67,6 @@ class Consumer(object):
         self.subscribe("ex.loc.%s" % user.location_id)
 
     def subscribe(self, channel):
-        # don't resubscribe or anything
         self.bus.subscribe(channel, "ex-%s" % self.session._id, self.on_message)
 
     def unsubscribe(self, channel):
@@ -80,16 +77,20 @@ class Consumer(object):
         Shut down the consumer.
         """
         logging.debug("Shutting down consumer for %s" % self.session._id)
-        self.bus.deleteQueue("ex-%s" % self.session._id)
+        self.bus.unconsume(self.ctag)
 
-    def on_message(self, method, header, body):
+    def on_message(self, ctag, method, header, body):
         """
         Handle a message.
-
-        :Parameters:
-             * ``frame``
-                Frame received.
         """
+        self.ctag = ctag
+
+        if self.rejecting:
+            logging.info("Rejecting packet: %s" % body)
+            self.bus.channel.basic_reject(delivery_tag=method.delivery_tag)
+            return
+
+        self.rejecting = True
         prefixparts = method.routing_key.split(".")
 
         if prefixparts[0] != "ex":

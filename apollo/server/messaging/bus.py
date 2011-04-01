@@ -19,6 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+from functools import wraps
 
 import uuid
 import logging
@@ -26,7 +27,7 @@ import logging
 from tornado.options import options
 
 from pika.adapters import TornadoConnection
-from pika import PlainCredentials, ConnectionParameters
+from pika import PlainCredentials, ConnectionParameters, BasicProperties
 
 from pymongo.objectid import ObjectId
 
@@ -72,6 +73,7 @@ class Bus(Component):
             exchange="apollo",
             type="topic",
             durable=True,
+            auto_delete=False,
             callback=self.on_amqp_exchange_declared
         )
 
@@ -86,36 +88,44 @@ class Bus(Component):
             routing_key=dest,
             callback=lambda *args: self.on_subscribe(queue, callback)
         )
-        logging.info("Bound queue %s for %s." % (queue, dest))
 
-    def handler_wrapper(self, fn):
+    def handler_wrapper(self, state, fn):
+        @wraps(fn)
         def _wrapper(channel, method, header, body):
             channel.basic_ack(delivery_tag=method.delivery_tag)
-            fn(method, header, body)
+            fn(state["ctag"], method, header, body)
         return _wrapper
 
     def on_subscribe(self, queue, callback):
-        self.channel.basic_consume(
-            consumer_callback=self.handler_wrapper(callback),
+        state = {}
+        state["ctag"] = self.channel.basic_consume(
+            consumer_callback=self.handler_wrapper(state, callback),
             queue=queue,
             no_ack=False
         )
 
     def subscribe(self, dest, queue, callback):
+        queue_name = "%s-%s" % (self.busName, queue)
+
+        logging.info("Bound queue %s for %s" % (queue_name, dest))
+
         self.channel.queue_declare(
-            queue="%s-%s" % (self.busName, queue),
+            queue=queue_name,
             durable=True,
+            exclusive=False,
+            auto_delete=True,
             callback=lambda *args: self.on_queue_declared(dest, "%s-%s" % (self.busName, queue), callback)
         )
 
     def unsubscribe(self, dest, queue):
         self.channel.queue_unbind(
+            exchange="apollo",
             queue=queue,
             routing_key=dest
         )
 
-    def deleteQueue(self, queue):
-        self.channel.queue_delete(queue=queue)
+    def unconsume(self, consumerTag):
+        self.channel.basic_cancel(consumer_tag=consumerTag)
 
     def broadcast(self, dest, packet):
         """
@@ -133,10 +143,13 @@ class Bus(Component):
         self.channel.basic_publish(
             exchange="apollo",
             routing_key=dest,
-            body=packet.dump()
+            body=packet.dump(),
+            properties=BasicProperties(
+                delivery_mode=2
+           )
         )
 
-    def on_inter_message(self, method, header, body):
+    def on_inter_message(self, ctag, method, header, body):
         """
         Process an "inter" message.
         """
