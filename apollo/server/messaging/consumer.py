@@ -66,6 +66,8 @@ class Consumer(object):
         """
         Shut down the consumer.
         """
+        self.rejecting = True
+
         logging.debug("Shutting down consumer for %s" % self.session._id)
         self.channel.basic_cancel(consumer_tag=self.ctag)
 
@@ -75,14 +77,12 @@ class Consumer(object):
         """
         logging.debug("Got packet: %s" % body)
 
+        if self.rejecting:
+            logging.info("Rejecting packet: %s" % body)
+            channel.basic_reject(delivery_tag=method.delivery_tag)
+            return
+
         channel.basic_ack(delivery_tag=method.delivery_tag)
-
-        #if self.rejecting:
-        #    logging.info("Rejecting packet: %s" % body)
-        #    self.bus.channel.basic_reject(delivery_tag=method.delivery_tag)
-        #    return
-
-        self.rejecting = True
         prefixparts = method.routing_key.split(".")
 
         if prefixparts[0] != "ex":
@@ -95,4 +95,6 @@ class Consumer(object):
             logging.warn("Dropped packet due to closed request: %s" % body)
 
         # shut down now, because we most definitely don't want any more stuff
+        # (but we tend to get stuff anyway, which is why we have a rejecting
+        # field)
         self.shutdown()

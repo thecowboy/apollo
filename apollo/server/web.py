@@ -122,7 +122,7 @@ class EventsHandler(RequestHandler):
             return
 
         if not self.clean:
-            self.application.bus.broadcast("ex.user.global", PacketLogout(username=user.name))
+            self.application.bus.broadcast("ex.user.global", PacketLogout(username=user.name, msg="Connection closed"))
 
     def finish(self, chunk=None):
         super(EventsHandler, self).finish(chunk)

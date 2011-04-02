@@ -130,6 +130,10 @@ class Bus(Component):
             routing_key=dest
         )
 
+    def deleteQueue(self, queue):
+        logging.debug("Deleting queue %s" % queue)
+        self.channel.queue_delete(queue=queue)
+
     def on_inter_message(self, channel, method, header, body):
         """
         Process an "inter" message.

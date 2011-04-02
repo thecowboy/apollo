@@ -76,14 +76,13 @@ class PacketLogin(Packet):
         session.user_id = user._id
         meta.session.save(session)
 
-        ## logout existing users
+        # logout existing users
         #if user.online:
-        #    core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Coexistence not permitted"))
+        #    core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Session clash"))
 
-        #    # in case this is a stale client, we can set it forcibly to offline
+            # in case this is a stale client, we can set it forcibly to offline
         #    user.online = False
-        #    meta.session.flush()
-        meta.session.flush()
+        #meta.session.flush()
 
         core.bus.broadcast("ex.session.%s" % session._id, PacketLogin())
 

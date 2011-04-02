@@ -67,3 +67,6 @@ class PacketLogout(Packet):
             # delete the session
             session.delete()
             meta.session.flush()
+
+            # delete the queue
+            core.bus.deleteQueue("ex-%s" % session._id)
