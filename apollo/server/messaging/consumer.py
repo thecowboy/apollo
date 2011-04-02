@@ -23,6 +23,7 @@
 import logging
 
 from tornado.ioloop import IOLoop
+import uuid
 
 from apollo.server.models import meta
 from apollo.server.models.auth import Session
@@ -37,6 +38,9 @@ class Consumer(object):
         self.io_loop = IOLoop.instance()
 
         self.bus = handler.application.bus
+        self.channel = self.bus.channel
+        self.ctag = uuid.uuid4().hex
+
         self.rejecting = False
 
     def eat(self):
@@ -49,46 +53,34 @@ class Consumer(object):
             logging.warn("Session %s does not exist; bailing" % self.handler.token)
             return
 
-        # subscribe to session queue
-        self.subscribe("ex.session.%s" % self.session._id)
+        self.channel.basic_consume(
+            consumer_callback=self.on_message,
+            queue="ex-%s" % self.session._id,
+            no_ack=False,
+            consumer_tag=self.ctag
+        )
 
         logging.debug("Created subscriber for %s" % self.session._id)
-
-        if self.session.getUser():
-            self.userSubscribe()
-
-    def userSubscribe(self):
-        """
-        Subscribe to the user specific channels.
-        """
-        user = self.session.getUser()
-        self.subscribe("ex.user.global")
-        self.subscribe("ex.user.%s" % user._id)
-        self.subscribe("ex.loc.%s" % user.location_id)
-
-    def subscribe(self, channel):
-        self.bus.subscribe(channel, "ex-%s" % self.session._id, self.on_message)
-
-    def unsubscribe(self, channel):
-        self.bus.unsubscribe(channel, "ex-%s" % self.session._id)
 
     def shutdown(self):
         """
         Shut down the consumer.
         """
         logging.debug("Shutting down consumer for %s" % self.session._id)
-        self.bus.unconsume(self.ctag)
+        self.channel.basic_cancel(consumer_tag=self.ctag)
 
-    def on_message(self, ctag, method, header, body):
+    def on_message(self, channel, method, header, body):
         """
         Handle a message.
         """
-        self.ctag = ctag
+        logging.debug("Got packet: %s" % body)
 
-        if self.rejecting:
-            logging.info("Rejecting packet: %s" % body)
-            self.bus.channel.basic_reject(delivery_tag=method.delivery_tag)
-            return
+        channel.basic_ack(delivery_tag=method.delivery_tag)
+
+        #if self.rejecting:
+        #    logging.info("Rejecting packet: %s" % body)
+        #    self.bus.channel.basic_reject(delivery_tag=method.delivery_tag)
+        #    return
 
         self.rejecting = True
         prefixparts = method.routing_key.split(".")

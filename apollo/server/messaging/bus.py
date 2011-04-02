@@ -69,63 +69,21 @@ class Bus(Component):
     def on_amqp_channel_open(self, channel):
         self.channel = channel
 
-        self.channel.exchange_declare(
-            exchange="apollo",
-            type="topic",
-            durable=True,
-            auto_delete=False,
-            callback=self.on_amqp_exchange_declared
-        )
+        self.declareQueue("inter", self.on_queue_declared)
 
-    def on_amqp_exchange_declared(self, method):
-        self.subscribe("inter.#", "inter", self.on_inter_message)
-        logging.info("Message bus ready.")
-
-    def on_queue_declared(self, dest, queue, callback):
-        self.channel.queue_bind(
-            exchange="apollo",
-            queue=queue,
-            routing_key=dest,
-            callback=lambda *args: self.on_subscribe(queue, callback)
-        )
-
-    def handler_wrapper(self, state, fn):
-        @wraps(fn)
-        def _wrapper(channel, method, header, body):
-            channel.basic_ack(delivery_tag=method.delivery_tag)
-            fn(state["ctag"], method, header, body)
-        return _wrapper
-
-    def on_subscribe(self, queue, callback):
-        state = {}
-        state["ctag"] = self.channel.basic_consume(
-            consumer_callback=self.handler_wrapper(state, callback),
-            queue=queue,
+    def on_queue_declared(self, something):
+        self.channel.basic_consume(
+            consumer_callback=self.on_inter_message,
+            queue="inter",
             no_ack=False
         )
 
-    def subscribe(self, dest, queue, callback):
-        queue_name = "%s-%s" % (self.busName, queue)
-
-        logging.info("Bound queue %s for %s" % (queue_name, dest))
-
-        self.channel.queue_declare(
-            queue=queue_name,
-            durable=True,
-            exclusive=False,
-            auto_delete=True,
-            callback=lambda *args: self.on_queue_declared(dest, "%s-%s" % (self.busName, queue), callback)
+        self.channel.queue_bind(
+            exchange="amq.topic",
+            queue="inter",
+            routing_key="inter.#"
         )
-
-    def unsubscribe(self, dest, queue):
-        self.channel.queue_unbind(
-            exchange="apollo",
-            queue=queue,
-            routing_key=dest
-        )
-
-    def unconsume(self, consumerTag):
-        self.channel.basic_cancel(consumer_tag=consumerTag)
+        logging.info("Message bus ready.")
 
     def broadcast(self, dest, packet):
         """
@@ -139,20 +97,45 @@ class Bus(Component):
              * ``packet``
                Packet to broadcast.
         """
-        logging.debug("Sending to %s: %s" % (dest, packet.dump()))
+        packet_dump = packet.dump()
+        logging.debug("Sending to %s: %s" % (dest, packet_dump))
         self.channel.basic_publish(
-            exchange="apollo",
+            exchange="amq.topic",
             routing_key=dest,
-            body=packet.dump(),
+            body=packet_dump,
             properties=BasicProperties(
                 delivery_mode=2
            )
         )
 
-    def on_inter_message(self, ctag, method, header, body):
+    def declareQueue(self, queue, callback=None):
+        self.channel.queue_declare(
+            queue=queue,
+            auto_delete=False,
+            callback=callback
+        )
+
+    def bindQueue(self, queue, dest):
+        logging.debug("Binding %s to %s" % (queue, dest))
+        self.channel.queue_bind(
+            exchange="amq.topic",
+            queue=queue,
+            routing_key=dest
+        )
+    def unbindQueue(self, queue, dest):
+        logging.debug("Unbinding %s from %s" % (queue, dest))
+        self.channel.queue_unbind(
+            exchange="amq.topic",
+            queue=queue,
+            routing_key=dest
+        )
+
+    def on_inter_message(self, channel, method, header, body):
         """
         Process an "inter" message.
         """
+        channel.basic_ack(delivery_tag=method.delivery_tag)
+
         prefixparts = method.routing_key.split(".")
 
         if prefixparts[0] != "inter":
@@ -165,7 +148,9 @@ class Bus(Component):
         if prefixparts[1] == "user":
             for session in meta.session.find(Session, { "user_id" : ObjectId(prefixparts[2]) }):
                 packet.dispatch(self.core, session)
+                return
         elif prefixparts[1] == "loc":
             for user in meta.session.find(User, { "location_id" : ObjectId(prefixparts[2]) }):
                 for session in meta.session.find(Session, { "user_id" : user._id }):
                     packet.dispatch(self.core, session)
+                    break

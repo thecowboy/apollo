@@ -79,6 +79,10 @@ class PacketMove(Packet):
         meta.session.save(user)
         meta.session.flush_all()
 
+        # rebind queue to new position
+        core.bus.unbindQueue("ex-%s" % session._id, "ex.loc.%s" % old_loc)
+        core.bus.bindQueue("ex-%s" % session._id, "ex.loc.%s" % tile._id)
+
         # some users may require additional info (including this one!)
         core.bus.broadcast("inter.loc.%s" % tile._id, PacketInfo())
         core.bus.broadcast("inter.loc.%s" % old_loc, PacketInfo())

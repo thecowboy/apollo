@@ -22,7 +22,7 @@
 
 from hashlib import sha256
 
-from apollo.server.protocol.packet import Packet
+from apollo.server.protocol.packet import Packet, ORIGIN_EX, ORIGIN_INTER
 
 from apollo.server.models import meta
 from apollo.server.models.auth import User
@@ -50,7 +50,18 @@ class PacketLogin(Packet):
     """
     name = "login"
 
-    def dispatch(self, core, session):
+    def _dispatch_inter(self, core, session):
+        user = session.getUser()
+
+        core.bus.broadcast("ex.user.global", PacketLogin(username=user.name))
+
+        # send this everywhere
+        core.bus.broadcast("inter.loc.%s" % user.location_id, PacketInfo())
+
+        user.online = True
+        meta.session.flush()
+
+    def _dispatch_ex(self, core, session):
         try:
             user = User.getUserByName(self.username)
         except ValueError:
@@ -64,7 +75,6 @@ class PacketLogin(Packet):
         # set all the sessions and stuff
         session.user_id = user._id
         meta.session.save(session)
-        meta.session.flush()
 
         ## logout existing users
         #if user.online:
@@ -73,16 +83,20 @@ class PacketLogin(Packet):
         #    # in case this is a stale client, we can set it forcibly to offline
         #    user.online = False
         #    meta.session.flush()
+        meta.session.flush()
 
-        # we don't have an ex.user subscription at this stage, so let's
-        # broadcast a packet about login explicitly to the player
-        core.bus.broadcast("ex.session.%s" % session._id, PacketLogin(username=user.name))
         core.bus.broadcast("ex.session.%s" % session._id, PacketLogin())
 
-        core.bus.broadcast("ex.user.global", PacketLogin(username=user.name))
+        # do some funkatronic queue binds
+        core.bus.bindQueue("ex-%s" % session._id, "ex.user.global")
+        core.bus.bindQueue("ex-%s" % session._id, "ex.user.%s" % user._id)
+        core.bus.bindQueue("ex-%s" % session._id, "ex.loc.%s" % user.location_id)
 
-        # send this everywhere
-        core.bus.broadcast("inter.loc.%s" % user.location_id, PacketInfo())
+        # perform phase 2 of login
+        core.bus.broadcast("inter.user.%s" % user._id, PacketLogin())
 
-        user.online = True
-        meta.session.flush()
+    def dispatch(self, core, session):
+        if self._origin == ORIGIN_EX:
+            self._dispatch_ex(core, session)
+        elif self._origin == ORIGIN_INTER:
+            self._dispatch_inter(core, session)

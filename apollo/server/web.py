@@ -48,7 +48,7 @@ class FrontendHandler(RequestHandler):
     Send the user the Apollo client frontend.
     """
 
-    def get(self):
+    def get(self, *args, **kwargs):
         self.set_header("Content-Type", "text/html; charset=utf8")
         self.write(self.application.loader.load("frontend.html").generate())
 
@@ -66,6 +66,15 @@ class SessionHandler(RequestHandler):
         meta.session.save(session)
         meta.session.flush()
 
+        # declare queue
+        self.application.bus.declareQueue(
+            "ex-%s" % session._id,
+            lambda *args: self.application.bus.bindQueue(
+                "ex-%s" % session._id,
+                "ex.session.%s" % session._id
+            )
+        )
+
         logging.info("Acquired session: %s" % session.token)
 
         self.write(json.dumps({
@@ -81,6 +90,7 @@ class ActionHandler(RequestHandler):
 
     def post(self, *args, **kwargs):
         self.token = self.get_argument("s")
+        session = meta.session.find(Session, { "token" : self.token }).one()
 
         payload = self.get_argument("p")
 
@@ -88,9 +98,8 @@ class ActionHandler(RequestHandler):
             packet = deserializePacket(payload)
             packet._origin = ORIGIN_EX
         except ValueError:
-            self.application.bus.broadcast("ex.session.%s" % self.token, PacketError(msg="bad packet payload"))
+            self.application.bus.broadcast("ex.session.%s" % session._id, PacketError(msg="bad packet payload"))
         else:
-            session = meta.session.find(Session, { "token" : self.token }).one()
             packet.dispatch(self.application, session)
 
         self.finish()
@@ -126,8 +135,9 @@ class EventsHandler(RequestHandler):
         self.set_header("Content-Type", "application/json")
 
         self.token = self.get_argument("s")
+        self.consumer = Consumer(self)
 
-        Consumer(self).eat()
+        self.consumer.eat()
 
 class DylibHandler(RequestHandler):
     """
