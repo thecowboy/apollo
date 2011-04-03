@@ -115,19 +115,22 @@ class Bus(Component):
             callback=callback
         )
 
-    def bindQueue(self, queue, dest):
+    def bindQueue(self, queue, dest, callback=None):
         logging.debug("Binding %s to %s" % (queue, dest))
         self.channel.queue_bind(
             exchange="amq.topic",
             queue=queue,
-            routing_key=dest
+            routing_key=dest,
+            callback=callback
         )
-    def unbindQueue(self, queue, dest):
+
+    def unbindQueue(self, queue, dest, callback=None):
         logging.debug("Unbinding %s from %s" % (queue, dest))
         self.channel.queue_unbind(
             exchange="amq.topic",
             queue=queue,
-            routing_key=dest
+            routing_key=dest,
+            callback=callback
         )
 
     def deleteQueue(self, queue):

@@ -50,7 +50,7 @@ class PacketLogin(Packet):
     """
     name = "login"
 
-    def _dispatch_inter(self, core, session):
+    def _dispatch_stage_2(self, core, session):
         user = session.getUser()
 
         core.bus.broadcast("ex.user.global", PacketLogin(username=user.name))
@@ -61,7 +61,7 @@ class PacketLogin(Packet):
         user.online = True
         meta.session.flush()
 
-    def _dispatch_ex(self, core, session):
+    def dispatch(self, core, session):
         try:
             user = User.getUserByName(self.username)
         except ValueError:
@@ -86,16 +86,11 @@ class PacketLogin(Packet):
 
         core.bus.broadcast("ex.session.%s" % session._id, PacketLogin())
 
-        # do some funkatronic queue binds
-        core.bus.bindQueue("ex-%s" % session._id, "ex.user.global")
-        core.bus.bindQueue("ex-%s" % session._id, "ex.user.%s" % user._id)
-        core.bus.bindQueue("ex-%s" % session._id, "ex.loc.%s" % user.location_id)
-
-        # perform phase 2 of login
-        core.bus.broadcast("inter.user.%s" % user._id, PacketLogin())
-
-    def dispatch(self, core, session):
-        if self._origin == ORIGIN_EX:
-            self._dispatch_ex(core, session)
-        elif self._origin == ORIGIN_INTER:
-            self._dispatch_inter(core, session)
+        # do some funkatronic queue binds and callbacking
+        core.bus.bindQueue("ex-%s" % session._id, "ex.user.global",
+            lambda *args: core.bus.bindQueue("ex-%s" % session._id, "ex.user.%s" % user._id,
+                lambda *args: core.bus.bindQueue("ex-%s" % session._id, "ex.loc.%s" % user.location_id,
+                    self._dispatch_stage_2(core, session)
+                )
+            )
+        )

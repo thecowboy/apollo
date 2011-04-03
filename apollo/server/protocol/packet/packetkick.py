@@ -48,6 +48,7 @@ class PacketKick(Packet):
     @requireAuthentication
     def dispatch(self, core, session):
         user = session.getUser()
+
         try:
             targetUser = User.getUserByName(self.target)
         except ValueError:
@@ -60,4 +61,4 @@ class PacketKick(Packet):
 
         self.msg = self.msg or "(no reason given)"
 
-        core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Kicked by server: %s" % self.msg))
+        core.bus.broadcast("inter.user.%s" % targetUser._id, PacketLogout(msg="Kicked by server: %s" % self.msg))
