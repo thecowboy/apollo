@@ -9,7 +9,7 @@ Depends
    http://www.python.org
 
  * Tornado
-   https://github.com/facebook/tornado
+   http://www.tornadoweb.org
 
  * MongoDB
    http://www.mongodb.org
@@ -17,8 +17,11 @@ Depends
  * Ming
    http://merciless.sourceforge.net
 
- * ZeroMQ
-   http://www.zeromq.org
+ * RabbitMQ
+   http://www.rabbitmq.com
+
+ * Pika
+   http://pika.github.com
 
  * PIL
    http://www.pythonware.com/products/pil

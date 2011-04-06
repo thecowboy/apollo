@@ -22,7 +22,6 @@
 
 import logging
 
-from tornado.ioloop import IOLoop
 import uuid
 
 from apollo.server.models import meta
@@ -35,7 +34,6 @@ class Consumer(object):
 
     def __init__(self, handler):
         self.handler = handler
-        self.io_loop = IOLoop.instance()
 
         self.bus = handler.application.bus
         self.channel = self.bus.channel
