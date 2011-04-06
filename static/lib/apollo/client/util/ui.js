@@ -148,3 +148,21 @@ apollo.client.util.ui.linkify = function(text)
 {
     return text.replace(linkExpr, "<a href=\"$1\">$1</a>");
 };
+
+apollo.client.util.ui.konami = function(combo, callback)
+{
+    var state = [];
+
+    return dojo.connect(window, "onkeyup", function(evt)
+    {
+        state.push(evt.keyCode);
+        while(state.length > combo.length)
+        {
+            state.shift();
+        }
+        if(state.join(",") == combo.join(","))
+        {
+            callback();
+        }
+    });
+};
