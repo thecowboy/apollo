@@ -35,15 +35,18 @@ class predicated(object):
     allowed to run.
     """
 
-    def __init__(self, fn):
+    def __init__(self, fn, fpred=None):
         self.fn = fn
-        self.fpred = lambda *args, **kwargs: True
+        self.__doc__ = fn.__doc__
+        self.fpred = fpred
 
-    def predicate(self, predicate):
-        self.fpred = predicate
+    def predicate(self, fpred):
+        self.fpred = fpred
         return self
 
     def validate(self, *args, **kwargs):
+        if self.fpred is None:
+            return True
         return self.fpred(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
@@ -52,4 +55,6 @@ class predicated(object):
         return self.fn(*args, **kwargs)
 
     def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self
         return MethodType(self, obj, objtype)
