@@ -105,9 +105,7 @@ if __name__ == "__main__":
     # create professions
     tester = Profession(
         name="Tester",
-        hpcurve="10 + user.level * 10",
-        apcurve="10 + user.level * 10",
-        xpcurve="10 + user.level * 10",
+        assoc_class="system.professions.Tester",
         spawnpoint_id=spawntile._id
     )
 

@@ -34,7 +34,7 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from apollo.server.models import meta
 from apollo.server.models.rpg import Profession
 
-from apollo.server.util.compilers import CurveCompiler
+from apollo.server.util.importlib import import_class
 
 class User(MappedClass):
     """
@@ -70,7 +70,7 @@ class User(MappedClass):
 
     password = property(fset=_set_password)
     """
-    Convenice property for setting the user's password.
+    Convenience property for setting the user's password.
     """
 
     online = FieldProperty(bool, if_missing=False)
@@ -123,7 +123,7 @@ class User(MappedClass):
         User's max HP, according to their ``profession.hpcurve``.
         """
         profession = meta.session.get(Profession, self.profession_id)
-        return CurveCompiler(profession.hpcurve)(user=self)
+        return import_class(profession.assoc_class)(self).hpCurve()
 
     ap = FieldProperty(int, if_missing=0)
     """
@@ -136,7 +136,7 @@ class User(MappedClass):
         User's max AP, according to their ``profession.apcurve``.
         """
         profession = meta.session.get(Profession, self.profession_id)
-        return CurveCompiler(profession.apcurve)(user=self)
+        return import_class(profession.assoc_class)(self).apCurve()
 
     xp = FieldProperty(int, if_missing=0)
     """
@@ -149,7 +149,7 @@ class User(MappedClass):
         User's max XP, according to their ``profession.xpcurve``.
         """
         profession = meta.session.get(Profession, self.profession_id)
-        return CurveCompiler(profession.xpcurve)(user=self)
+        return import_class(profession.assoc_class)(self).xpCurve()
 
     stats = FieldProperty(schema.Anything)
     """

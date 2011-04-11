@@ -20,27 +20,36 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.protocol.packet import Packet
+from types import MethodType
 
-from apollo.server.models import meta
-from apollo.server.models.auth import User
-
-from apollo.server.util.auth import requireAuthentication
-
-class PacketOnline(Packet):
+class PredicateNotMatchedError(Exception):
     """
-    Request a list of online users.
+    An error thrown when a ``predicated`` is invoked when its predicate is not
+    true.
+    """
+    pass
 
-    :Direction of Transfer:
-        Bidirectional.
-
-    :Data Members:
-        None.
+class predicated(object):
+    """
+    Represents an function requiring a certain criteria to be met before being
+    allowed to run.
     """
 
-    name = "online"
+    def __init__(self, fn):
+        self.fn = fn
+        self.fpred = lambda *args, **kwargs: True
 
-    @requireAuthentication
-    def dispatch(self, core, session):
-        user = session.getUser()
-        core.bus.broadcast("ex.user.%s" % user._id, PacketOnline(users=[ ruser.name for ruser in meta.session.find(User, { "online" : True }) ]))
+    def predicate(self, predicate):
+        self.fpred = predicate
+        return self
+
+    def validate(self, *args, **kwargs):
+        return self.fpred(*args, **kwargs)
+
+    def __call__(self, *args, **kwargs):
+        if not self.validate(*args, **kwargs):
+            raise PredicateNotMatchedError("predicate was not matched")
+        return self.fn(*args, **kwargs)
+
+    def __get__(self, obj, objtype=None):
+        return MethodType(self, obj, objtype)

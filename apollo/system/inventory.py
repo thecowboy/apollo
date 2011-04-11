@@ -20,27 +20,16 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.protocol.packet import Packet
+from apollo.system import predicated
 
-from apollo.server.models import meta
-from apollo.server.models.auth import User
+class Item(object):
+    def __init__(self, params):
+        self.__dict__.update(params)
 
-from apollo.server.util.auth import requireAuthentication
+    @predicated
+    def on_use(self, target):
+        pass
 
-class PacketOnline(Packet):
-    """
-    Request a list of online users.
-
-    :Direction of Transfer:
-        Bidirectional.
-
-    :Data Members:
-        None.
-    """
-
-    name = "online"
-
-    @requireAuthentication
-    def dispatch(self, core, session):
-        user = session.getUser()
-        core.bus.broadcast("ex.user.%s" % user._id, PacketOnline(users=[ ruser.name for ruser in meta.session.find(User, { "online" : True }) ]))
+    @on_use.predicate
+    def on_use(self, target):
+        return False

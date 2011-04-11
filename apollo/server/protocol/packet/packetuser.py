@@ -29,8 +29,7 @@ from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
 from apollo.server.models import meta
 from apollo.server.models.rpg import Profession
 
-from apollo.server.util.decorators import requireAuthentication
-from apollo.server.util.compilers import CurveCompiler
+from apollo.server.util.auth import requireAuthentication
 from apollo.server.util.mathhelper import dissolve
 
 class PacketUser(Packet):
@@ -101,9 +100,9 @@ class PacketUser(Packet):
                 "y"     : acoords[1],
                 "realm" : realm.name
             },
-            hp={ "now" : user.hp, "max" : CurveCompiler(profession.hpcurve)(user=user) },
-            ap={ "now" : user.ap, "max" : CurveCompiler(profession.apcurve)(user=user) },
-            xp={ "now" : user.xp, "max" : CurveCompiler(profession.xpcurve)(user=user) }
+            hp={ "now" : user.hp, "max" : user.hpmax },
+            ap={ "now" : user.ap, "max" : user.apmax },
+            xp={ "now" : user.xp, "max" : user.xpmax }
         )
 
         if self.target is not None:

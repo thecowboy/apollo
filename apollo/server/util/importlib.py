@@ -36,3 +36,10 @@ def import_module(name, package=None):
         name = _resolve_name(name[level:], package, level)
     __import__(name)
     return sys.modules[name]
+
+def import_class(name, package=None):
+    """
+    Import a class.
+    """
+    module, klass = name.rsplit(".", 1)
+    return getattr(import_module(module, package), klass)

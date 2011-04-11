@@ -26,7 +26,7 @@ from apollo.server.models.auth import User
 from apollo.server.protocol.packet import Packet
 from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
 
-from apollo.server.util.decorators import requireAuthentication
+from apollo.server.util.auth import requireAuthentication
 
 class PacketChat(Packet):
     """

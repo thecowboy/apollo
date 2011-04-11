@@ -19,10 +19,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+from apollo.server.models.auth import Session
 
 from apollo.server.protocol.packet import Packet, ORIGIN_INTER
 
-from apollo.server.util.decorators import requireAuthentication
+from apollo.server.util.auth import requireAuthentication
 
 from apollo.server.models import meta
 
@@ -64,8 +65,10 @@ class PacketLogout(Packet):
             # send packetinfo to relevant people
             core.bus.broadcast("inter.loc.%s" % user.location_id, PacketInfo())
 
-            # delete the session
-            session.delete()
+            # delete all sessions associated
+            for sess in meta.session.find(Session, { "user_id" : user._id }):
+                sess.delete()
+
             meta.session.flush()
 
             # delete the queue

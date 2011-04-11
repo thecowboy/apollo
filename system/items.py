@@ -20,27 +20,32 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.protocol.packet import Packet
+from apollo.system import predicated
+from apollo.system.inventory import Item
 
-from apollo.server.models import meta
-from apollo.server.models.auth import User
+class HPPotion(Item):
+    @predicated
+    def on_use(self, target):
+        target.hp = min(target.hpmax, target.hp + self.hp)
 
-from apollo.server.util.auth import requireAuthentication
+    @on_use.predicate
+    def on_use(self, target):
+        return target.hp < target.hpmax
 
-class PacketOnline(Packet):
-    """
-    Request a list of online users.
+class APPotion(Item):
+    @predicated
+    def on_use(self, target):
+        target.ap = min(target.apmax, target.ap + self.ap)
 
-    :Direction of Transfer:
-        Bidirectional.
+    @on_use.predicate
+    def on_use(self, target):
+        return target.ap < target.apmax
 
-    :Data Members:
-        None.
-    """
+class Revive(Item):
+    @predicated
+    def on_use(self, target):
+        target.hp = self.hp
 
-    name = "online"
-
-    @requireAuthentication
-    def dispatch(self, core, session):
-        user = session.getUser()
-        core.bus.broadcast("ex.user.%s" % user._id, PacketOnline(users=[ ruser.name for ruser in meta.session.find(User, { "online" : True }) ]))
+    @on_use.predicate
+    def on_use(self, target):
+        return target.hp <= 0

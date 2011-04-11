@@ -20,27 +20,14 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.protocol.packet import Packet
+from apollo.system.profession import Profession
 
-from apollo.server.models import meta
-from apollo.server.models.auth import User
+class Tester(Profession):
+    def hpCurve(self):
+        return 10 + self.user.level * 10
 
-from apollo.server.util.auth import requireAuthentication
+    def apCurve(self):
+        return 10 + self.user.level * 10
 
-class PacketOnline(Packet):
-    """
-    Request a list of online users.
-
-    :Direction of Transfer:
-        Bidirectional.
-
-    :Data Members:
-        None.
-    """
-
-    name = "online"
-
-    @requireAuthentication
-    def dispatch(self, core, session):
-        user = session.getUser()
-        core.bus.broadcast("ex.user.%s" % user._id, PacketOnline(users=[ ruser.name for ruser in meta.session.find(User, { "online" : True }) ]))
+    def xpCurve(self):
+        return 10 + self.user.level * 10

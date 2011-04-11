@@ -42,33 +42,9 @@ class Profession(MappedClass):
     Name of the profession.
     """
 
-    hpcurve = FieldProperty(str, required=True)
+    assoc_class = FieldProperty(str)
     """
-    Python expression that evaluates to the HP for this profession based on user
-    stats.
-
-    The variable ``user`` is available for accessing user stats.
-    """
-
-    apcurve = FieldProperty(str, required=True)
-    """
-    Python expression that evaluates to the AP for this profession based on user
-    stats.
-
-    The variable ``user`` is available for accessing user stats.
-    """
-
-    xpcurve = FieldProperty(str, required=True)
-    """
-    Python expression that evaluates to the XP for this profession based on user
-    stats.
-
-    The variable ``user`` is available for accessing user stats.
-    """
-
-    basestats = FieldProperty(schema.Anything)
-    """
-    Base stats for this profession.
+    Associated system profession class.
     """
 
     spawnpoint_id = ForeignIdProperty("Tile")
@@ -91,15 +67,37 @@ class Item(MappedClass):
     Name of the item.
     """
 
-    type
+    type_id = ForeignIdProperty("ItemType")
     """
     Item type.
     """
 
-    #
-    # python event code
-    #
-    onuse = FieldProperty(str)
+    assoc_class = FieldProperty(str)
     """
-    What should occur when the item is used?
+    Associated system item class (overrides ``ItemType`` definition).
+    """
+
+    assoc_params = FieldProperty(schema.Anything)
+    """
+    Parameters for the associated class.
+    """
+
+class ItemType(MappedClass):
+    """
+    A type of item.
+    """
+    class __mongometa__:
+        name = "itemtype"
+        session = meta.session
+
+    _id = FieldProperty(schema.ObjectId)
+
+    name = FieldProperty(str, required=True)
+    """
+    Name of the item type.
+    """
+
+    assoc_class = FieldProperty(str)
+    """
+    Associated system item class.
     """

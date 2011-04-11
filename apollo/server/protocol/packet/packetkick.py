@@ -26,7 +26,7 @@ from apollo.server.protocol.packet import Packet
 from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
 from apollo.server.protocol.packet.packetlogout import PacketLogout
 
-from apollo.server.util.decorators import requirePermission, requireAuthentication
+from apollo.server.util.auth import requirePermission, requireAuthentication
 
 class PacketKick(Packet):
     """

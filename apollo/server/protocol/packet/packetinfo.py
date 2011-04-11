@@ -26,7 +26,7 @@ from apollo.server.models import meta
 from apollo.server.models.geography import Tile, Chunk, CHUNK_STRIDE, Terrain, Realm
 from apollo.server.models.auth import User
 
-from apollo.server.util.decorators import requireAuthentication
+from apollo.server.util.auth import requireAuthentication
 from apollo.server.util.mathhelper import dissolve
 
 class PacketInfo(Packet):
