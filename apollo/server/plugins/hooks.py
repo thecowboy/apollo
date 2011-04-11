@@ -36,8 +36,6 @@ class HookRegistry(object):
     def __getattr__(self, item):
         return self.registry[item]
 
-registry = HookRegistry()
-
 class Hook(object):
     def __init__(self, name):
         self.name = name
@@ -54,6 +52,8 @@ class Hook(object):
             listener(*args, **kwargs)
 
 def setup(*args):
+    globals()["registry"] = HookRegistry()
+
     from apollo.server.protocol.packet.packetmove import PacketMove
 
     # hooks for PacketMove
