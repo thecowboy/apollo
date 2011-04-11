@@ -57,3 +57,29 @@ class PluginRegistry(Component):
 
     def isPluginLoaded(self, plugin_name):
         return plugin_name in self.plugins
+
+    def unloadPlugin(self, plugin_name):
+        plugin = self.plugins[plugin_name]
+
+        if hasattr(plugin, "shutdown"):
+            plugin.shutdown(self.core)
+
+        del self.plugins[plugin_name]
+
+class PluginMonkey(object):
+    def __init__(self):
+        self.monkeys = {}
+
+    def patch(self, cls, name, deco):
+        fn = getattr(cls, name)
+        self.monkeys[cls, name] = fn
+        setattr(cls, name, deco(fn))
+
+    def undo(self, cls, name):
+        setattr(cls, name, self.monkeys[cls, name])
+        del self.monkeys[cls, name]
+
+    def rollback(self):
+        for cls, name in self.monkeys:
+            setattr(cls, name, self.monkeys[cls, name])
+        self.monkeys.clear()

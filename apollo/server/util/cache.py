@@ -21,6 +21,20 @@
 #
 
 """
-Helper functions for event code. Functions in here are automatically imported
-into any event code.
+Various caching helpers.
 """
+
+def memoize(fn):
+    """
+    Memoizing decorator for functions.
+    """
+    cache = {}
+
+    def _closure(*args, **kwargs):
+        key = (args, tuple(kwargs.iteritems()))
+        if key not in cache:
+            cache[key] = fn(*args, **kwargs)
+        return cache[key]
+
+    _closure.clear_cache = cache.clear
+    return _closure

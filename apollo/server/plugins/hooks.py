@@ -48,12 +48,20 @@ class Hook(object):
         self.listeners.remove(listener)
 
     def __call__(self, *args, **kwargs):
+        result = True
+
         for listener in self.listeners:
-            listener(*args, **kwargs)
+            result = result and listener(*args, **kwargs)
+
+        return result
 
 def setup(*args):
     globals()["registry"] = HookRegistry()
 
+    from apollo.server.plugins import PluginMonkey
+    globals()["monkey"] = PluginMonkey()
+
+    from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
     from apollo.server.protocol.packet.packetmove import PacketMove
 
     # hooks for PacketMove
@@ -62,9 +70,17 @@ def setup(*args):
 
     def monkey_PacketMove(fn):
         def dispatch(self, core, session):
-            before_move(self, core, session)
+            user = session.getUser()
+
+            if not before_move(self, core, session):
+                core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
+                return
+
             if fn(self, core, session):
                 after_move(self, core, session)
         return dispatch
 
-    PacketMove.dispatch = monkey_PacketMove(PacketMove.dispatch)
+    monkey.patch(PacketMove, "dispatch", monkey_PacketMove)
+
+def shutdown(*args):
+    monkey.rollback()

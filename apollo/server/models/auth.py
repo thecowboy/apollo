@@ -34,6 +34,7 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from apollo.server.models import meta
 from apollo.server.models.rpg import Profession
 
+from apollo.server.util.cache import memoize
 from apollo.server.util.importlib import import_class
 
 class User(MappedClass):
@@ -217,6 +218,7 @@ class Session(MappedClass):
     ID of the user connected to this session.
     """
 
+    @memoize
     def getUser(self):
         """
         Get the user connected to this session (if any).

@@ -28,6 +28,7 @@ depends = [ "apollo.server.plugins.hooks" ]
 
 def move_test(self, core, session):
     print "i got triggered!"
+    return True
 
 def setup(core):
     from apollo.server.plugins.hooks import registry
