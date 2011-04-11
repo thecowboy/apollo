@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    intro
+   plugins
    geography
    api/index
 
