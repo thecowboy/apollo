@@ -28,14 +28,6 @@ class Profession(object):
     def __init__(self, user):
         self.user = user
 
-    @predicated
-    def on_move(self, x, y, terrain):
-        pass
-
-    @on_move.predicate
-    def on_move(self, x, y, terrain):
-        return True
-
     def hpCurve(self):
         return 1
 

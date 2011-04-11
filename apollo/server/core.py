@@ -32,6 +32,7 @@ from tornado.template import Loader
 from tornado.web import Application
 
 from apollo.server import setupDBSession
+from apollo.server.plugins import PluginRegistry
 
 from apollo.server.render.supervisor import RendererSupervisor
 from apollo.server.web import FrontendHandler, SessionHandler, ActionHandler, EventsHandler, DylibHandler
@@ -71,6 +72,7 @@ class Core(Application):
         self.connections = {}
 
         self.bus = Bus(self)
+        self.plugins = PluginRegistry(self)
 
     def go(self):
         """
@@ -78,6 +80,8 @@ class Core(Application):
         """
         self.cron = CronScheduler(self)
         self.cron.go()
+
+        self.plugins.loadPluginsFromOptions()
 
         #self.rendervisor = RendererSupervisor()
         #self.rendervisor.go()

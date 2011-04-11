@@ -65,7 +65,7 @@ dojo.declare("apollo.client.protocol.Transport", apollo.client.Component, {
 
     processEvent : function(packet)
     {
-        var packetType = apollo.client.dylib.packetlist[packet.__name__];
+        var packetType = apollo.client.dylib.packetlist[packet._name];
 
         if(packetType)
         {

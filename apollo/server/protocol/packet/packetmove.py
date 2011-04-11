@@ -20,15 +20,12 @@
 # THE SOFTWARE.
 #
 
-from apollo.server.models.rpg import Profession
-
 from apollo.server.protocol.packet import Packet
 
 from apollo.server.models import meta
-from apollo.server.models.geography import Chunk, CHUNK_STRIDE, Tile, Terrain
+from apollo.server.models.geography import Chunk, CHUNK_STRIDE, Tile
 
 from apollo.server.util.auth import requireAuthentication
-from apollo.server.util.importlib import import_class
 
 from apollo.server.util.mathhelper import absolve
 
@@ -58,8 +55,6 @@ class PacketMove(Packet):
     @requireAuthentication
     def dispatch(self, core, session):
         user = session.getUser()
-        profession = meta.session.get(Profession, user.profession_id)
-        sys_user_profession = import_class(profession.assoc_class)(user)
 
         old_loc = user.location_id
 
@@ -71,23 +66,14 @@ class PacketMove(Packet):
             chunk = meta.session.find(Chunk, { "location" : { "cx" : ccoords[0], "cy" : ccoords[1] } }).one()
         except ValueError:
             core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
-            return
+            return False
 
         # find the tile
         try:
             tile = meta.session.find(Tile, { "location" : { "rx" : rcoords[0], "ry" : rcoords[1] }, "chunk_id" : chunk._id }).one()
         except ValueError:
             core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
-            return
-
-        terrain = meta.session.get(Terrain, tile.terrain_id)
-
-        try:
-            # dispatch the onmove hook
-            sys_user_profession.on_move(self.x, self.y, terrain)
-        except PredicateNotMatchedError:
-            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
-            return
+            return False
 
         user.location_id = tile._id
 
@@ -101,3 +87,6 @@ class PacketMove(Packet):
         # some users may require additional info (including this one!)
         core.bus.broadcast("inter.loc.%s" % tile._id, PacketInfo())
         core.bus.broadcast("inter.loc.%s" % old_loc, PacketInfo())
+
+        # return true for hooks
+        return True

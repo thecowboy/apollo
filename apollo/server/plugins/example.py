@@ -20,42 +20,15 @@
 # THE SOFTWARE.
 #
 
-import json
+__name__ = "Example"
+__author__ = "Tony Young"
+__version__ = "0.1"
+__description__ = "Sample plugin."
+depends = [ "apollo.server.plugins.hooks" ]
 
-ORIGIN_EX = 1
-ORIGIN_INTER = 2
+def move_test(self, core, session):
+    print "i got triggered!"
 
-class Packet(object):
-    """
-    Base packet class. Implements the command pattern.
-    """
-    def __init__(self, **payload):
-        self.__dict__.update(payload)
-
-    def dispatch(self, core, session):
-        """
-        Dispatch the packet. Can be decorated with decorators from
-        ``apollo.server.util.decorators``.
-
-        :Parameters:
-            * ``core``
-              The Core object.
-
-            * ``session``
-              The session processing the packet.
-        """
-        pass
-
-    def dump(self):
-        """
-        Dump the packet into JSON format.
-        """
-        dic = self.__dict__.copy()
-        dic["_name"] = self.__class__.name
-        return json.dumps(dic)
-
-    def __getattr__(self, attr):
-        return None
-
-    def __repr__(self):
-        return "<%s: %s>" % (self.__class__.__name__, self.dump())
+def setup(core):
+    from apollo.server.plugins.hooks import registry
+    registry.before_move.addListener(move_test)

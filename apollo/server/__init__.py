@@ -54,6 +54,8 @@ def setupOptions():
     define("address", default="127.0.0.1", help="bind to the given address", metavar="ADDRESS")
     define("port", default=8081, help="run on the given port", type=int, metavar="PORT")
 
+    define("plugins", default=[], help="plugins to load", type=list, metavar="PLUGINS")
+
     define("render_process_num", default=4, help="number of renderer processes to run", type=int, metavar="NUM")
 
     define("cron_interval", default=360, help="run cron every specified seconds", type=int, metavar="INTERVAL")
