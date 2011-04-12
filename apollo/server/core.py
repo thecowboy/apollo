@@ -68,20 +68,19 @@ class Core(Application):
         setupDBSession()
 
         self.dylib_dispatcher = DylibDispatcher(self)
-
-        self.connections = {}
-
         self.bus = Bus(self)
         self.plugins = PluginRegistry(self)
+        self.cron = CronScheduler(self)
 
     def go(self):
         """
         Start the server proper.
         """
-        self.cron = CronScheduler(self)
+        self.bus.go()
+        self.plugins.loadPluginsFromOptions()
         self.cron.go()
 
-        self.plugins.loadPluginsFromOptions()
+        logging.info("Server ready (may be waiting for message bus).")
 
         #self.rendervisor = RendererSupervisor()
         #self.rendervisor.go()

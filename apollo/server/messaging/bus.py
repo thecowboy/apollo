@@ -32,6 +32,7 @@ from pika import PlainCredentials, ConnectionParameters, BasicProperties
 from pymongo.objectid import ObjectId
 
 from apollo.server.component import Component
+from apollo.server.messaging import FakeSession
 
 from apollo.server.protocol.packet import ORIGIN_INTER
 from apollo.server.protocol.packet.meta import deserializePacket
@@ -58,6 +59,7 @@ class Bus(Component):
             virtual_host=options.amqp_vhost
         )
 
+    def go(self):
         self.amqp = TornadoConnection(
             parameters=self.parameters,
             on_open_callback=self.on_amqp_connection_open
@@ -153,11 +155,7 @@ class Bus(Component):
         packet._origin = ORIGIN_INTER
 
         if prefixparts[1] == "user":
-            for session in meta.session.find(Session, { "user_id" : ObjectId(prefixparts[2]) }):
-                packet.dispatch(self.core, session)
-                return
+            packet.dispatch(self.core, FakeSession(ObjectId(prefixparts[2])))
         elif prefixparts[1] == "loc":
             for user in meta.session.find(User, { "location_id" : ObjectId(prefixparts[2]) }):
-                for session in meta.session.find(Session, { "user_id" : user._id }):
-                    packet.dispatch(self.core, session)
-                    break
+                packet.dispatch(self.core, FakeSession(user._id))

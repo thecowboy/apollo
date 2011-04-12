@@ -20,8 +20,6 @@
 # THE SOFTWARE.
 #
 
-from apollo.system import predicated
-
 class Profession(object):
     base_stats = {}
 
@@ -36,4 +34,3 @@ class Profession(object):
 
     def xpCurve(self):
         return 1
-

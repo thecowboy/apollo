@@ -23,3 +23,16 @@
 """
 Apollo's broadcast and cross-server communication system.
 """
+
+from apollo.server.models import meta
+from apollo.server.models.auth import User
+
+from apollo.server.util.cache import memoize
+
+class FakeSession(object):
+    def __init__(self, user_id):
+        self.user_id = user_id
+
+    @memoize
+    def getUser(self):
+        return meta.session.get(User, self.user_id)

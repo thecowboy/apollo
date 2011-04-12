@@ -32,11 +32,14 @@ class PluginRegistry(Component):
         super(PluginRegistry, self).__init__(core)
         self.plugins = {}
 
+    def loadedPlugins(self):
+        return self.plugins.keys()
+
     def loadPluginsFromOptions(self):
         for plugin in options.plugins:
             if not self.isPluginLoaded(plugin):
                 self.loadPlugin(plugin)
-        logging.info("Loaded %d plugins." % len(self.plugins))
+        logging.info("Loaded %d plugins: %s" % (len(self.plugins), ", ".join(self.loadedPlugins())))
 
     def loadPlugin(self, plugin_name):
         try:

@@ -25,6 +25,9 @@ __author__ = "Tony Young"
 __version__ = "0.1"
 __description__ = "Mechanism to hook various events via monkey patching."
 
+from apollo.server.plugins import PluginMonkey
+monkey = PluginMonkey()
+
 class HookRegistry(object):
     def __init__(self):
         self.registry = {}
@@ -56,10 +59,7 @@ class Hook(object):
         return result
 
 def setup(*args):
-    globals()["registry"] = HookRegistry()
-
-    from apollo.server.plugins import PluginMonkey
-    globals()["monkey"] = PluginMonkey()
+    globals()["registry"] = registry = HookRegistry()
 
     from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
     from apollo.server.protocol.packet.packetmove import PacketMove

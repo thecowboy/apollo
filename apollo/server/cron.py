@@ -37,10 +37,6 @@ class CronScheduler(Component):
     """
     Apollo scheduler service. Performs clean up of dead sessions, etc.
     """
-    def __init__(self, core):
-        super(CronScheduler, self).__init__(core)
-        self.callback = PeriodicCallback(self.run, options.cron_interval * 1000)
-
     def run(self):
         """
         Run cron (once).
@@ -73,4 +69,5 @@ class CronScheduler(Component):
         Start the cron cycle.
         """
         self.run()
+        self.callback = PeriodicCallback(self.run, options.cron_interval * 1000)
         self.callback.start()
