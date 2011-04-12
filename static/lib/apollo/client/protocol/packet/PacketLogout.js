@@ -33,7 +33,9 @@ dojo.declare("apollo.client.protocol.packet.PacketLogout", apollo.client.protoco
         {
             if(dijit.byId("loginDialog").open)
             {
-                dojo.byId("login_error").style.display = "";
+                var errorDiv = dojo.byId("loginError");
+                errorDiv.innerHTML = this.msg;
+                errorDiv.style.display = "";
             }
             else
             {

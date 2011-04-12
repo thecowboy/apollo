@@ -2,8 +2,8 @@
     <div dojoType="dijit.form.Form" id="login_form" method="post">
         <table>
             <tr>
-                <td id="login_error" colspan="2" style="display: none; color: red">
-                    Invalid username/password combination.
+                <td id="loginError" colspan="2" style="display: none; color: red">
+                    Unable to perform login.
                 </td>
             </tr>
             <tr>
@@ -21,7 +21,7 @@
             </tr>
         </table>
         <script type="dojo/method" event="onSubmit">
-            dojo.byId("login_error").style.display = "none";
+            dojo.byId("loginError").style.display = "none";
             core.actions.login(dojo.byId("login_username").value, dojo.byId("login_password").value);
             return false;
         </script>

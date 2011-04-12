@@ -65,24 +65,23 @@ class PacketLogin(Packet):
         try:
             user = User.getUserByName(self.username)
         except ValueError:
-            core.bus.broadcast("ex.session.%s" % session._id, PacketLogout()) # nope, you don't even exist
+            core.bus.broadcast("ex.session.%s" % session._id, PacketLogout(msg="Invalid username or password.")) # nope, you don't even exist
             return
 
         if self.pwhash != sha256(self.nonce + sha256(user.pwhash + session.token).hexdigest()).hexdigest():
-            core.bus.broadcast("ex.session.%s" % session._id, PacketLogout()) # nope, your hash is incorrect
+            core.bus.broadcast("ex.session.%s" % session._id, PacketLogout(msg="Invalid username or password.")) # nope, your hash is incorrect
+            return
+
+        if user.online:
+            core.bus.broadcast("ex.session.%s" % session._id, PacketLogout(msg="Session clash, please try again."))
+            core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Session clash"))
+            user.online = False
+            meta.session.flush()
             return
 
         # set all the sessions and stuff
         session.user_id = user._id
         meta.session.save(session)
-
-        # logout existing users
-        #if user.online:
-        #    core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Session clash"))
-
-            # in case this is a stale client, we can set it forcibly to offline
-        #    user.online = False
-        #meta.session.flush()
 
         core.bus.broadcast("ex.session.%s" % session._id, PacketLogin())
 

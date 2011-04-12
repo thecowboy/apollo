@@ -19,7 +19,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-from functools import wraps
 
 import uuid
 import logging
@@ -32,13 +31,14 @@ from pika import PlainCredentials, ConnectionParameters, BasicProperties
 from pymongo.objectid import ObjectId
 
 from apollo.server.component import Component
-from apollo.server.messaging import FakeSession
 
 from apollo.server.protocol.packet import ORIGIN_INTER
 from apollo.server.protocol.packet.meta import deserializePacket
 
+from apollo.server.messaging import FakeSession
+
 from apollo.server.models import meta
-from apollo.server.models.auth import Session, User
+from apollo.server.models.auth import User
 
 class Bus(Component):
     """
