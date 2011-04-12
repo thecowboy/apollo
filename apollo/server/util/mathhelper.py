@@ -104,4 +104,4 @@ def dissolve(cx, cy, rx, ry, s):
    :Returns:
         A tuple containing absolute coordinates.
     """
-    return (cx * s + rx, cy * s + ry)
+    return cx * s + rx, cy * s + ry

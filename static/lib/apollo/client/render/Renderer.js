@@ -98,10 +98,10 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         // XXX: why are the numbers 5 and -3 required ? probably something wrong
         //      with my math :(
         //
-        var realpos = {
+        realpos = {
             x : isocoords.x - 5 + pos.x,
             y : isocoords.y + 3 + pos.y
-        };
+        }
 
         // don't allow clicking outside the map (server will eat this anyway)
         if(
