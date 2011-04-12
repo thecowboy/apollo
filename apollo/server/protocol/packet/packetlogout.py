@@ -65,11 +65,9 @@ class PacketLogout(Packet):
             # send packetinfo to relevant people
             core.bus.broadcast("inter.loc.%s" % user.location_id, PacketInfo())
 
-            # delete all sessions associated
+            # delete all sessions and queues associated
             for sess in meta.session.find(Session, { "user_id" : user._id }):
                 sess.delete()
+                core.bus.deleteQueue("ex-%s" % sess._id)
 
             meta.session.flush()
-
-            # delete the queue
-            core.bus.deleteQueue("ex-%s" % session._id)
