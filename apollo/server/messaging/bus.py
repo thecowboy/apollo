@@ -47,6 +47,8 @@ class Bus(Component):
     def __init__(self, core):
         super(Bus, self).__init__(core)
 
+        self.ready = False
+
         self.busName = uuid.uuid4().hex
 
         self.parameters = ConnectionParameters(
@@ -85,6 +87,7 @@ class Bus(Component):
             queue="inter",
             routing_key="inter.#"
         )
+        self.ready = True
         logging.info("Message bus ready.")
 
     def broadcast(self, dest, packet):

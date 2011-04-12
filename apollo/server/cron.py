@@ -32,6 +32,7 @@ from apollo.server.component import Component
 
 from apollo.server.models import meta
 from apollo.server.models.auth import Session, User
+from apollo.server.protocol.packet.packetlogout import PacketLogout
 
 class CronScheduler(Component):
     """
@@ -41,6 +42,10 @@ class CronScheduler(Component):
         """
         Run cron (once).
         """
+        if not self.core.bus.ready:
+            logging.warn("Bus is not ready, not running cron.")
+            return
+
         logging.info("Running cron...")
 
         cursor = meta.session.find(Session, {
@@ -52,22 +57,19 @@ class CronScheduler(Component):
         num_rows = cursor.count()
 
         for session in cursor:
-            if session.token in self.core.connections:
-                self.core.connections[session.token].shutdown("Heartbeat timeout")
-                logging.info("Dropped active connection %s." % session.token)
-            else:
-                user = meta.session.get(User, session.user_id)
-                if user is not None:
-                    user.online = False
-                meta.session.flush_all()
+            user = meta.session.get(User, session.user_id)
+            if user is not None:
+                if user.online:
+                    self.core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Heartbeat timeout"))
+                user.online = False
             meta.session.remove(Session, { "_id" : session._id })
 
+        meta.session.flush()
         logging.info("Purged %d expired session(s)." % num_rows)
 
     def go(self):
         """
         Start the cron cycle.
         """
-        self.run()
         self.callback = PeriodicCallback(self.run, options.cron_interval * 1000)
         self.callback.start()

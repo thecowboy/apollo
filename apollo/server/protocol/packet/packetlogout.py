@@ -48,7 +48,7 @@ class PacketLogout(Packet):
         if self._origin == ORIGIN_INTER:
             msg = self.msg or "Reason unknown"
         else:
-            msg ="User logout: " + (self.msg or "(no reason given)")
+            msg = "User logout: " + (self.msg or "(no reason given)")
 
         user = session.getUser()
 

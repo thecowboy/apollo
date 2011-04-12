@@ -47,6 +47,8 @@ class Core(Application):
     def __init__(self):
         logging.getLogger().setLevel(options.logging_level)
 
+        logging.info("Starting server...")
+
         # apollo distribution root
         dist_root = os.path.join(os.path.dirname(__file__), "..", "..")
 
@@ -80,7 +82,7 @@ class Core(Application):
         self.plugins.loadPluginsFromOptions()
         self.cron.go()
 
-        logging.info("Server ready (may be waiting for message bus).")
+        logging.info("Server ready (may be still waiting for message bus).")
 
         #self.rendervisor = RendererSupervisor()
         #self.rendervisor.go()
