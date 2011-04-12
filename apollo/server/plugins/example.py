@@ -26,14 +26,14 @@ __version__ = "0.1"
 __description__ = "Sample plugin."
 depends = [ "apollo.server.plugins.hooks" ]
 
+from apollo.server.plugins.hooks import registry
+
 def move_test(self, core, session):
     print "i got triggered!"
     return True
 
 def setup(core):
-    from apollo.server.plugins.hooks import registry
     registry.before_move.addListener(move_test)
 
 def shutdown(core):
-    from apollo.server.plugins.hooks import registry
     registry.before_move.removeListener(move_test)

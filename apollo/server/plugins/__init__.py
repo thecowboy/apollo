@@ -27,10 +27,35 @@ from tornado.options import options
 from apollo.server.component import Component
 from apollo.server.util.importlib import import_module
 
+class PluginMonkey(object):
+    def __init__(self):
+        self.monkeys = {}
+
+    def patch(self, cls, name, deco):
+        key = (cls, name)
+        if key in self.monkeys:
+            logging.error("Monkey patch already applied for %s.%s.%s, refusing to apply another! Use apollo.server.plugins.hooks for multiple patches!" % (cls.__module__, cls.__name__, name))
+            return
+
+        fn = getattr(cls, name)
+        self.monkeys[key] = (deco, fn)
+        setattr(cls, name, deco(fn))
+
+        logging.info("Monkey patched %s.%s.%s." % (cls.__module__, cls.__name__, name))
+
+    def undo(self, cls, name, deco):
+        if self.monkeys[cls, name][0] is not deco:
+            logging.error("Cannot undo monkey patch for %s.%s.%s. It may not have been patched." % (cls.__module__, cls.__name__, name))
+            return
+
+        setattr(cls, name, self.monkeys[cls, name])
+        del self.monkeys[cls, name]
+
 class PluginRegistry(Component):
     def __init__(self, core):
         super(PluginRegistry, self).__init__(core)
         self.plugins = {}
+        self.monkey = PluginMonkey()
 
     def loadedPlugins(self):
         return self.plugins.keys()
@@ -68,21 +93,3 @@ class PluginRegistry(Component):
             plugin.shutdown(self.core)
 
         del self.plugins[plugin_name]
-
-class PluginMonkey(object):
-    def __init__(self):
-        self.monkeys = {}
-
-    def patch(self, cls, name, deco):
-        fn = getattr(cls, name)
-        self.monkeys[cls, name] = fn
-        setattr(cls, name, deco(fn))
-
-    def undo(self, cls, name):
-        setattr(cls, name, self.monkeys[cls, name])
-        del self.monkeys[cls, name]
-
-    def rollback(self):
-        for cls, name in self.monkeys:
-            setattr(cls, name, self.monkeys[cls, name])
-        self.monkeys.clear()

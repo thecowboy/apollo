@@ -25,18 +25,18 @@ __author__ = "Tony Young"
 __version__ = "0.1"
 __description__ = "Mechanism to hook various events via monkey patching."
 
-from apollo.server.plugins import PluginMonkey
-monkey = PluginMonkey()
-
 class HookRegistry(object):
     def __init__(self):
         self.registry = {}
+        self.available = False
 
     def registerHook(self, hook):
         self.registry[hook.name] = hook
         return hook
 
     def __getattr__(self, item):
+        if not self.available:
+            raise ValueError("hooks plugin not loaded")
         return self.registry[item]
 
 class Hook(object):
@@ -58,29 +58,36 @@ class Hook(object):
 
         return result
 
-def setup(core):
-    globals()["registry"] = registry = HookRegistry()
+# a registry will exist EVEN IF this plugin is not loaded!
+registry = HookRegistry()
 
+# various monkey patches
+def monkey_PacketMove(fn):
     from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
+
+    def dispatch(self, core, session):
+        user = session.getUser()
+
+        if not registry.before_move(self, core, session):
+            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
+            return
+
+        if fn(self, core, session):
+            registry.after_move(self, core, session)
+    return dispatch
+
+def setup(core):
+    registry.available = True
+
     from apollo.server.protocol.packet.packetmove import PacketMove
 
     # hooks for PacketMove
-    before_move = registry.registerHook(Hook("before_move"))
-    after_move = registry.registerHook(Hook("after_move"))
+    registry.registerHook(Hook("before_move"))
+    registry.registerHook(Hook("after_move"))
 
-    def monkey_PacketMove(fn):
-        def dispatch(self, core, session):
-            user = session.getUser()
-
-            if not before_move(self, core, session):
-                core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
-                return
-
-            if fn(self, core, session):
-                after_move(self, core, session)
-        return dispatch
-
-    monkey.patch(PacketMove, "dispatch", monkey_PacketMove)
+    core.plugins.monkey.patch(PacketMove, "dispatch", monkey_PacketMove)
 
 def shutdown(core):
-    monkey.rollback()
+    from apollo.server.protocol.packet.packetmove import PacketMove
+
+    core.plugins.monkey.undo(PacketMove, "dispatch", monkey_PacketMove)
