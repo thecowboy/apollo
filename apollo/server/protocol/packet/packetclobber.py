@@ -56,9 +56,9 @@ class PacketClobber(Packet):
             core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Could not find chunk to clobber."))
             return
 
-        core.rendervisor.renderChunk(chunk._id)
-
-        core.bus.broadcast("ex.user.global", PacketClobber(
-            cx=self.cx,
-            cy=self.cy
-        ))
+        core.rendervisor.renderChunk(chunk._id, callback=lambda *args:
+            core.bus.broadcast("ex.user.global", PacketClobber(
+                cx=self.cx,
+                cy=self.cy
+            ))
+        )
