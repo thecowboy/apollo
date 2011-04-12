@@ -84,5 +84,5 @@ class Core(Application):
 
         logging.info("Server ready (may be still waiting for message bus).")
 
-        #self.rendervisor = RendererSupervisor()
-        #self.rendervisor.go()
+        self.rendervisor = RendererSupervisor()
+        self.rendervisor.go()

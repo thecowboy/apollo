@@ -20,14 +20,21 @@
 # THE SOFTWARE.
 #
 
+from apollo.server.models import meta
+from apollo.server.models.geography import Chunk
+
 from apollo.server.protocol.packet import Packet
+from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
+
+from apollo.server.util.auth import requireAuthentication, requirePermission
 
 class PacketClobber(Packet):
     """
-    Request that the client clobbers a chunk and reloads it.
+    Request that the client clobbers a chunk and reloads it, or request that
+    the server rerender a chunk.
 
     :Direction of Transfer:
-        Server to client only.
+        Bidirectional.
 
     :Data Members:
          * ``cx``
@@ -37,3 +44,21 @@ class PacketClobber(Packet):
            Chunk y coordinate.
     """
     name = "clobber"
+
+    @requirePermission("admin.clobber")
+    @requireAuthentication
+    def dispatch(self, core, session):
+        user = session.getUser()
+
+        try:
+            chunk = meta.session.find(Chunk, { "location" : { "cx" : int(self.cx), "cy" : int(self.cy) } }).one()
+        except ValueError:
+            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Could not find chunk to clobber."))
+            return
+
+        core.rendervisor.renderChunk(chunk._id)
+
+        core.bus.broadcast("ex.user.global", PacketClobber(
+            cx=self.cx,
+            cy=self.cy
+        ))

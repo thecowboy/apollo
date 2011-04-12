@@ -38,6 +38,7 @@ dojo.require("apollo.client.command.WhisperCommand");
 dojo.require("apollo.client.command.OnlineCommand");
 dojo.require("apollo.client.command.TeleportCommand");
 dojo.require("apollo.client.command.WhoisCommand");
+dojo.require("apollo.client.command.ClobberCommand");
 
 dojo.declare("apollo.client.ActionDispatcher", null, {
     constructor : function(transport)
@@ -82,7 +83,8 @@ dojo.declare("apollo.client.ActionDispatcher", null, {
         online  : apollo.client.command.OnlineCommand,
         teleport: apollo.client.command.TeleportCommand,
         tp      : apollo.client.command.TeleportCommand,
-        whois   : apollo.client.command.WhoisCommand
+        whois   : apollo.client.command.WhoisCommand,
+        clobber : apollo.client.command.ClobberCommand
     },
 
     chat : function(msg)

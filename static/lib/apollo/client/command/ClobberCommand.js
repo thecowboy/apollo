@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 by Ryan Lewis
+ * Copyright (C) 2011 by Tony Young
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +20,28 @@
  * THE SOFTWARE.
  */
 
-dojo.provide("apollo.client.command.LogoutCommand");
+dojo.provide("apollo.client.command.ClobberCommand");
 
-dojo.require("apollo.client.protocol.packet.PacketLogout");
+dojo.require("apollo.client.protocol.packet.PacketClobber");
 
 dojo.require("apollo.client.util.ui");
 
 dojo.require("apollo.client.command.Command");
 
-dojo.declare("apollo.client.command.LogoutCommand", apollo.client.command.Command, {
-    name : "logout",
-    description : "/logout [reason] - Log out of the game with a given reason",
+dojo.declare("apollo.client.command.ClobberCommand", apollo.client.command.Command, {
+    name : "clobber",
+    description : "/clobber cx cy - Clobber a chunk",
 
-    execute : function(transport)
+    execute : function(transport, cx, cy)
     {
-        transport.sendAction(new apollo.client.protocol.packet.PacketLogout({
-            msg    : Array.prototype.splice.call(arguments, 1).join(" ")
+        if (cx == undefined || cy == undefined)
+        {
+            apollo.client.util.ui.addConsoleMessage("Incorrect number of arguments.");
+            return;
+        }
+        transport.sendAction(new apollo.client.protocol.packet.PacketClobber({
+            cx     : cx,
+            cy     : cy
         }));
     }
 });
