@@ -33,3 +33,7 @@ def move_test(self, core, session):
 def setup(core):
     from apollo.server.plugins.hooks import registry
     registry.before_move.addListener(move_test)
+
+def shutdown(core):
+    from apollo.server.plugins.hooks import registry
+    registry.before_move.removeListener(move_test)

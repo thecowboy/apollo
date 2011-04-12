@@ -58,7 +58,7 @@ class Hook(object):
 
         return result
 
-def setup(*args):
+def setup(core):
     globals()["registry"] = registry = HookRegistry()
 
     from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
@@ -82,5 +82,5 @@ def setup(*args):
 
     monkey.patch(PacketMove, "dispatch", monkey_PacketMove)
 
-def shutdown(*args):
+def shutdown(core):
     monkey.rollback()
