@@ -1,0 +1,21 @@
+<div dojoType="dijit.Dialog" title="Preferences" id="preferencesDialog">
+    <div dojoType="dijit.form.Form" id="preferences_form" method="post">
+        Preferences go here.
+
+        <div style="text-align: right">
+            <button dojoType="dijit.form.Button" type="button">
+                Cancel
+                <script type="dojo/method" event="onClick">
+                    dijit.byId("preferencesDialog").hide();
+                </script>
+            </button>
+
+            <button dojoType="dijit.form.Button" type="submit">OK</button>
+        </div>
+
+        <script type="dojo/method" event="onSubmit">
+            dijit.byId("preferencesDialog").hide();
+            return false;
+        </script>
+    </div>
+</div>

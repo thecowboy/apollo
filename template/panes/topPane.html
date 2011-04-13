@@ -12,6 +12,13 @@
                     Inventory
                 </div>
                 <div dojoType="dijit.MenuItem">
+                    Preferences
+                    <script type="dojo/action" event="onClick">
+                        dijit.byId("preferencesDialog").show();
+                    </script>
+                </div>
+                <div dojoType="dijit.MenuSeparator"></div>
+                <div dojoType="dijit.MenuItem">
                     Logout
                     <script type="dojo/action" event="onClick">
                         core.transport.sendAction(new apollo.client.protocol.packet.PacketLogout());

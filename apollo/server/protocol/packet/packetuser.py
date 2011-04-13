@@ -68,23 +68,25 @@ class PacketUser(Packet):
 
     @requireAuthentication
     def dispatch(self, core, session):
+        user = session.getUser()
+
         if self.target is None:
-            user = session.getUser()
+            target = user
         else:
             try:
-                user = meta.session.find(User, { "name" : self.target }).one()
+                target = meta.session.find(User, { "name" : self.target }).one()
             except ValueError:
-                core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User not found."))
+                core.bus.broadcast("ex.user.%s" % target._id, PacketError(severity=SEVERITY_WARN, msg="User not found."))
                 return
 
-        if not user.online:
+        if not target.online:
             # lie about it and pretend the user doesn't exist
-            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User not found."))
+            core.bus.broadcast("ex.user.%s" % target._id, PacketError(severity=SEVERITY_WARN, msg="User not found."))
             return
 
-        profession = meta.session.get(Profession, user.profession_id)
+        profession = meta.session.get(Profession, target.profession_id)
 
-        tile = meta.session.get(Tile, user.location_id)
+        tile = meta.session.get(Tile, target.location_id)
         chunk = meta.session.get(Chunk, tile.chunk_id)
 
         realm = meta.session.get(Realm, chunk.realm_id)
@@ -92,20 +94,20 @@ class PacketUser(Packet):
         acoords = dissolve(chunk.location.cx, chunk.location.cy, tile.location.rx, tile.location.ry, CHUNK_STRIDE)
 
         packet = PacketUser(
-            name=user.name,
-            level=user.level,
+            name=target.name,
+            level=target.level,
             profession=profession.name,
             location={
                 "x"     : acoords[0],
                 "y"     : acoords[1],
                 "realm" : realm.name
             },
-            hp={ "now" : user.hp, "max" : user.hpmax },
-            ap={ "now" : user.ap, "max" : user.apmax },
-            xp={ "now" : user.xp, "max" : user.xpmax }
+            hp={ "now" : target.hp, "max" : target.hpmax },
+            ap={ "now" : target.ap, "max" : target.apmax },
+            xp={ "now" : target.xp, "max" : target.xpmax }
         )
 
         if self.target is not None:
-            packet.target = user.name
+            packet.target = target.name
 
         core.bus.broadcast("ex.user.%s" % user._id, packet)

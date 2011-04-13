@@ -40,6 +40,7 @@ dojo.require("dijit.Menu");
 dojo.require("dijit.MenuBar");
 dojo.require("dijit.PopupMenuBarItem");
 dojo.require("dijit.MenuItem");
+dojo.require("dijit.MenuSeparator");
 
 dojo.baseUrl = "static/lib/dojo/"; // dojo WOULD be here
 
@@ -62,3 +63,4 @@ dojo.addOnLoad(function()
     }).play();
     (core = new apollo.client.Core()).go();
 });
+

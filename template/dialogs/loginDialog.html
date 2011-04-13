@@ -14,12 +14,12 @@
                 <td><label for="login_password">Password</label></td>
                 <td><input type="password" id="login_password" name="password" required="true" dojoType="dijit.form.TextBox" /></td>
             </tr>
-            <tr>
-                <td colspan="2">
-                    <button dojoType="dijit.form.Button" type="submit">Login</button>
-                </td>
-            </tr>
         </table>
+
+        <div style="text-align: right">
+            <button dojoType="dijit.form.Button" type="submit">Login</button>
+        </div>
+
         <script type="dojo/method" event="onSubmit">
             dojo.byId("loginError").style.display = "none";
             core.actions.login(dojo.byId("login_username").value, dojo.byId("login_password").value);
