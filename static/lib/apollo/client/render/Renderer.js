@@ -53,6 +53,8 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         {
             this.autofit();
         }));
+
+        dojo.connect(this.canvas, "onmousemove", dojo.hitch(this, this.handleMouseMove));
     },
 
     autofit : function()
@@ -69,16 +71,8 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         return Math.floor((new Date()).getTime() / 1000);
     },
 
-    handleClick : function(pos, size, evt)
+    transformToIsometric : function(x, y)
     {
-        var canvaspos = dojo.position(this.canvas);
-
-        var x = evt.clientX - canvaspos.x;
-        var y = evt.clientY - canvaspos.y;
-
-        // resolve coordinates
-        var rcoords = apollo.client.util.mathhelper.absolve(pos.x, pos.y, this.CHUNK_STRIDE);
-
         // calculate the coordinates in terms isometric map coordinates (normalize first)
         var isocoords = {
             x : (x + this.CHUNK_WIDTH / 2 - this.canvas.width / 2) / this.TILE_WIDTH,
@@ -93,15 +87,27 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
             y : Math.round(isocoords.y + 0.5)
         };
 
-        // realpos
-        //
         // XXX: why are the numbers 5 and -3 required ? probably something wrong
         //      with my math :(
-        //
-        realpos = {
-            x : isocoords.x - 5 + pos.x,
-            y : isocoords.y + 3 + pos.y
-        }
+        return {
+            x : isocoords.x - 5,
+            y : isocoords.y + 3
+        };
+    },
+
+    handleClick : function(pos, size, evt)
+    {
+        var canvaspos = dojo.position(this.canvas);
+
+        var tpos = this.transformToIsometric(
+            evt.clientX - canvaspos.x,
+            evt.clientY - canvaspos.y
+        );
+
+        var realpos = {
+            x : tpos.x + pos.x,
+            y : tpos.y + pos.y
+        };
 
         // don't allow clicking outside the map (server will eat this anyway)
         if(
@@ -110,6 +116,36 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         ) return;
 
         this.core.transport.sendAction(new apollo.client.protocol.packet.PacketMove(realpos));
+    },
+
+    handleMouseMove : function(evt)
+    {
+        this.redraw();
+
+        var canvaspos = dojo.position(this.canvas);
+
+        var tpos = this.transformToIsometric(
+            evt.clientX - canvaspos.x,
+            evt.clientY - canvaspos.y
+        );
+
+        var backtpos = apollo.client.util.mathhelper.isometricTransform(tpos.x, tpos.y);
+
+        var realpos = {
+            x : backtpos.x * this.TILE_WIDTH + Math.round(canvaspos.w / 2),
+            y : backtpos.y * this.TILE_HEIGHT + Math.round(canvaspos.h / 2)
+        };
+
+        this.context.save();
+        this.context.strokeStyle = "#000";
+        this.context.beginPath();
+        this.context.moveTo(realpos.x - this.TILE_WIDTH / 2, realpos.y);
+        this.context.lineTo(realpos.x, realpos.y - this.TILE_HEIGHT / 2);
+        this.context.lineTo(realpos.x + this.TILE_WIDTH / 2, realpos.y);
+        this.context.lineTo(realpos.x, realpos.y + this.TILE_HEIGHT / 2);
+        this.context.closePath();
+        this.context.stroke();
+        this.context.restore();
     },
 
     draw : function(pos, size)

@@ -36,7 +36,7 @@ apollo.client.util.mathhelper.isometricTransform = function(x, y)
         x: (x - y) / 2,
         y: (x + y) / 2
     };
-}
+};
 
 apollo.client.util.mathhelper.cartesianTransform = function(x, y)
 {
@@ -44,18 +44,18 @@ apollo.client.util.mathhelper.cartesianTransform = function(x, y)
         x: x + y,
         y: y - x
     };
-}
+};
 
 apollo.client.util.mathhelper.clamp = function(val, min, max)
 {
     return Math.max(Math.min(val, max), min);
-}
+};
 
 
 apollo.client.util.mathhelper.hypot = function(x, y)
 {
     return Math.sqrt(x * x + y * y);
-}
+};
 
 apollo.client.util.mathhelper.absolve = function(x, y, s) // absolute coordinate resolution
 {
@@ -70,4 +70,4 @@ apollo.client.util.mathhelper.absolve = function(x, y, s) // absolute coordinate
             y : Math.floor(y / s)
         }
     }
-}
+};
