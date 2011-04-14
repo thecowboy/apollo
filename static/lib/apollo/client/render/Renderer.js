@@ -129,22 +129,25 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
             evt.clientY - canvaspos.y
         );
 
-        var backtpos = apollo.client.util.mathhelper.isometricTransform(tpos.x, tpos.y);
+        var backtpos = apollo.client.util.mathhelper.isometricTransform(
+            tpos.x,
+            tpos.y
+        );
 
         var realpos = {
-            x : backtpos.x * this.TILE_WIDTH + Math.round(canvaspos.w / 2),
-            y : backtpos.y * this.TILE_HEIGHT + Math.round(canvaspos.h / 2)
+            x : Math.round(backtpos.x * this.TILE_WIDTH + canvaspos.w / 2),
+            y : Math.round(backtpos.y * this.TILE_HEIGHT + canvaspos.h / 2)
         };
 
         this.context.save();
-        this.context.strokeStyle = "#000";
+        this.context.fillStyle = "rgba(0, 0, 0, 0.5)";
         this.context.beginPath();
         this.context.moveTo(realpos.x - this.TILE_WIDTH / 2, realpos.y);
         this.context.lineTo(realpos.x, realpos.y - this.TILE_HEIGHT / 2);
         this.context.lineTo(realpos.x + this.TILE_WIDTH / 2, realpos.y);
         this.context.lineTo(realpos.x, realpos.y + this.TILE_HEIGHT / 2);
         this.context.closePath();
-        this.context.stroke();
+        this.context.fill();
         this.context.restore();
     },
 
