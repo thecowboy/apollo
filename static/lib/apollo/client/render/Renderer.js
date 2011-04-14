@@ -82,7 +82,7 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         // calculate the coordinates in terms isometric map coordinates (normalize first)
         var isocoords = {
             x : (x + this.CHUNK_WIDTH / 2 - this.canvas.width / 2) / this.TILE_WIDTH,
-            y : (y + this.TILE_HEIGHT - this.canvas.height / 2) / this.TILE_HEIGHT
+            y : (y + this.TILE_HEIGHT / 2 - this.canvas.height / 2) / this.TILE_HEIGHT
         };
 
         isocoords = apollo.client.util.mathhelper.cartesianTransform(isocoords.x, isocoords.y);
@@ -150,7 +150,7 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
 
                 tcoords = {
                     x: Math.round(tcoords.x * this.TILE_WIDTH + this.canvas.width / 2 - this.CHUNK_WIDTH / 2),
-                    y: Math.round(tcoords.y * this.TILE_HEIGHT + this.canvas.height / 2 - this.TILE_HEIGHT)
+                    y: Math.round(tcoords.y * this.TILE_HEIGHT + this.canvas.height / 2 - this.TILE_HEIGHT / 2)
                 };
 
                 // cull chunks that lie outside of screen space (second pass)
