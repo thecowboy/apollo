@@ -55,6 +55,7 @@ dojo.declare("apollo.client.render.Renderer", apollo.client.Component, {
         }));
 
         dojo.connect(this.canvas, "onmousemove", dojo.hitch(this, this.handleMouseMove));
+        dojo.connect(this.canvas, "onmouseout", dojo.hitch(this, this.redraw));
     },
 
     autofit : function()

@@ -51,6 +51,8 @@ def setupOptions():
     """
     Initialize options for use with Tornado.
     """
+    define("debug", default=False, help="run in debug mode", type=bool, metavar="DEBUG")
+
     define("address", default="127.0.0.1", help="bind to the given address", metavar="ADDRESS")
     define("port", default=8081, help="run on the given port", type=int, metavar="PORT")
 
@@ -72,7 +74,7 @@ def setupOptions():
     define("amqp_port", default=5672, help="amqp server port", type=int, metavar="PORT")
     define("amqp_username", default="guest", help="amqp server username", metavar="USERNAME")
     define("amqp_password", default="guest", help="amqp server password (put in apollod.conf)", metavar="PASSWORD")
-    define("amqp_vhost", default="/", help="amq vhost", metavar="VHOST")
+    define("amqp_vhost", default="/", help="amqp vhost", metavar="VHOST")
 
     define("logging_level", default=logging.WARN, help="logging level", type=int, metavar="LEVEL")
 

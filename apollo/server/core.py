@@ -47,6 +47,11 @@ class Core(Application):
     def __init__(self):
         logging.getLogger().setLevel(options.logging_level)
 
+        if options.debug:
+            logging.warn("==================================================================================")
+            logging.warn("SERVER IS RUNNING IN DEBUG MODE! MAKE SURE THIS IS OFF WHEN RUNNING IN PRODUCTION!")
+            logging.warn("==================================================================================")
+
         logging.info("Starting server...")
 
         # apollo distribution root
@@ -61,8 +66,9 @@ class Core(Application):
                 (r"/events",            EventsHandler),
                 (r"/dylib/(.*)\.js",    DylibHandler)
             ],
-            dist_root   =   dist_root,
-            static_path =   os.path.join(dist_root, "static")
+            dist_root   = dist_root,
+            static_path = os.path.join(dist_root, "static"),
+            debug       = options.debug
         )
 
         self.loader = Loader(os.path.join(dist_root, "template"))

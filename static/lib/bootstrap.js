@@ -22,6 +22,8 @@
 
 dojo.require("dojo.parser");
 
+dojo.require("dojo.dnd.Source");
+
 dojo.require("dijit.Dialog");
 
 dojo.require("dijit.form.Form");

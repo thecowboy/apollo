@@ -1,0 +1,28 @@
+<div dojoType="dijit.Dialog" title="Inventory" id="inventoryDialog">
+    <ul dojotype="dojo.dnd.Source" id="inventory">
+        <li class="dojoDndItem">
+            <img src="static/items/unknown.png" title="Unknown" alt="Unknown" />
+        </li>
+        <li class="dojoDndItem">
+            <img src="static/items/unknown.png" title="Unknown" alt="Unknown" />
+        </li>
+        <li class="dojoDndItem">
+            <img src="static/items/unknown.png" title="Unknown" alt="Unknown" />
+        </li>
+    </ul>
+
+    <div id="equipment">
+        blah blah
+    </div>
+
+    <div style="clear:both"></div>
+
+    <div style="text-align:right">
+        <button dojoType="dijit.form.Button" type="button">
+            Close
+            <script type="dojo/method" event="onClick">
+                dijit.byId("inventoryDialog").hide();
+            </script>
+        </button>
+    </div>
+</div>
