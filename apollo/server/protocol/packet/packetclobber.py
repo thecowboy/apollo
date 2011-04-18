@@ -53,11 +53,11 @@ class PacketClobber(Packet):
         try:
             chunk = meta.session.find(Chunk, { "location" : { "cx" : int(self.cx), "cy" : int(self.cy) } }).one()
         except ValueError:
-            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Could not find chunk to clobber."))
+            user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="Could not find chunk to clobber."))
             return
 
         core.rendervisor.renderChunk(chunk._id, callback=lambda *args:
-            core.bus.broadcast("ex.user.global", PacketClobber(
+            core.bus.broadcastEx(PacketClobber(
                 cx=self.cx,
                 cy=self.cy
             ))

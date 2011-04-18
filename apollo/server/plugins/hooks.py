@@ -69,7 +69,7 @@ def monkey_PacketMove(fn):
         user = session.getUser()
 
         if not registry.before_move(self, core, session):
-            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
+            user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
             return
 
         if fn(self, core, session):

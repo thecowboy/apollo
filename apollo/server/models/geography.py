@@ -24,7 +24,7 @@ from ming import schema
 from ming.orm import MappedClass
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
-from apollo.server.models import meta
+from apollo.server.models import meta, Messagable
 
 CHUNK_STRIDE = 8
 """
@@ -63,7 +63,7 @@ class Terrain(MappedClass):
     Image of the terrain type.
     """
 
-class Realm(MappedClass):
+class Realm(MappedClass, Messagable):
     """
     The representation of a "world".
     """
@@ -123,7 +123,7 @@ class Chunk(MappedClass):
     ID of the realm the chunk belongs to.
     """
 
-class Tile(MappedClass):
+class Tile(MappedClass, Messagable):
     """
     A tile in the world.
     """
@@ -152,4 +152,60 @@ class Tile(MappedClass):
     terrain_id = ForeignIdProperty("Terrain", required=True)
     """
     ID of the terrain type this tile is.
+    """
+
+class Construct(MappedClass):
+    """
+    A construct (e.g. house, farm, etc.) in the world.
+    """
+    class __mongometa__:
+        name = "construct"
+        session = meta.session
+
+    _id = FieldProperty(schema.ObjectId)
+
+    type_id = ForeignIdProperty("ConstructType")
+    """
+    Construct's type.
+    """
+
+    location_id = ForeignIdProperty("Tile")
+    """
+    Construct's location.
+    """
+
+    assoc_params = schema.Anything()
+    """
+    Parameters for the construct type.
+    """
+
+class ConstructType(MappedClass):
+    """
+    A type of construct (e.g. house, farm, etc.) in the world.
+    """
+
+    class __mongometa__:
+        name = "constructtype"
+        session = meta.session
+
+    _id = FieldProperty(schema.ObjectId)
+
+    mask = FieldProperty([{
+        "ax" : int,
+        "ay" : int,
+        "solid" : bool
+    }], required=True)
+    """
+    A list of tile locations the construct takes up. This is used to determine
+    collisions and depth-sorting. Assume ``(0, 0)`` is the origin.
+    """
+
+    img = FieldProperty(str, required=True)
+    """
+    Image of the construct.
+    """
+
+    assoc_class = FieldProperty(str, required=True)
+    """
+    Associated system class for the construct type.
     """

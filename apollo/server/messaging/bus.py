@@ -90,9 +90,9 @@ class Bus(Component):
         self.ready = True
         logging.info("Message bus ready.")
 
-    def broadcast(self, dest, packet):
+    def send(self, dest, packet):
         """
-        Broadcast a packet to a specific destination.
+        Send a packet to a specific destination.
 
         :Parameters:
              * ``dest``
@@ -100,7 +100,7 @@ class Bus(Component):
                communication and ``user.`` for direct user messaging.
 
              * ``packet``
-               Packet to broadcast.
+               Packet to send.
         """
         packet_dump = packet.dump()
         logging.debug("Sending to %s: %s" % (dest, packet_dump))
@@ -159,6 +159,27 @@ class Bus(Component):
 
         if prefixparts[1] == "user":
             packet.dispatch(self.core, FakeSession(ObjectId(prefixparts[2])))
-        elif prefixparts[1] == "loc":
+        elif prefixparts[1] == "tile":
             for user in meta.session.find(User, { "location_id" : ObjectId(prefixparts[2]) }):
                 packet.dispatch(self.core, FakeSession(user._id))
+        elif prefixparts[1] == "group":
+            for user in meta.session.find(User, { "group_id" : ObjectId(prefixparts[2]) }):
+                packet.dispatch(self.core, FakeSession(user._id))
+        elif prefixparts[1] == "realm":
+            # TODO: implement this
+            pass
+        elif prefixparts[1] == "global":
+            for user in meta.session.find(User):
+                packet.dispatch(self.core, FakeSession(user._id))
+
+    def broadcastEx(self, packet):
+        self.send("ex.global", packet)
+
+    def broadcastInter(self, packet):
+        self.send("inter.global", packet)
+
+    def globalBind(self, session, callback=None):
+        self.bindQueue("ex-%s" % session._id, "ex.global", callback)
+
+    def globalUnbind(self, session, callback=None):
+        self.unbindQueue("ex-%s" % session._id, "ex.global", callback)

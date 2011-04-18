@@ -50,15 +50,15 @@ class PacketKick(Packet):
         user = session.getUser()
 
         try:
-            targetUser = User.getUserByName(self.target)
+            target = User.getUserByName(self.target)
         except ValueError:
-            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User does not exist."))
+            user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="User does not exist."))
             return
 
         if not user.online:
-            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="User is not online."))
+            user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="User is not online."))
             return
 
         self.msg = self.msg or "(no reason given)"
 
-        core.bus.broadcast("inter.user.%s" % targetUser._id, PacketLogout(msg="Kicked by server: %s" % self.msg))
+        target.sendInter(core.bus, PacketLogout(msg="Kicked by server: %s" % self.msg))

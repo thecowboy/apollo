@@ -31,13 +31,13 @@ from ming import schema
 from ming.orm import MappedClass
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
-from apollo.server.models import meta
+from apollo.server.models import meta, Messagable
 from apollo.server.models.rpg import Profession
 
 from apollo.server.util.cache import memoize
 from apollo.server.util.importlib import import_class
 
-class User(MappedClass):
+class User(MappedClass, Messagable):
     """
     A user.
     """
@@ -192,7 +192,7 @@ class User(MappedClass):
         """
         return meta.session.find(User, { "name" : { "$regex" : "^%s$" % re.escape(name.lower()), "$options" : "i" } }).one()
 
-class Session(MappedClass):
+class Session(MappedClass, Messagable):
     """
     A session that is established when a user makes a connection.
     """
@@ -225,7 +225,7 @@ class Session(MappedClass):
         """
         return meta.session.get(User, self.user_id)
 
-class Group(MappedClass):
+class Group(MappedClass, Messagable):
     """
     A permission group.
     """

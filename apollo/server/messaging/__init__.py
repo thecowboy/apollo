@@ -21,7 +21,7 @@
 #
 
 """
-Apollo's broadcast and cross-server communication system.
+Apollo's cross-server communication and packet routing system.
 """
 
 from apollo.server.models import meta

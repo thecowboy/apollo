@@ -60,7 +60,7 @@ class CronScheduler(Component):
             user = meta.session.get(User, session.user_id)
             if user is not None:
                 if user.online:
-                    self.core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Heartbeat timeout"))
+                    user.sendInter(self.core.bus, PacketLogout(msg="Heartbeat timeout"))
                 user.online = False
             meta.session.remove(Session, { "_id" : session._id })
 

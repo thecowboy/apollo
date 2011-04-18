@@ -21,11 +21,12 @@
 #
 
 from hashlib import sha256
+from apollo.server.models.geography import Tile, Chunk, Realm
 
 from apollo.server.protocol.packet import Packet, ORIGIN_EX, ORIGIN_INTER
 
 from apollo.server.models import meta
-from apollo.server.models.auth import User
+from apollo.server.models.auth import User, Group
 from apollo.server.protocol.packet.packetinfo import PacketInfo
 
 from apollo.server.protocol.packet.packetlogout import PacketLogout
@@ -53,10 +54,12 @@ class PacketLogin(Packet):
     def _dispatch_stage_2(self, core, session):
         user = session.getUser()
 
-        core.bus.broadcast("ex.user.global", PacketLogin(username=user.name))
+        core.bus.broadcastEx(PacketLogin(username=user.name))
+
+        tile = meta.session.get(Tile, user.location_id)
 
         # send this everywhere
-        core.bus.broadcast("inter.loc.%s" % user.location_id, PacketInfo())
+        tile.sendInter(core.bus, PacketInfo())
 
         user.online = True
         meta.session.flush()
@@ -65,16 +68,16 @@ class PacketLogin(Packet):
         try:
             user = User.getUserByName(self.username)
         except ValueError:
-            core.bus.broadcast("ex.session.%s" % session._id, PacketLogout(msg="Invalid username or password.")) # nope, you don't even exist
+            session.sendEx(core.bus, PacketLogout(msg="Invalid username or password.")) # nope, you don't even exist
             return
 
         if self.pwhash != sha256(self.nonce + sha256(user.pwhash + session.token).hexdigest()).hexdigest():
-            core.bus.broadcast("ex.session.%s" % session._id, PacketLogout(msg="Invalid username or password.")) # nope, your hash is incorrect
+            session.sendEx(core.bus, PacketLogout(msg="Invalid username or password.")) # nope, your hash is incorrect
             return
 
         if user.online:
-            core.bus.broadcast("ex.session.%s" % session._id, PacketLogout(msg="Session clash, please try again."))
-            core.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Session clash"))
+            session.sendEx(core.bus, PacketLogout(msg="Session clash, please try again."))
+            user.sendInter(core.bus, PacketLogout(msg="Session clash"))
             user.online = False
             meta.session.flush()
             return
@@ -83,13 +86,23 @@ class PacketLogin(Packet):
         session.user_id = user._id
         meta.session.save(session)
 
-        core.bus.broadcast("ex.session.%s" % session._id, PacketLogin())
+        session.sendEx(core.bus, PacketLogin())
+
+        group = meta.session.get(Group, user.group_id)
+
+        tile = meta.session.get(Tile, user.location_id)
+        chunk = meta.session.get(Chunk, tile.chunk_id)
+        realm = meta.session.get(Realm, chunk.realm_id)
 
         # do some funkatronic queue binds and callbacking
-        core.bus.bindQueue("ex-%s" % session._id, "ex.user.global",
-            lambda *args: core.bus.bindQueue("ex-%s" % session._id, "ex.user.%s" % user._id,
-                lambda *args: core.bus.bindQueue("ex-%s" % session._id, "ex.loc.%s" % user.location_id,
-                    self._dispatch_stage_2(core, session)
+        core.bus.globalBind(session,
+            lambda *args: user.queueBind(core.bus, session,
+                lambda *args: tile.queueBind(core.bus, session,
+                    lambda *args: group.queueBind(core.bus, session,
+                        lambda *args: realm.queueBind(core.bus, session,
+                            self._dispatch_stage_2(core, session)
+                        )
+                    )
                 )
             )
         )

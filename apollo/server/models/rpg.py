@@ -72,11 +72,6 @@ class Item(MappedClass):
     Item type.
     """
 
-    assoc_class = FieldProperty(str)
-    """
-    Associated system item class (overrides ``ItemType`` definition).
-    """
-
     assoc_params = FieldProperty(schema.Anything)
     """
     Parameters for the associated class.
@@ -97,7 +92,7 @@ class ItemType(MappedClass):
     Name of the item type.
     """
 
-    assoc_class = FieldProperty(str)
+    assoc_class = FieldProperty(str, required=True)
     """
     Associated system item class.
     """

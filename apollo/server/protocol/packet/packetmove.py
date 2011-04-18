@@ -56,7 +56,7 @@ class PacketMove(Packet):
     def dispatch(self, core, session):
         user = session.getUser()
 
-        old_loc = user.location_id
+        old_tile = meta.session.get(Tile, user.location_id)
 
         # get the tile the user wants to move to
         ccoords, rcoords = absolve(self.x, self.y, CHUNK_STRIDE)
@@ -65,14 +65,14 @@ class PacketMove(Packet):
         try:
             chunk = meta.session.find(Chunk, { "location" : { "cx" : ccoords[0], "cy" : ccoords[1] } }).one()
         except ValueError:
-            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
+            user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
             return False
 
         # find the tile
         try:
             tile = meta.session.find(Tile, { "location" : { "rx" : rcoords[0], "ry" : rcoords[1] }, "chunk_id" : chunk._id }).one()
         except ValueError:
-            core.bus.broadcast("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
+            user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
             return False
 
         user.location_id = tile._id
@@ -81,12 +81,12 @@ class PacketMove(Packet):
         meta.session.flush_all()
 
         # rebind queue to new position
-        core.bus.unbindQueue("ex-%s" % session._id, "ex.loc.%s" % old_loc)
-        core.bus.bindQueue("ex-%s" % session._id, "ex.loc.%s" % tile._id)
+        old_tile.queueUnbind(core.bus, session)
+        tile.queueBind(core.bus, session)
 
         # some users may require additional info (including this one!)
-        core.bus.broadcast("inter.loc.%s" % tile._id, PacketInfo())
-        core.bus.broadcast("inter.loc.%s" % old_loc, PacketInfo())
+        tile.sendInter(core.bus, PacketInfo())
+        old_tile.sendInter(core.bus, PacketInfo())
 
         # return true for hooks
         return True

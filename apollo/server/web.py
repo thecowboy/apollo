@@ -69,10 +69,7 @@ class SessionHandler(RequestHandler):
         # declare queue
         self.application.bus.declareQueue(
             "ex-%s" % session._id,
-            lambda *args: self.application.bus.bindQueue(
-                "ex-%s" % session._id,
-                "ex.session.%s" % session._id
-            )
+            lambda *args: session.queueBind(self.application.bus, session)
         )
 
         logging.info("Acquired session: %s" % session.token)
@@ -98,7 +95,7 @@ class ActionHandler(RequestHandler):
             packet = deserializePacket(payload)
             packet._origin = ORIGIN_EX
         except ValueError:
-            self.application.bus.broadcast("ex.session.%s" % session._id, PacketError(msg="bad packet payload"))
+            self.application.bus.send("ex.session.%s" % session._id, PacketError(msg="bad packet payload"))
         else:
             packet.dispatch(self.application, session)
 
@@ -122,7 +119,7 @@ class EventsHandler(RequestHandler):
             return
 
         if not self.clean:
-            self.application.bus.broadcast("inter.user.%s" % user._id, PacketLogout(msg="Connection closed"))
+            self.application.bus.send("inter.user.%s" % user._id, PacketLogout(msg="Connection closed"))
 
     def finish(self, chunk=None):
         super(EventsHandler, self).finish(chunk)

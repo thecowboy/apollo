@@ -20,6 +20,7 @@
 # THE SOFTWARE.
 #
 from apollo.server.models.auth import Session
+from apollo.server.models.geography import Tile
 
 from apollo.server.protocol.packet import Packet, ORIGIN_INTER
 
@@ -54,16 +55,17 @@ class PacketLogout(Packet):
 
         if user is not None:
             # tell user logout was successful
-            core.bus.broadcast("ex.user.%s" % user._id, PacketLogout(msg=msg))
+            user.sendEx(core.bus, PacketLogout(msg=msg))
 
-            # broadcast the logout
-            core.bus.broadcast("ex.user.global", PacketLogout(username=user.name, msg=msg))
+            # send the logout
+            core.bus.broadcastEx(PacketLogout(username=user.name, msg=msg))
 
             # unset online
             user.online = False
 
             # send packetinfo to relevant people
-            core.bus.broadcast("inter.loc.%s" % user.location_id, PacketInfo())
+            tile = meta.session.get(Tile, user.location_id)
+            tile.sendInter(core.bus, PacketInfo())
 
             # delete all sessions and queues associated
             for sess in meta.session.find(Session, { "user_id" : user._id }):

@@ -82,7 +82,7 @@ class PacketInfo(Packet):
 
         acoords = dissolve(chunk.location.cx, chunk.location.cy, tile.location.rx, tile.location.ry, CHUNK_STRIDE)
 
-        core.bus.broadcast("ex.user.%s" % user._id, PacketInfo(
+        user.sendEx(core.bus, PacketInfo(
             location={
                 "x"     : acoords[0],
                 "y"     : acoords[1],

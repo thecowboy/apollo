@@ -43,4 +43,4 @@ class PacketOnline(Packet):
     @requireAuthentication
     def dispatch(self, core, session):
         user = session.getUser()
-        core.bus.broadcast("ex.user.%s" % user._id, PacketOnline(users=[ ruser.name for ruser in meta.session.find(User, { "online" : True }) ]))
+        user.sendEx(core.bus, PacketOnline(users=[ ruser.name for ruser in meta.session.find(User, { "online" : True }) ]))

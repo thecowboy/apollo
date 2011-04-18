@@ -23,3 +23,16 @@
 """
 Models that represent database items and provide convenience methods.
 """
+
+class Messagable(object):
+    def sendEx(self, bus, packet):
+        bus.send("ex.%s.%s" % (self.__class__.__name__.lower(), self._id), packet)
+
+    def sendInter(self, bus, packet):
+        bus.send("inter.%s.%s" % (self.__class__.__name__.lower(), self._id), packet)
+
+    def queueBind(self, bus, session, callback=None):
+        bus.bindQueue("ex-%s" % session._id, "ex.%s.%s" % (self.__class__.__name__.lower(), self._id), callback)
+
+    def queueUnbind(self, bus, session, callback=None):
+        bus.unbindQueue("ex-%s" % session._id, "ex.%s.%s" % (self.__class__.__name__.lower(), self._id), callback)
