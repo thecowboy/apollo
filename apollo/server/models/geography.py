@@ -58,6 +58,8 @@ class Terrain(meta.Base, PrimaryKeyed):
     Image of the terrain type.
     """
 
+    tiles = relationship("Tile", backref="terrain")
+
 class Realm(meta.Base, PrimaryKeyed, MessagableMixin):
     """
     The representation of a "world".
@@ -78,6 +80,8 @@ class Realm(meta.Base, PrimaryKeyed, MessagableMixin):
     """
     The height of the realm, in chunk coordinates.
     """
+
+    chunks = relationship("Chunk", backref="realm")
 
 class Chunk(meta.Base, PrimaryKeyed):
     """
@@ -110,6 +114,8 @@ class Chunk(meta.Base, PrimaryKeyed):
     """
     ID of the realm the chunk belongs to.
     """
+
+    tiles = relationship("Tile", backref="chunk")
 
 Index("idx_cx", Chunk.cx)
 Index("idx_cy", Chunk.cy)

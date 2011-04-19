@@ -49,9 +49,7 @@ class PacketClobber(Packet):
         sess.merge(chunk)
         sess.commit()
 
-        realm = sess.query(Realm).get(chunk.realm_id)
-
-        realm.sendEx(core.bus, PacketClobber(
+        chunk.realm.sendEx(core.bus, PacketClobber(
             cx=chunk.cx,
             cy=chunk.cy
         ))

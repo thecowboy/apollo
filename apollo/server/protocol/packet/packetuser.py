@@ -86,23 +86,19 @@ class PacketUser(Packet):
             user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="User not found."))
             return
 
-        profession = sess.query(Profession).get(target.profession_id)
-
-        tile = sess.query(Tile).get(target.location_id)
-        chunk = sess.query(Chunk).get(tile.chunk_id)
-
-        realm = sess.query(Realm).get(chunk.realm_id)
+        tile = target.location
+        chunk = tile.chunk
 
         acoords = dissolve(chunk.cx, chunk.cy, tile.rx, tile.ry, CHUNK_STRIDE)
 
         packet = PacketUser(
             name=target.name,
             level=target.level,
-            profession=profession.name,
+            profession=target.profession.name,
             location={
                 "x"     : acoords[0],
                 "y"     : acoords[1],
-                "realm" : realm.name
+                "realm" : chunk.realm.name
             },
             hp={ "now" : target.hp, "max" : target.hpmax },
             ap={ "now" : target.ap, "max" : target.apmax },

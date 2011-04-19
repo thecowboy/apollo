@@ -61,9 +61,9 @@ class PacketInfo(Packet):
 
         # TODO: optimize these queries (more joins!)
         tile = sess.query(Tile).get(user.location_id)
-        terrain = sess.query(Terrain).get(tile.terrain_id)
-        chunk = sess.query(Chunk).get(tile.chunk_id)
-        realm = sess.query(Realm).get(chunk.realm_id)
+        terrain = tile.terrain
+        chunk = tile.chunk
+        realm = chunk.realm
 
         # get the players here
         things = []

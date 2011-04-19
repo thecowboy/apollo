@@ -97,19 +97,16 @@ class PacketLogin(Packet):
 
         session.sendEx(core.bus, PacketLogin())
 
-        group = sess.query(Group).get(user.group_id)
-
         # XXX: maybe drop down below the messaging abstraction layer?
-        tile = sess.query(Tile).get(user.location_id)
-        chunk = sess.query(Chunk).get(tile.chunk_id)
-        realm = sess.query(Realm).get(chunk.realm_id)
+        tile = user.location
+        chunk = tile.chunk
 
         # do some funkatronic queue binds and callbacking
         core.bus.globalBind(session,
             lambda *args: user.queueBind(core.bus, session,
                 lambda *args: tile.queueBind(core.bus, session,
-                    lambda *args: group.queueBind(core.bus, session,
-                        lambda *args: realm.queueBind(core.bus, session,
+                    lambda *args: user.group.queueBind(core.bus, session,
+                        lambda *args: chunk.realm.queueBind(core.bus, session,
                             self._dispatch_stage_2(core, session)
                         )
                     )
