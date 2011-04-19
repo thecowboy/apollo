@@ -185,6 +185,16 @@ class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
 
         return False
 
+    # a few overrides to avoid sending packets to offline people who can't
+    # actually process them
+    def sendEx(self, bus, packet):
+        if self.online:
+            super(User, self).sendEx(bus, packet)
+
+    def sendInter(self, bus, packet):
+        if self.online:
+            super(User, self).sendInter(bus, packet)
+
 # use a DDL index because functional ones are not yet available
 DDL("CREATE UNIQUE INDEX idx_name ON %(fullname)s (lower(name))").execute_at("after-create", User.__table__)
 

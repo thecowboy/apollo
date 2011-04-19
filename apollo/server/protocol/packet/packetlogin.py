@@ -59,10 +59,8 @@ class PacketLogin(Packet):
 
         core.bus.broadcastEx(PacketLogin(username=user.name))
 
-        tile = sess.query(Tile).get(user.location_id)
-
         # send this everywhere
-        tile.sendInter(core.bus, PacketInfo())
+        user.location.sendInter(core.bus, PacketInfo())
 
         user.online = True
 
