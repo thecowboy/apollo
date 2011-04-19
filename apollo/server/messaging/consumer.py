@@ -45,20 +45,21 @@ class Consumer(object):
         """
         Begin consuming events.
         """
-        try:
-            self.session = meta.session.find(Session, { "token" : self.handler.token }).one()
-        except ValueError:
+        sess = meta.Session()
+
+        self.session = sess.query(Session).get(self.handler.token)
+        if self.session is None:
             logging.warn("Session %s does not exist; bailing" % self.handler.token)
             return
 
         self.channel.basic_consume(
             consumer_callback=self.on_message,
-            queue="ex-%s" % self.session._id,
+            queue="ex-%s" % self.session.id,
             no_ack=False,
             consumer_tag=self.ctag
         )
 
-        logging.debug("Created subscriber for %s" % self.session._id)
+        logging.debug("Created subscriber for %s" % self.session.id)
 
     def shutdown(self):
         """
@@ -66,7 +67,7 @@ class Consumer(object):
         """
         self.rejecting = True
 
-        logging.debug("Shutting down consumer for %s" % self.session._id)
+        logging.debug("Shutting down consumer for %s" % self.session.id)
         self.channel.basic_cancel(consumer_tag=self.ctag)
 
     def on_message(self, channel, method, header, body):

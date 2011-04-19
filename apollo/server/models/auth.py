@@ -184,10 +184,9 @@ class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
                 return True
 
         return False
-DDL(
-    "CREATE UNIQUE INDEX idx_name ON %(fullname)s "
-    "(lower(name))"
-).execute_at('after-create', User.__table__)
+
+# use a DDL index because functional ones are not yet available
+DDL("CREATE UNIQUE INDEX idx_name ON %(fullname)s (lower(name))").execute_at("after-create", User.__table__)
 
 class Session(meta.Base, PrimaryKeyed, MessagableMixin):
     """

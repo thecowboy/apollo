@@ -51,7 +51,9 @@ class PacketLogout(Packet):
         else:
             msg = "User logout: " + (self.msg or "(no reason given)")
 
-        user = session.getUser()
+        sess = meta.Session()
+
+        user = session.user
 
         if user is not None:
             # tell user logout was successful
@@ -64,12 +66,13 @@ class PacketLogout(Packet):
             user.online = False
 
             # send packetinfo to relevant people
-            tile = meta.session.get(Tile, user.location_id)
+            tile = sess.query(Tile).get(user.location_id)
             tile.sendInter(core.bus, PacketInfo())
 
             # delete all sessions and queues associated
-            for sess in meta.session.find(Session, { "user_id" : user._id }):
-                sess.delete()
-                core.bus.deleteQueue("ex-%s" % sess._id)
+            for session in user.sessions:
+                core.bus.deleteQueue("ex-%s" % session.id)
 
-            meta.session.flush()
+            sess.query(Session).filter(Session.user_id == user.id).delete()
+
+            sess.commit()

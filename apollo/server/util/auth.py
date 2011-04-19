@@ -39,11 +39,11 @@ def requirePermission(permission):
     def _decorator(fn):
         @wraps(fn)
         def _closure(self, core, session):
-            user = session.getUser()
+            user = session.user
             if user.hasPermission(permission):
                 fn(self, core, session)
             else:
-                core.bus.send("ex.user.%s" % user._id, PacketError(severity=SEVERITY_WARN, msg="Not permitted to perform action."))
+                user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="Not permitted to perform action."))
         return _closure
     return _decorator
 
@@ -53,10 +53,8 @@ def requireAuthentication(fn):
     """
     @wraps(fn)
     def _closure(self, core, session):
-        try:
-            user = session.getUser()
-        except ValueError:
-            core.bus.send("ex.session.%s" % session._id, PacketError(msg="not authenticated"))
+        if session.user is None:
+            session.sendEx(core.bus, PacketError(msg="not authenticated"))
         else:
             fn(self, core, session)
     return _closure

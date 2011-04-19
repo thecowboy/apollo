@@ -42,29 +42,27 @@ class CronScheduler(Component):
         """
         Run cron (once).
         """
+        sess = meta.Session()
+
         if not self.core.bus.ready:
             logging.warn("Bus is not ready, not running cron.")
             return
 
         logging.info("Running cron...")
 
-        cursor = meta.session.find(Session, {
-            "last_active" :
-            {
-                "$lte" : datetime.utcnow() - timedelta(seconds=options.session_expiry)
-            }
-        })
+        cursor = sess.query(Session).filter(Session.last_active <= datetime.utcnow() - timedelta(seconds=options.session_expiry))
         num_rows = cursor.count()
 
         for session in cursor:
-            user = meta.session.get(User, session.user_id)
+            user = sess.query(User).get(session.user_id)
             if user is not None:
                 if user.online:
                     user.sendInter(self.core.bus, PacketLogout(msg="Heartbeat timeout"))
                 user.online = False
-            meta.session.remove(Session, { "_id" : session._id })
+                sess.merge(user)
 
-        meta.session.flush()
+        cursor.delete()
+        sess.commit()
         logging.info("Purged %d expired session(s)." % num_rows)
 
     def go(self):

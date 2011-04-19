@@ -34,5 +34,8 @@ class FakeSession(object):
         self.user_id = user_id
 
     @memoize
-    def getUser(self):
-        return meta.session.get(User, self.user_id)
+    def _get_user(self):
+        sess = meta.Session()
+        return sess.query(User).get(self.user_id)
+
+    user = property(_get_user)

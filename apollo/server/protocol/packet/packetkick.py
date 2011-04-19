@@ -20,6 +20,9 @@
 # THE SOFTWARE.
 #
 
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+
+from apollo.server.models import meta
 from apollo.server.models.auth import User
 
 from apollo.server.protocol.packet import Packet
@@ -47,11 +50,11 @@ class PacketKick(Packet):
     @requirePermission("moderator.kick")
     @requireAuthentication
     def dispatch(self, core, session):
-        user = session.getUser()
+        user = session.user
 
         try:
-            target = User.getUserByName(self.target)
-        except ValueError:
+            target = meta.Session().query(User).filter(User.name==self.target).one()
+        except (NoResultFound, MultipleResultsFound):
             user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="User does not exist."))
             return
 

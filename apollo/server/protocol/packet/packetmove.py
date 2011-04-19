@@ -19,6 +19,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
+from sqlalchemy.sql.expression import and_
 
 from apollo.server.protocol.packet import Packet
 
@@ -54,31 +56,32 @@ class PacketMove(Packet):
 
     @requireAuthentication
     def dispatch(self, core, session):
-        user = session.getUser()
+        user = session.user
+        sess = meta.Session()
 
-        old_tile = meta.session.get(Tile, user.location_id)
+        old_tile = sess.query(Tile).get(user.location_id)
 
         # get the tile the user wants to move to
         ccoords, rcoords = absolve(self.x, self.y, CHUNK_STRIDE)
 
         # find the chunk
         try:
-            chunk = meta.session.find(Chunk, { "location" : { "cx" : ccoords[0], "cy" : ccoords[1] } }).one()
-        except ValueError:
+            chunk = sess.query(Chunk).filter(and_(Chunk.cx == ccoords[0], Chunk.cy == ccoords[1])).one()
+        except (NoResultFound, MultipleResultsFound):
             user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
             return False
 
         # find the tile
         try:
-            tile = meta.session.find(Tile, { "location" : { "rx" : rcoords[0], "ry" : rcoords[1] }, "chunk_id" : chunk._id }).one()
-        except ValueError:
+            tile = sess.query(Tile).filter(and_(Tile.rx == rcoords[0], Tile.ry == rcoords[1], Tile.chunk_id == chunk.id)).one()
+        except (NoResultFound, MultipleResultsFound):
             user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))
             return False
 
-        user.location_id = tile._id
+        user.location_id = tile.id
 
-        meta.session.save(user)
-        meta.session.flush_all()
+        sess.merge(user)
+        sess.commit()
 
         # rebind queue to new position
         old_tile.queueUnbind(core.bus, session)

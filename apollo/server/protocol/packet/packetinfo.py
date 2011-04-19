@@ -19,6 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+from sqlalchemy.sql.expression import and_
 
 from apollo.server.protocol.packet import Packet
 
@@ -55,32 +56,26 @@ class PacketInfo(Packet):
 
     @requireAuthentication
     def dispatch(self, core, session):
-        user = session.getUser()
+        user = session.user
+        sess = meta.Session()
 
-        tile = meta.session.get(Tile, user.location_id)
-
-        terrain = meta.session.get(Terrain, tile.terrain_id)
-        chunk = meta.session.get(Chunk, tile.chunk_id)
-
-        realm = meta.session.get(Realm, chunk.realm_id)
+        # TODO: optimize these queries (more joins!)
+        tile = sess.query(Tile).get(user.location_id)
+        terrain = sess.query(Terrain).get(tile.terrain_id)
+        chunk = sess.query(Chunk).get(tile.chunk_id)
+        realm = sess.query(Realm).get(chunk.realm_id)
 
         # get the players here
         things = []
 
-        users_raw = meta.session.find(User, {
-            "location_id" : tile._id,
-            "online" : True
-        })
-
-        for user_raw in users_raw:
-            if user._id == user_raw._id: continue
+        for target in sess.query(User).filter(and_(User.location_id == tile.id, User.online == True, User.id != user.id)):
             things.append({
-                "name"  : user_raw.name,
-                "level" : user_raw.level,
+                "name"  : target.name,
+                "level" : target.level,
                 "type"  : "user"
             })
 
-        acoords = dissolve(chunk.location.cx, chunk.location.cy, tile.location.rx, tile.location.ry, CHUNK_STRIDE)
+        acoords = dissolve(chunk.cx, chunk.cy, tile.rx, tile.ry, CHUNK_STRIDE)
 
         user.sendEx(core.bus, PacketInfo(
             location={
@@ -93,8 +88,8 @@ class PacketInfo(Packet):
                 "name"  : terrain.name,
             },
             size={
-                "cw"    : realm.size.cw,
-                "ch"    : realm.size.ch
+                "cw"    : realm.cw,
+                "ch"    : realm.ch
             },
             things=things
         ))

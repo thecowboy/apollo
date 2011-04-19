@@ -63,19 +63,20 @@ class SessionHandler(RequestHandler):
         self.set_header("Content-Type", "application/json")
 
         session = Session()
-        meta.session.save(session)
-        meta.session.flush()
+        sess = meta.Session()
+        sess.add(session)
+        sess.commit()
 
         # declare queue
         self.application.bus.declareQueue(
-            "ex-%s" % session._id,
+            "ex-%s" % session.id,
             lambda *args: session.queueBind(self.application.bus, session)
         )
 
-        logging.info("Acquired session: %s" % session.token)
+        logging.info("Acquired session: %s" % session.id)
 
         self.write(json.dumps({
-            "s" :   session.token
+            "s" :   session.id
         }))
 
 class ActionHandler(RequestHandler):
@@ -87,7 +88,7 @@ class ActionHandler(RequestHandler):
 
     def post(self, *args, **kwargs):
         self.token = self.get_argument("s")
-        session = meta.session.find(Session, { "token" : self.token }).one()
+        session = meta.Session().query(Session).get(self.token)
 
         payload = self.get_argument("p")
 
@@ -95,7 +96,7 @@ class ActionHandler(RequestHandler):
             packet = deserializePacket(payload)
             packet._origin = ORIGIN_EX
         except ValueError:
-            self.application.bus.send("ex.session.%s" % session._id, PacketError(msg="bad packet payload"))
+            self.application.bus.send("ex.session.%s" % session.id, PacketError(msg="bad packet payload"))
         else:
             packet.dispatch(self.application, session)
 
@@ -109,17 +110,17 @@ class EventsHandler(RequestHandler):
     SUPPORTED_METHODS = ("GET",)
 
     def on_connection_close(self):
-        try:
-            session = meta.session.find(Session, { "token" : self.token }).one()
-        except ValueError:
+        session = meta.Session().query(Session).get(self.token)
+
+        if session is None:
             return
 
-        user = session.getUser()
+        user = session.user
         if not user:
             return
 
         if not self.clean:
-            self.application.bus.send("inter.user.%s" % user._id, PacketLogout(msg="Connection closed"))
+            self.application.bus.send("inter.user.%s" % user.id, PacketLogout(msg="Connection closed"))
 
     def finish(self, chunk=None):
         super(EventsHandler, self).finish(chunk)

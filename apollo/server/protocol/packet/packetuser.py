@@ -19,6 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from apollo.server.models.auth import User
 from apollo.server.models.geography import Tile, Chunk, CHUNK_STRIDE, Realm
@@ -68,14 +69,15 @@ class PacketUser(Packet):
 
     @requireAuthentication
     def dispatch(self, core, session):
-        user = session.getUser()
+        user = session.user
+        sess = meta.Session()
 
         if self.target is None:
             target = user
         else:
             try:
-                target = meta.session.find(User, { "name" : self.target }).one()
-            except ValueError:
+                target = sess.query(User).filter(User.name == self.target).one()
+            except (NoResultFound, MultipleResultsFound):
                 user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="User not found."))
                 return
 
@@ -84,14 +86,14 @@ class PacketUser(Packet):
             user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="User not found."))
             return
 
-        profession = meta.session.get(Profession, target.profession_id)
+        profession = sess.query(Profession).get(target.profession_id)
 
-        tile = meta.session.get(Tile, target.location_id)
-        chunk = meta.session.get(Chunk, tile.chunk_id)
+        tile = sess.query(Tile).get(target.location_id)
+        chunk = sess.query(Chunk).get(tile.chunk_id)
 
-        realm = meta.session.get(Realm, chunk.realm_id)
+        realm = sess.query(Realm).get(chunk.realm_id)
 
-        acoords = dissolve(chunk.location.cx, chunk.location.cy, tile.location.rx, tile.location.ry, CHUNK_STRIDE)
+        acoords = dissolve(chunk.cx, chunk.cy, tile.rx, tile.ry, CHUNK_STRIDE)
 
         packet = PacketUser(
             name=target.name,

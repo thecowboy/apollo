@@ -19,6 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
 from apollo.server.models import meta
 from apollo.server.models.auth import User
@@ -48,35 +49,35 @@ class PacketChat(Packet):
     def dispatch(self, core, session):
         if not self.msg.strip(): return
 
-        origin = session.getUser()
+        user = session.user
 
         if self.target:
             try:
-                user = User.getUserByName(self.target)
-            except ValueError:
-                user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="User does not exist."))
+                target = meta.Session().query(User).filter(User.name==self.target).one()
+            except (NoResultFound, MultipleResultsFound):
+                target.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="User does not exist."))
                 return
 
-            if not user.online:
-                user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="User is not online."))
+            if not target.online:
+                target.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="User is not online."))
                 return
 
             # send packet to target
-            user.sendEx(core.bus, PacketChat(
-                origin=origin.name,
+            target.sendEx(core.bus, PacketChat(
+                origin=user.name,
                 target=self.target,
                 msg=self.msg
             ))
 
             # send packet to origin
-            origin.sendEx(core.bus, PacketChat(
-                origin=origin.name,
+            user.sendEx(core.bus, PacketChat(
+                origin=user.name,
                 target=self.target,
                 msg=self.msg
             ))
             return
 
         core.bus.broadcastEx(PacketChat(
-            origin=origin.name,
+            origin=user.name,
             msg=self.msg
         ))

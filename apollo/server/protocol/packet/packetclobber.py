@@ -20,8 +20,11 @@
 # THE SOFTWARE.
 #
 
+from sqlalchemy.sql.expression import and_
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+
 from apollo.server.models import meta
-from apollo.server.models.geography import Chunk
+from apollo.server.models.geography import Chunk, Tile, Realm
 
 from apollo.server.protocol.packet import Packet
 from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
@@ -35,30 +38,33 @@ class PacketClobber(Packet):
 
     :Direction of Transfer:
         Bidirectional.
-
-    :Data Members:
-         * ``cx``
-           Chunk x coordinate.
-
-         * ``cy``
-           Chunk y coordinate.
     """
     name = "clobber"
+
+    def _render_callback(self, core, chunk):
+        sess = meta.Session()
+
+        chunk.fresh = True
+
+        sess.merge(chunk)
+        sess.commit()
+
+        realm = sess.query(Realm).get(chunk.realm_id)
+
+        realm.sendEx(core.bus, PacketClobber(
+            cx=chunk.cx,
+            cy=chunk.cy
+        ))
 
     @requirePermission("admin.clobber")
     @requireAuthentication
     def dispatch(self, core, session):
-        user = session.getUser()
+        user = session.user
 
         try:
-            chunk = meta.session.find(Chunk, { "location" : { "cx" : int(self.cx), "cy" : int(self.cy) } }).one()
-        except ValueError:
+            chunk = meta.Session().query(Chunk).filter(Chunk.id == Tile.chunk_id).filter(Tile.id == user.location_id).one()
+        except (NoResultFound, MultipleResultsFound):
             user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="Could not find chunk to clobber."))
             return
 
-        core.rendervisor.renderChunk(chunk._id, callback=lambda *args:
-            core.bus.broadcastEx(PacketClobber(
-                cx=self.cx,
-                cy=self.cy
-            ))
-        )
+        core.rendervisor.renderChunk(chunk.id, callback=lambda *args: self._render_callback(core, chunk))

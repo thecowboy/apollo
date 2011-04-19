@@ -28,8 +28,6 @@ from tornado.options import options
 from pika.adapters import TornadoConnection
 from pika import PlainCredentials, ConnectionParameters, BasicProperties
 
-from pymongo.objectid import ObjectId
-
 from apollo.server.component import Component
 from apollo.server.models.geography import Realm, Tile, Chunk
 
@@ -147,6 +145,8 @@ class Bus(Component):
         """
         Process an "inter" message.
         """
+        sess = meta.Session()
+
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
         prefixparts = method.routing_key.split(".")
@@ -159,26 +159,20 @@ class Bus(Component):
         packet._origin = ORIGIN_INTER
 
         if prefixparts[1] == "user":
-            user = meta.session.get(User, ObjectId(prefixparts[2]))
-            if user.online:
-                packet.dispatch(self.core, FakeSession(user._id))
+            user = sess.query(User).get(prefixparts[2])
+            packet.dispatch(self.core, FakeSession(user.id))
         elif prefixparts[1] == "tile":
-            for user in meta.session.find(User, { "location_id" : ObjectId(prefixparts[2]), "online" : True }):
-                packet.dispatch(self.core, FakeSession(user._id))
+            for user in sess.query(User).filter(User.location_id == prefixparts[2]):
+                packet.dispatch(self.core, FakeSession(user.id))
         elif prefixparts[1] == "group":
-            for user in meta.session.find(User, { "group_id" : ObjectId(prefixparts[2]), "online" : True }):
-                packet.dispatch(self.core, FakeSession(user._id))
+            for user in sess.query(User).filter(User.group_id == prefixparts[2]):
+                packet.dispatch(self.core, FakeSession(user.id))
         elif prefixparts[1] == "realm":
-            # TODO: SLOW, HORRIBLE, ABSOLUTELY TERRIBLE!
-            realm_id = ObjectId(prefixparts[2])
-            for user in meta.session.find(User, { "online" : True }):
-                tile = meta.session.get(Tile, user.location_id)
-                chunk = meta.session.get(Chunk, tile.chunk_id)
-                if chunk.realm_id == realm_id:
-                    packet.dispatch(self.core, FakeSession(user._id))
+            for user in sess.query(User).filter(User.location_id == Tile.id).filter(Tile.chunk_id == Chunk.id).filter(Chunk.realm_id == Realm.id).filter(Realm.id == prefixparts[2]):
+                packet.dispatch(self.core, FakeSession(user.id))
         elif prefixparts[1] == "global":
-            for user in meta.session.find(User):
-                packet.dispatch(self.core, FakeSession(user._id))
+            for user in sess.query(User):
+                packet.dispatch(self.core, FakeSession(user.id))
 
     def broadcastEx(self, packet):
         self.send("ex.global", packet)
@@ -187,7 +181,7 @@ class Bus(Component):
         self.send("inter.global", packet)
 
     def globalBind(self, session, callback=None):
-        self.bindQueue("ex-%s" % session._id, "ex.global", callback)
+        self.bindQueue("ex-%s" % session.id, "ex.global", callback)
 
     def globalUnbind(self, session, callback=None):
-        self.unbindQueue("ex-%s" % session._id, "ex.global", callback)
+        self.unbindQueue("ex-%s" % session.id, "ex.global", callback)

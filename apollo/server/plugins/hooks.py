@@ -66,7 +66,7 @@ def monkey_PacketMove(fn):
     from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
 
     def dispatch(self, core, session):
-        user = session.getUser()
+        user = session.user
 
         if not registry.before_move(self, core, session):
             user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="Cannot move there."))

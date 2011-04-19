@@ -39,6 +39,8 @@ class PacketHeartbeat(Packet):
     name = "heartbeat"
 
     def dispatch(self, core, session):
+        sess = meta.Session()
         session.last_active = datetime.utcnow()
-        meta.session.save(session)
-        meta.session.flush()
+        sess.merge(session)
+        sess.commit()
+

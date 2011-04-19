@@ -21,6 +21,7 @@
 #
 
 from hashlib import sha256
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from apollo.server.models.geography import Tile, Chunk, Realm
 
 from apollo.server.protocol.packet import Packet, ORIGIN_EX, ORIGIN_INTER
@@ -52,26 +53,32 @@ class PacketLogin(Packet):
     name = "login"
 
     def _dispatch_stage_2(self, core, session):
-        user = session.getUser()
+        sess = meta.Session()
+
+        user = session.user
 
         core.bus.broadcastEx(PacketLogin(username=user.name))
 
-        tile = meta.session.get(Tile, user.location_id)
+        tile = sess.query(Tile).get(user.location_id)
 
         # send this everywhere
         tile.sendInter(core.bus, PacketInfo())
 
         user.online = True
-        meta.session.flush()
+
+        sess.merge(user)
+        sess.commit()
 
     def dispatch(self, core, session):
+        sess = meta.Session()
+
         try:
-            user = User.getUserByName(self.username)
-        except ValueError:
+            user = sess.query(User).filter(User.name==self.username).one()
+        except (NoResultFound, MultipleResultsFound):
             session.sendEx(core.bus, PacketLogout(msg="Invalid username or password.")) # nope, you don't even exist
             return
 
-        if self.pwhash != sha256(self.nonce + sha256(user.pwhash + session.token).hexdigest()).hexdigest():
+        if self.pwhash != sha256(self.nonce + sha256(user.pwhash + session.id).hexdigest()).hexdigest():
             session.sendEx(core.bus, PacketLogout(msg="Invalid username or password.")) # nope, your hash is incorrect
             return
 
@@ -79,20 +86,23 @@ class PacketLogin(Packet):
             session.sendEx(core.bus, PacketLogout(msg="Session clash, please try again."))
             user.sendInter(core.bus, PacketLogout(msg="Session clash"))
             user.online = False
-            meta.session.flush()
+            sess.merge(user)
+            sess.commit()
             return
 
         # set all the sessions and stuff
-        session.user_id = user._id
-        meta.session.save(session)
+        session.user_id = user.id
+        sess.merge(session)
+        sess.commit()
 
         session.sendEx(core.bus, PacketLogin())
 
-        group = meta.session.get(Group, user.group_id)
+        group = sess.query(Group).get(user.group_id)
 
-        tile = meta.session.get(Tile, user.location_id)
-        chunk = meta.session.get(Chunk, tile.chunk_id)
-        realm = meta.session.get(Realm, chunk.realm_id)
+        # XXX: maybe drop down below the messaging abstraction layer?
+        tile = sess.query(Tile).get(user.location_id)
+        chunk = sess.query(Chunk).get(tile.chunk_id)
+        realm = sess.query(Realm).get(chunk.realm_id)
 
         # do some funkatronic queue binds and callbacking
         core.bus.globalBind(session,

@@ -62,6 +62,8 @@ def render(chunk_id):
            The ID of the chunk.
     """
     try:
+        sess = meta.Session()
+
         img_cache = {}
 
         CHUNK_WIDTH = CHUNK_STRIDE * TILE_WIDTH
@@ -76,11 +78,11 @@ def render(chunk_id):
             (0, 0, 0, 0)
         )
 
-        chunk = meta.session.get(Chunk, chunk_id)
+        chunk = sess.query(Chunk).get(chunk_id)
 
-        for tile in meta.session.find(Tile, { "chunk_id" : chunk._id }).sort([ ("location.rx", 1), ("location.ry", 1) ]):
-            terrain = meta.session.get(Terrain, tile.terrain_id)
-            tx, ty = isometricTransform(tile.location.rx, tile.location.ry)
+        for tile in sess.query(Tile).filter(Tile.chunk_id==chunk.id):
+            terrain = sess.query(Terrain).get(tile.terrain_id)
+            tx, ty = isometricTransform(tile.rx, tile.ry)
 
             if terrain.img not in img_cache:
                 img_cache[terrain.img] = Image.open(os.path.join(STATIC_TILE_PATH, "%s.png" % terrain.img))
@@ -94,11 +96,13 @@ def render(chunk_id):
                 tile_img
             )
 
-        chunk_img.save(os.path.join(STATIC_CHUNK_PATH, "%d.%d.png" % (chunk.location.cx, chunk.location.cy)))
+        chunk_img.save(os.path.join(STATIC_CHUNK_PATH, "%d.%d.png" % (chunk.cx, chunk.cy)))
         chunk.fresh = True
-        meta.session.save(chunk)
 
-        logging.info("Rendered chunk at (%d, %d)" % (chunk.location.cx, chunk.location.cy))
+        sess.add(chunk)
+        sess.commit()
+
+        logging.info("Rendered chunk at (%d, %d)" % (chunk.cx, chunk.cy))
     except Exception, e:
         logging.error("Got exception: %s: %s" % (e.__class__.__name__, e))
 
@@ -120,7 +124,7 @@ class RendererSupervisor(object):
     def renderRealm(self, realm_id, callback=None):
         callback = callback or (lambda *args, **kwargs: None)
 
-        chunk_cur = meta.session.find(Chunk, { "realm_id" : realm_id }).sort([ ("location.cx", 1), ("location.cy", 1) ])
+        chunk_cur = meta.Session().query(Chunk).filter(Chunk.realm_id == realm_id)
         chunk_num = [ 0, chunk_cur.count() ]
 
         def _callback(*args, **kwargs):
@@ -129,7 +133,7 @@ class RendererSupervisor(object):
                 callback(*args, **kwargs)
 
         for chunk in chunk_cur:
-            self.renderChunk(chunk._id, callback=_callback)
+            self.renderChunk(chunk.id, callback=_callback)
 
     def renderChunk(self, chunk_id, callback=None):
         callback = callback or (lambda *args, **kwargs: None)

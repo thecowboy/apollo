@@ -32,16 +32,8 @@ dojo.declare("apollo.client.command.ClobberCommand", apollo.client.command.Comma
     name : "clobber",
     description : "/clobber cx cy - Clobber a chunk",
 
-    execute : function(transport, cx, cy)
+    execute : function(transport)
     {
-        if (cx == undefined || cy == undefined)
-        {
-            apollo.client.util.ui.addConsoleMessage("Incorrect number of arguments.");
-            return;
-        }
-        transport.sendAction(new apollo.client.protocol.packet.PacketClobber({
-            cx     : cx,
-            cy     : cy
-        }));
+        transport.sendAction(new apollo.client.protocol.packet.PacketClobber({}));
     }
 });

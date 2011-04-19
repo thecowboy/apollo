@@ -25,6 +25,8 @@ Depends
 
 And any form of RDBMS SQLAlchemy supports (PostgreSQL, MySQL, etc.).
 
+*Note:* MySQL may not be supported, due to functional indexes.
+
 Installation
 ------------
 

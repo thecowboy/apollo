@@ -28,26 +28,37 @@ import uuid
 
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.schema import Column
-from sqlalchemy.types import String
+from sqlalchemy.types import Unicode, TypeDecorator
 from sqlalchemy import func
 
-UUIDType = String(32)
+class UUIDType(TypeDecorator):
+    impl = Unicode(32)
+
+    def process_bind_param(self, value, dialect):
+        # coerce to unicode
+        if value is not None:
+            return value.decode("utf-8")
+
+    def process_result_value(self, value, dialect):
+        # coerce to str
+        if value is not None:
+            return value.encode("utf-8")
 
 class PrimaryKeyed(object):
     id = Column("id", UUIDType, primary_key=True, default=lambda: uuid.uuid4().hex, nullable=False)
 
 class MessagableMixin(object):
     def sendEx(self, bus, packet):
-        bus.send("ex.%s.%s" % (self.__class__.__name__.lower(), self._id), packet)
+        bus.send("ex.%s.%s" % (self.__class__.__name__.lower(), self.id), packet)
 
     def sendInter(self, bus, packet):
-        bus.send("inter.%s.%s" % (self.__class__.__name__.lower(), self._id), packet)
+        bus.send("inter.%s.%s" % (self.__class__.__name__.lower(), self.id), packet)
 
     def queueBind(self, bus, session, callback=None):
-        bus.bindQueue("ex-%s" % session._id, "ex.%s.%s" % (self.__class__.__name__.lower(), self._id), callback)
+        bus.bindQueue("ex-%s" % session.id, "ex.%s.%s" % (self.__class__.__name__.lower(), self.id), callback)
 
     def queueUnbind(self, bus, session, callback=None):
-        bus.unbindQueue("ex-%s" % session._id, "ex.%s.%s" % (self.__class__.__name__.lower(), self._id), callback)
+        bus.unbindQueue("ex-%s" % session.id, "ex.%s.%s" % (self.__class__.__name__.lower(), self.id), callback)
 
 class CaseInsensitiveComparator(ColumnProperty.Comparator):
     def __eq__(self, other):

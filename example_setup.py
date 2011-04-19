@@ -89,10 +89,10 @@ if __name__ == "__main__":
 
     print "Rendering chunks..."
 
-    #renderer = RendererSupervisor()
-    #renderer.go()
-    #renderer.renderRealm(realm)
-    #renderer.stop()
+    renderer = RendererSupervisor()
+    renderer.go()
+    renderer.renderRealm(realm.id)
+    renderer.stop()
 
     print "Chunks rendered."
 
