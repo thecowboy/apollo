@@ -11,11 +11,8 @@ Depends
  * Tornado
    http://www.tornadoweb.org
 
- * MongoDB
-   http://www.mongodb.org
-
- * Ming
-   http://merciless.sourceforge.net
+ * SQLAlchemy
+   http://www.sqlalchemy.org
 
  * RabbitMQ
    http://www.rabbitmq.com
@@ -25,6 +22,8 @@ Depends
 
  * PIL
    http://www.pythonware.com/products/pil
+
+And any form of RDBMS SQLAlchemy supports (PostgreSQL, MySQL, etc.).
 
 Installation
 ------------

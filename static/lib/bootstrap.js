@@ -22,6 +22,7 @@
 
 dojo.require("dojo.parser");
 
+// bootstrap some (a lot of) ui stuff
 dojo.require("dojo.dnd.Source");
 
 dojo.require("dijit.Dialog");

@@ -24,7 +24,19 @@
 Models that represent database items and provide convenience methods.
 """
 
-class Messagable(object):
+import uuid
+
+from sqlalchemy.orm.properties import ColumnProperty
+from sqlalchemy.schema import Column
+from sqlalchemy.types import String
+from sqlalchemy import func
+
+UUIDType = String(32)
+
+class PrimaryKeyed(object):
+    id = Column("id", UUIDType, primary_key=True, default=lambda: uuid.uuid4().hex, nullable=False)
+
+class MessagableMixin(object):
     def sendEx(self, bus, packet):
         bus.send("ex.%s.%s" % (self.__class__.__name__.lower(), self._id), packet)
 
@@ -36,3 +48,7 @@ class Messagable(object):
 
     def queueUnbind(self, bus, session, callback=None):
         bus.unbindQueue("ex-%s" % session._id, "ex.%s.%s" % (self.__class__.__name__.lower(), self._id), callback)
+
+class CaseInsensitiveComparator(ColumnProperty.Comparator):
+    def __eq__(self, other):
+        return func.lower(self.__clause_element__()) == func.lower(other)

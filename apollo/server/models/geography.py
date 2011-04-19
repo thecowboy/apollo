@@ -19,12 +19,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+from sqlalchemy.orm import relationship
 
-from ming import schema
-from ming.orm import MappedClass
-from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
+from sqlalchemy.schema import ForeignKey, Column, Index
+from sqlalchemy.types import Integer, Unicode, Boolean, UnicodeText
 
-from apollo.server.models import meta, Messagable
+from apollo.server.models import meta, MessagableMixin, PrimaryKeyed, UUIDType
 
 CHUNK_STRIDE = 8
 """
@@ -42,170 +42,159 @@ TILE_HEIGHT = 32
 Height of a single tile (top half not counted).
 """
 
-class Terrain(MappedClass):
+class Terrain(meta.Base, PrimaryKeyed):
     """
     Terrain type.
     """
+    __tablename__ = "terrains"
 
-    class __mongometa__:
-        name = "terrain"
-        session = meta.session
-
-    _id = FieldProperty(schema.ObjectId)
-
-    name = FieldProperty(str, required=True)
+    name = Column("name", Unicode(255), nullable=False)
     """
     Name of the terrain type.
     """
 
-    img = FieldProperty(str, required=True)
+    img = Column("img", Unicode(255), nullable=False)
     """
     Image of the terrain type.
     """
 
-class Realm(MappedClass, Messagable):
+class Realm(meta.Base, PrimaryKeyed, MessagableMixin):
     """
     The representation of a "world".
     """
+    __tablename__ = "realms"
 
-    class __mongometa__:
-        name = "realm"
-        session = meta.session
-
-    _id = FieldProperty(schema.ObjectId)
-
-    name = FieldProperty(str, required=True)
+    name = Column("name", Unicode(255), nullable=False)
     """
     The name of the realm.
     """
 
-    size = FieldProperty({ "cw" : int, "ch" : int }, required=True)
+    cw = Column("cw", Integer, nullable=False)
     """
-    The size of the realm, in chunk coordinates.
-    """
-
-    chunks = RelationProperty("Chunk")
-    """
-    The chunks contained in this world.
+    The width of the realm, in chunk coordinates.
     """
 
-class Chunk(MappedClass):
+    ch = Column("ch", Integer, nullable=False)
+    """
+    The height of the realm, in chunk coordinates.
+    """
+
+class Chunk(meta.Base, PrimaryKeyed):
     """
     A region of the map ``CHUNK_STRIDE`` high and wide. These are rendered for
     the client to display, instead of the client stitching up its own tiles.
-    """
-    class __mongometa__:
-        name = "chunk"
-        session = meta.session
-
-    _id = FieldProperty(schema.ObjectId)
-
-    location = FieldProperty({
-        "cx" : int,
-        "cy" : int
-    }, required=True)
-    """
-    Location of the chunk, in chunk coordinates.
 
     Chunk coordinates are calculated with the expressions ``ax // CHUNK_STRIDE``
     and ``ay // CHUNK_STRIDE``, where ``ax`` and ``ay`` are absolute x and y
     coordinates, respectively.
     """
+    __tablename__ = "chunks"
 
-    fresh = FieldProperty(bool, if_missing=False)
+    cx = Column("cx", Integer, nullable=False)
+    """
+    x-coordinate of the chunk.
+    """
+
+    cy = Column("cy", Integer, nullable=False)
+    """
+    y-coordinate of the chunk.
+    """
+
+    fresh = Column("fresh", Boolean, nullable=False, default=False)
     """
     Chunk is "fresh", i.e. no changes to the tiles that reside within it since
     the last render.
     """
 
-    realm_id = ForeignIdProperty("Realm", required=True)
+    realm_id = Column("realm_id", UUIDType, ForeignKey("realms.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     """
     ID of the realm the chunk belongs to.
     """
 
-class Tile(MappedClass, Messagable):
+Index("idx_cx", Chunk.cx)
+Index("idx_cy", Chunk.cy)
+
+class Tile(meta.Base, PrimaryKeyed, MessagableMixin):
     """
     A tile in the world.
+
+    These are in coordinates relative to the chunk. They have the same scale as
+    aboslute coordinates, and can be calculated with the expressions
+    ``ax % CHUNK_STRIDE`` and ``ay % CHUNK_STRIDE``.
+    """
+    __tablename__ = "tiles"
+
+    rx = Column("rx", Integer, nullable=False)
+    """
+    Relative x-coordinate of the tile.
     """
 
-    class __mongometa__:
-        name = "tile"
-        session = meta.session
-
-    _id = FieldProperty(schema.ObjectId)
-
-    location = FieldProperty({
-        "rx" : int,
-        "ry" : int
-    }, required=True)
+    ry = Column("ry", Integer, nullable=False)
     """
-    Location of the tile. These are in coordinates relative to the chunk. They
-    have the same scale as aboslute coordinates, and can be calculated with the
-    expressions ``ax % CHUNK_STRIDE`` and ``ay % CHUNK_STRIDE``.
+    Relative y-coordinate of the tile.
     """
 
-    chunk_id = ForeignIdProperty("Chunk", required=True)
+    chunk_id = Column("chunk_id", UUIDType, ForeignKey("chunks.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     """
     ID of the chunk this tile belongs to.
     """
 
-    terrain_id = ForeignIdProperty("Terrain", required=True)
+    terrain_id = Column("terrain_id", UUIDType, ForeignKey("terrains.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     """
     ID of the terrain type this tile is.
     """
 
-class Construct(MappedClass):
-    """
-    A construct (e.g. house, farm, etc.) in the world.
-    """
-    class __mongometa__:
-        name = "construct"
-        session = meta.session
+    users = relationship("User", backref="location")
+    professions_spawn = relationship("Profession", backref="spawnpoint")
 
-    _id = FieldProperty(schema.ObjectId)
+Index("idx_rx", Tile.rx)
+Index("idx_ry", Tile.ry)
 
-    type_id = ForeignIdProperty("ConstructType")
-    """
-    Construct's type.
-    """
-
-    location_id = ForeignIdProperty("Tile")
-    """
-    Construct's location.
-    """
-
-    assoc_params = schema.Anything()
-    """
-    Parameters for the construct type.
-    """
-
-class ConstructType(MappedClass):
+class ConstructType(meta.Base, PrimaryKeyed):
     """
     A type of construct (e.g. house, farm, etc.) in the world.
     """
+    __tablename__ = "construct_types"
 
-    class __mongometa__:
-        name = "constructtype"
-        session = meta.session
-
-    _id = FieldProperty(schema.ObjectId)
-
-    mask = FieldProperty([{
-        "ax" : int,
-        "ay" : int,
-        "solid" : bool
-    }], required=True)
+    mask = Column("mask", UnicodeText, nullable=False)
     """
     A list of tile locations the construct takes up. This is used to determine
     collisions and depth-sorting. Assume ``(0, 0)`` is the origin.
     """
 
-    img = FieldProperty(str, required=True)
+    img = Column("img", Unicode(255), nullable=False)
     """
     Image of the construct.
     """
 
-    assoc_class = FieldProperty(str, required=True)
+    img_offset_x = Column("img_offset_x", Integer, nullable=False)
+    img_offset_y = Column("img_offset_y", Integer, nullable=False)
+
+    assoc_class = Column("assoc_class", Unicode(255), nullable=False)
     """
     Associated system class for the construct type.
     """
+
+class Construct(meta.Base, PrimaryKeyed):
+    """
+    A construct (e.g. house, farm, etc.) in the world.
+    """
+    __tablename__ = "constructs"
+
+    type_id = Column("type_id", UUIDType, ForeignKey("construct_types.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    """
+    Construct's type.
+    """
+
+    location_id = Column("location_id", UUIDType, ForeignKey("tiles.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    """
+    Construct's location.
+    """
+
+    assoc_params = Column("assoc_params", UnicodeText, nullable=True)
+    """
+    Parameters for the construct type, as a JSON object.
+    """
+
+from apollo.server.models.auth import User
+from apollo.server.models.rpg import Profession

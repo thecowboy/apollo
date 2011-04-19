@@ -21,39 +21,119 @@
 #
 
 import re
-
-import uuid
+import json
 
 from hashlib import sha256
 from datetime import datetime
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import column_property, relationship
 
-from ming import schema
-from ming.orm import MappedClass
-from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
+from sqlalchemy.schema import ForeignKey, Column, Index, Table, DDL
+from sqlalchemy.types import Integer, Unicode, Boolean, UnicodeText, DateTime, String
 
-from apollo.server.models import meta, Messagable
-from apollo.server.models.rpg import Profession
+from apollo.server.models import meta, MessagableMixin, PrimaryKeyed, UUIDType, CaseInsensitiveComparator
 
-from apollo.server.util.cache import memoize
 from apollo.server.util.importlib import import_class
 
-class User(MappedClass, Messagable):
+user_inventory = Table("user_inventory", meta.Base.metadata,
+   Column("user_id", UUIDType, ForeignKey("users.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False),
+   Column("item_id", UUIDType, ForeignKey("items.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+)
+
+class RPGUserPartial(object):
+    """
+    Partial class for the RPG elements of a user.
+    """
+    level = Column("level", Integer, nullable=False, default=1)
+    """
+    User's level.
+    """
+
+    @declared_attr
+    def profession_id(cls):
+        """
+        ID of the profession the user belongs to.
+        """
+        return Column("profession_id", UUIDType, ForeignKey("professions.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+
+    @declared_attr
+    def location_id(cls):
+        """
+        ID of the tile the user is currrently at.
+        """
+        return Column("location_id", UUIDType, ForeignKey("tiles.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+
+    hp = Column("hp", Integer, nullable=False, default=0)
+    """
+    User's HP.
+    """
+
+    @declared_attr
+    def inventory(cls):
+        return relationship("Item", user_inventory)
+
+    @property
+    def hpmax(self):
+        """
+        User's max HP, according to their ``profession.hpcurve``.
+        """
+        return import_class(self.profession.assoc_class)(self).hpCurve()
+
+    ap = Column("ap", Integer, nullable=False, default=0)
+    """
+    User's AP.
+    """
+
+    @property
+    def apmax(self):
+        """
+        User's max AP, according to their ``profession.apcurve``.
+        """
+        return import_class(self.profession.assoc_class)(self).apCurve()
+
+    xp = Column("xp", Integer, nullable=False, default=0)
+    """
+    User's XP.
+    """
+
+    @property
+    def xpmax(self):
+        """
+        User's max XP, according to their ``profession.xpcurve``.
+        """
+        return import_class(self.profession.assoc_class)(self).xpCurve()
+
+
+class Group(meta.Base, PrimaryKeyed, MessagableMixin):
+    """
+    A permission group.
+    """
+    __tablename__ = "groups"
+
+    name = Column("name", Unicode(255), nullable=False)
+    """
+    Name of the group, e.g. `Administrator`.
+    """
+
+    permissions = Column("permissions", UnicodeText, nullable=False)
+    """
+    List of permissions the group has. The wildcard character ``*`` is allowed.
+    """
+
+    users = relationship("User", backref="group")
+
+class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
     """
     A user.
     """
+    __tablename__ = "users"
 
-    class __mongometa__:
-        name = "user"
-        session = meta.session
-
-    _id = FieldProperty(schema.ObjectId)
-
-    name = FieldProperty(str, required=True)
+    name = column_property(Column("name", Unicode(255), nullable=False), comparator_factory=CaseInsensitiveComparator)
     """
     The username of the user.
     """
 
-    pwhash = FieldProperty(str)
+    pwhash = Column("pwhash", String(64), nullable=False)
     """
     The password hash of the user (see ``_set_password`` for how this is
     calculated).
@@ -74,93 +154,22 @@ class User(MappedClass, Messagable):
     Convenience property for setting the user's password.
     """
 
-    online = FieldProperty(bool, if_missing=False)
+    online = Column("online", Boolean, nullable=False, default=False)
     """
     The status of the user being online.
     """
 
-    registered = FieldProperty(datetime, if_missing=datetime.utcnow)
+    registered = Column("registered", DateTime, nullable=False, default=datetime.utcnow)
     """
     Date when user registered.
     """
 
-    sessions = RelationProperty("Session")
-    """
-    User's sessions.
-    """
-
-    group_id = ForeignIdProperty("Group", required=True)
+    group_id = Column("group_id", UUIDType, ForeignKey("groups.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     """
     ID of the group the user belongs to.
     """
 
-    #
-    # rpg stuff
-    #
-
-    level = FieldProperty(int, if_missing=1)
-    """
-    User's level.
-    """
-
-    profession_id = ForeignIdProperty("Profession", required=True)
-    """
-    ID of the profession the user belongs to.
-    """
-
-    location_id = ForeignIdProperty("Tile", required=True)
-    """
-    ID of the tile the user is currrently at.
-    """
-
-    hp = FieldProperty(int, if_missing=0)
-    """
-    User's HP.
-    """
-
-    @property
-    def hpmax(self):
-        """
-        User's max HP, according to their ``profession.hpcurve``.
-        """
-        profession = meta.session.get(Profession, self.profession_id)
-        return import_class(profession.assoc_class)(self).hpCurve()
-
-    ap = FieldProperty(int, if_missing=0)
-    """
-    User's AP.
-    """
-
-    @property
-    def apmax(self):
-        """
-        User's max AP, according to their ``profession.apcurve``.
-        """
-        profession = meta.session.get(Profession, self.profession_id)
-        return import_class(profession.assoc_class)(self).apCurve()
-
-    xp = FieldProperty(int, if_missing=0)
-    """
-    User's XP.
-    """
-
-    @property
-    def xpmax(self):
-        """
-        User's max XP, according to their ``profession.xpcurve``.
-        """
-        profession = meta.session.get(Profession, self.profession_id)
-        return import_class(profession.assoc_class)(self).xpCurve()
-
-    stats = FieldProperty(schema.Anything)
-    """
-    User's stats.
-    """
-
-    inventory = FieldProperty([schema.ObjectId])
-    """
-    User's on-hand items.
-    """
+    sessions = relationship("Session", backref="user")
 
     def hasPermission(self, permission):
         """
@@ -170,82 +179,30 @@ class User(MappedClass, Messagable):
              * ``permission``
                Permission to check for.
         """
-        group = meta.session.get(Group, self.group_id)
-
-        if group is None:
-            return False
-
-        for perm in group.permissions:
+        for perm in json.loads(self.group.permissions):
             if re.match(re.escape(perm).replace("\\*", ".+"), permission):
                 return True
 
         return False
+DDL(
+    "CREATE UNIQUE INDEX idx_name ON %(fullname)s "
+    "(lower(name))"
+).execute_at('after-create', User.__table__)
 
-    @staticmethod
-    def getUserByName(name):
-        """
-        Get user by name case-insensitively.
-
-        :Parameters:
-             * ``name``
-               Username.
-        """
-        return meta.session.find(User, { "name" : { "$regex" : "^%s$" % re.escape(name.lower()), "$options" : "i" } }).one()
-
-class Session(MappedClass, Messagable):
+class Session(meta.Base, PrimaryKeyed, MessagableMixin):
     """
     A session that is established when a user makes a connection.
     """
+    __tablename__ = "sessions"
 
-    class __mongometa__:
-        name = "session"
-        session = meta.session
-
-    _id = FieldProperty(schema.ObjectId)
-
-    token = FieldProperty(str, if_missing=lambda: uuid.uuid4().hex)
-    """
-    Unique session identifier.
-    """
-
-    last_active = FieldProperty(datetime, if_missing=datetime.utcnow)
+    last_active = Column("last_active", DateTime, nullable=False, default=datetime.utcnow)
     """
     Last active session time.
     """
 
-    user_id = ForeignIdProperty("User")
+    user_id = Column("user_id", UUIDType, ForeignKey("users.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
     """
     ID of the user connected to this session.
     """
 
-    @memoize
-    def getUser(self):
-        """
-        Get the user connected to this session (if any).
-        """
-        return meta.session.get(User, self.user_id)
-
-class Group(MappedClass, Messagable):
-    """
-    A permission group.
-    """
-    class __mongometa__:
-        name = "group"
-        session = meta.session
-
-    _id = FieldProperty(schema.ObjectId)
-
-    name = FieldProperty(str, required=True)
-    """
-    Name of the group, e.g. `Administrator`.
-    """
-
-    permissions = FieldProperty([str])
-    """
-    List of permissions the group has. The wildcard character ``*`` is allowed.
-    """
-
-    users = RelationProperty("User")
-    """
-    Users that are members of this group.
-    """
+from apollo.server.models.geography import Tile

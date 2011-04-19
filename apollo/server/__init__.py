@@ -25,9 +25,10 @@ Apollo server core package.
 """
 
 import urlparse
+import urllib
 import logging
 
-from ming.datastore import DataStore
+from sqlalchemy.engine import create_engine
 
 from apollo.server.models.meta import bindSession
 
@@ -64,11 +65,12 @@ def setupOptions():
 
     define("session_expiry", default=3600, help="expire inactive sessions after specified seconds", type=int, metavar="EXPIRY")
 
-    define("mongodb_host", default="localhost", help="mongodb server host", metavar="HOST")
-    define("mongodb_port", default=27017, help="mongodb server port", type=int, metavar="PORT")
-    define("mongodb_username", default="", help="mongodb server username", metavar="USERNAME")
-    define("mongodb_password", default="", help="mongodb server password (put in apollod.conf)", metavar="PASSWORD")
-    define("mongodb_database", default="apollo", help="mongodb database name", metavar="DATABASE")
+    define("sql_store", default="postgresql", help="sql server store", metavar="HOST")
+    define("sql_host", default="localhost", help="sql server host", metavar="HOST")
+    define("sql_port", default=5432, help="sql server port", type=int, metavar="PORT")
+    define("sql_username", default="apollo", help="sql server username", metavar="USERNAME")
+    define("sql_password", default="apollo", help="sql server password (put in apollod.conf)", metavar="PASSWORD")
+    define("sql_database", default="apollo", help="sql database name", metavar="DATABASE")
 
     define("amqp_host", default="localhost", help="amqp server host", metavar="HOST")
     define("amqp_port", default=5672, help="amqp server port", type=int, metavar="PORT")
@@ -80,22 +82,22 @@ def setupOptions():
 
 def setupDBSession():
     """
-    Set up the session for Ming (MongoDB).
+    Set up the session for SQLAlchemy.
     """
-    # netloc for mongodb
-    mongodb_netloc = options.mongodb_host
-    if options.mongodb_port:
-        mongodb_netloc += ":%d" % options.mongodb_port
-    if options.mongodb_username:
-        mongodb_auth = options.mongodb_username
-        if options.mongodb_password:
-            mongodb_auth += ":%s" % options.mongodb_password
-        mongodb_netloc = mongodb_auth + "@" + mongodb_netloc
+    # netloc
+    netloc = options.sql_host
+    if options.sql_port:
+        netloc += ":%d" % options.sql_port
+    if options.sql_username:
+        auth = urllib.unquote_plus(options.sql_username)
+        if options.sql_password:
+            auth += ":%s" % urllib.unquote_plus(options.sql_password)
+        netloc = auth + "@" + netloc
 
-    bindSession(DataStore(urlparse.urlunsplit((
-        "mongodb",
-        mongodb_netloc,
-        "",
+    bindSession(create_engine(urlparse.urlunsplit((
+        options.sql_store,
+        netloc,
+        options.sql_database,
         "",
         ""
-    )), database=options.mongodb_database))
+    ))))

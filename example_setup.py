@@ -1,3 +1,4 @@
+import json
 import sys
 import logging
 import random
@@ -19,11 +20,10 @@ logging.basicConfig(level=logging.INFO)
 if __name__ == "__main__":
     skeletonSetup()
 
-    # clear out the old database (while breaking many, many layers of encapsulation)
-    meta.session.get(User, "") # connect to the database
-    conn = meta.session.impl.bind.bind._conn
-    conn.drop_database(meta.session.impl.bind.database)
-    db = conn[meta.session.impl.bind.database]
+    sess = meta.Session()
+    meta.Base.metadata.drop_all(sess.bind)
+    print "Creating tables..."
+    meta.Base.metadata.create_all(sess.bind)
 
     # set spawn
     SPAWN_X = 0
@@ -33,52 +33,48 @@ if __name__ == "__main__":
     print "Generating terrain information..."
 
     terrains = [
-        Terrain(name="Grass", img="grass"),
-        Terrain(name="Sand", img="sand")
+        Terrain(name=u"Grass", img=u"grass"),
+        Terrain(name=u"Sand", img=u"sand")
     ]
+    sess.add_all(terrains)
+    sess.commit()
 
-    # create realm
+# create realm
     realm = Realm(
-        name="Best Realm Ever",
-        size={
-            "cw" : 10,
-            "ch" : 10
-        }
+        name=u"Best Realm Ever",
+        cw=10,
+        ch=10
     )
-
-    meta.session.flush_all()
+    sess.add(realm)
+    sess.commit()
 
     # BEST TERRAIN GENERATOR EVER
     print "Generating realm..."
 
-    MAX_TILES = realm.size.cw * CHUNK_STRIDE * realm.size.ch * CHUNK_STRIDE
-
-    db.chunk.create_index([ ("location.cx", 1), ("location.cy", 1) ], unique=True)
-    db.tile.create_index([ ("location.rx", 1), ("location.ry", 1) ])
+    MAX_TILES = realm.cw * CHUNK_STRIDE * realm.ch * CHUNK_STRIDE
 
     num_tiles = 0
-    for cx in xrange(0, realm.size.cw):
-        for cy in xrange(0, realm.size.ch):
+    for cx in xrange(0, realm.cw):
+        for cy in xrange(0, realm.ch):
             chunk = Chunk(
-                location={
-                    "cx" : cx,
-                    "cy" : cy
-                },
-                realm_id=realm._id
+                cx=cx,
+                cy=cy,
+                realm_id=realm.id
             )
+            sess.add(chunk)
+            sess.commit()
             for rx in xrange(0, CHUNK_STRIDE):
                 for ry in xrange(0, CHUNK_STRIDE):
                     x = cx * CHUNK_STRIDE + rx
                     y = cy * CHUNK_STRIDE + ry
 
                     tile = Tile(
-                        location={
-                            "rx" : rx,
-                            "ry" : ry
-                        },
-                        chunk_id=chunk._id,
-                        terrain_id=terrains[random.randrange(0, len(terrains))]._id
+                        rx=rx,
+                        ry=ry,
+                        chunk_id=chunk.id,
+                        terrain_id=terrains[random.randrange(0, len(terrains))].id
                     )
+                    sess.add(tile)
                     num_tiles += 1
 
                     if not num_tiles % 1000:
@@ -87,16 +83,16 @@ if __name__ == "__main__":
 
                     if x == SPAWN_X and y == SPAWN_Y:
                         spawntile = tile
+            sess.commit()
 
     print "Generated tiles: %d/%d, flushing to database..." % (num_tiles, num_tiles)
-    meta.session.flush_all()
 
     print "Rendering chunks..."
 
-    renderer = RendererSupervisor()
-    renderer.go()
-    renderer.renderRealm(realm._id)
-    renderer.stop()
+    #renderer = RendererSupervisor()
+    #renderer.go()
+    #renderer.renderRealm(realm)
+    #renderer.stop()
 
     print "Chunks rendered."
 
@@ -104,30 +100,32 @@ if __name__ == "__main__":
 
     # create professions
     tester = Profession(
-        name="Tester",
-        assoc_class="system.professions.Tester",
-        spawnpoint_id=spawntile._id
+        name=u"Tester",
+        assoc_class=u"system.professions.Tester",
+        spawnpoint_id=spawntile.id
     )
+    sess.add(tester)
 
-    # create groups
+# create groups
     players = Group(
-        name="Players",
-        permissions=[]
+        name=u"Players",
+        permissions=unicode(json.dumps([]))
     )
+    sess.add(players)
 
     admins = Group(
-        name="Administrators",
-        permissions=[ "*" ]
+        name=u"Administrators",
+        permissions=unicode(json.dumps([ "*" ]))
     )
+    sess.add(admins)
+    sess.commit()
 
     # create users
-    db.user.create_index([ ("name", 1) ], unique=True)
-
     user = User(
-        name="rfw",
-        group_id=admins._id,
-        profession_id=tester._id,
-        location_id=spawntile._id,
+        name=u"rfw",
+        group_id=admins.id,
+        profession_id=tester.id,
+        location_id=spawntile.id,
 
         level=10,
 
@@ -136,29 +134,30 @@ if __name__ == "__main__":
         xp=1
     )
     user.password = "iscool"
+    sess.add(user)
 
     user = User(
-        name="rlew",
-        group_id=admins._id,
-        profession_id=tester._id,
-        location_id=spawntile._id,
+        name=u"rlew",
+        group_id=admins.id,
+        profession_id=tester.id,
+        location_id=spawntile.id,
 
         hp=1,
         ap=1,
         xp=1
     )
     user.password = "stinx"
+    sess.add(user)
 
     user = User(
-        name="noshi",
-        group_id=players._id,
-        profession_id=tester._id,
-        location_id=spawntile._id
+        name=u"noshi",
+        group_id=players.id,
+        profession_id=tester.id,
+        location_id=spawntile.id
     )
     user.password = "isgat"
+    sess.add(user)
 
-    # we're done!
-    meta.session.flush_all()
+    sess.commit()
 
     print "Example setup completed."
-

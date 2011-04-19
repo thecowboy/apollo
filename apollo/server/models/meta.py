@@ -20,47 +20,18 @@
 # THE SOFTWARE.
 #
 
-import logging
-import os
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import scoped_session, sessionmaker
 
-from apollo.server.util.importlib import import_module
+Session = scoped_session(sessionmaker())
+Base = declarative_base()
 
-from ming import Session
-from ming.orm import MappedClass, ThreadLocalORMSession
-from ming.orm.base import mapper
-
-doc_session = Session()
-session = ThreadLocalORMSession(doc_session=doc_session)
-
-def bindSession(bind):
+def bindSession(engine):
     """
     Bind the session to a database connection.
 
     :Parameters:
-         * ``bind``
+         * ``engine`
             Database connection.
     """
-    doc_session.bind = bind
-    autodiscover()
-
-def autodiscover():
-    """
-    Autodiscover all models and compile them.
-    """
-    for filename in os.listdir(os.path.dirname(__file__)):
-        if filename[-3:] == ".py":
-            module_name, ext = filename.rsplit(".", 1)
-
-            if module_name in ("meta", "__init__"):
-                continue
-
-            module = import_module(".%s" % module_name, "apollo.server.models")
-
-            for member_name in dir(module):
-                member = getattr(module, member_name)
-                try:
-                    if issubclass(member, MappedClass) and member is not MappedClass:
-                        mapper(member).compile()
-                except TypeError:
-                    pass
-    logging.info("Compiled Ming models for use.")
+    Session.configure(bind=engine)

@@ -31,6 +31,7 @@ from pika import PlainCredentials, ConnectionParameters, BasicProperties
 from pymongo.objectid import ObjectId
 
 from apollo.server.component import Component
+from apollo.server.models.geography import Realm, Tile, Chunk
 
 from apollo.server.protocol.packet import ORIGIN_INTER
 from apollo.server.protocol.packet.meta import deserializePacket
@@ -158,16 +159,23 @@ class Bus(Component):
         packet._origin = ORIGIN_INTER
 
         if prefixparts[1] == "user":
-            packet.dispatch(self.core, FakeSession(ObjectId(prefixparts[2])))
+            user = meta.session.get(User, ObjectId(prefixparts[2]))
+            if user.online:
+                packet.dispatch(self.core, FakeSession(user._id))
         elif prefixparts[1] == "tile":
-            for user in meta.session.find(User, { "location_id" : ObjectId(prefixparts[2]) }):
+            for user in meta.session.find(User, { "location_id" : ObjectId(prefixparts[2]), "online" : True }):
                 packet.dispatch(self.core, FakeSession(user._id))
         elif prefixparts[1] == "group":
-            for user in meta.session.find(User, { "group_id" : ObjectId(prefixparts[2]) }):
+            for user in meta.session.find(User, { "group_id" : ObjectId(prefixparts[2]), "online" : True }):
                 packet.dispatch(self.core, FakeSession(user._id))
         elif prefixparts[1] == "realm":
-            # TODO: implement this
-            pass
+            # TODO: SLOW, HORRIBLE, ABSOLUTELY TERRIBLE!
+            realm_id = ObjectId(prefixparts[2])
+            for user in meta.session.find(User, { "online" : True }):
+                tile = meta.session.get(Tile, user.location_id)
+                chunk = meta.session.get(Chunk, tile.chunk_id)
+                if chunk.realm_id == realm_id:
+                    packet.dispatch(self.core, FakeSession(user._id))
         elif prefixparts[1] == "global":
             for user in meta.session.find(User):
                 packet.dispatch(self.core, FakeSession(user._id))

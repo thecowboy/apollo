@@ -20,79 +20,71 @@
 # THE SOFTWARE.
 #
 
-from ming import schema
-from ming.orm import MappedClass
-from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
+from sqlalchemy import Table
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import ForeignKey, Column
+from sqlalchemy.types import Integer, Unicode, Boolean, UnicodeText, DateTime
 
-from apollo.server.models import meta
+from apollo.server.models import meta, PrimaryKeyed, UUIDType
 
-class Profession(MappedClass):
+class Profession(meta.Base, PrimaryKeyed):
     """
     An RPG-style profession (think `Warrior`, `Caster`, etc.).
     """
+    __tablename__ = "professions"
 
-    class __mongometa__:
-        name = "profession"
-        session = meta.session
-
-    _id = FieldProperty(schema.ObjectId)
-
-    name = FieldProperty(str, required=True)
+    name = Column("name", Unicode, nullable=False)
     """
     Name of the profession.
     """
 
-    assoc_class = FieldProperty(str)
+    assoc_class = Column("assoc_class", Unicode(255), nullable=False)
     """
     Associated system profession class.
     """
 
-    spawnpoint_id = ForeignIdProperty("Tile")
+    spawnpoint_id = Column("spawnpoint_id", ForeignKey("tiles.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     """
     ID of the tile that is the profession's default spawnpoint.
     """
 
-class Item(MappedClass):
-    """
-    An item in a user's inventory.
-    """
-    class __mongometa__:
-        name = "item"
-        session = meta.session
+    users = relationship("User", backref="profession")
 
-    _id = FieldProperty(schema.ObjectId)
+class ItemType(meta.Base, PrimaryKeyed):
+    __tablename__ = "item_types"
 
-    name = FieldProperty(str, required=True)
-    """
-    Name of the item.
-    """
-
-    type_id = ForeignIdProperty("ItemType")
-    """
-    Item type.
-    """
-
-    assoc_params = FieldProperty(schema.Anything)
-    """
-    Parameters for the associated class.
-    """
-
-class ItemType(MappedClass):
-    """
-    A type of item.
-    """
-    class __mongometa__:
-        name = "itemtype"
-        session = meta.session
-
-    _id = FieldProperty(schema.ObjectId)
-
-    name = FieldProperty(str, required=True)
+    name = Column("name", Unicode, nullable=False)
     """
     Name of the item type.
     """
 
-    assoc_class = FieldProperty(str, required=True)
+    assoc_class = Column("assoc_class", Unicode(255), nullable=False)
     """
     Associated system item class.
     """
+
+    items = relationship("Item", backref="type")
+
+class Item(meta.Base, PrimaryKeyed):
+    """
+    An item in a user's inventory.
+    """
+    __tablename__ = "items"
+
+    name = Column("name", Unicode, nullable=False)
+    """
+    Name of the item.
+    """
+
+    type_id = Column("type_id", ForeignKey("item_types.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    """
+    Item type.
+    """
+
+    assoc_params= Column("assoc_params", UnicodeText, nullable=False)
+    """
+    Parameters for the associated class.
+    """
+
+from apollo.server.models.auth import User
+from apollo.server.models.geography import Tile
