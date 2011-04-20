@@ -32,6 +32,7 @@ import logging
 
 from tornado.options import options
 from tornado.web import RequestHandler, asynchronous, HTTPError
+import uuid
 
 from apollo.server.messaging.consumer import Consumer
 
@@ -69,14 +70,14 @@ class SessionHandler(RequestHandler):
 
         # declare queue
         self.application.bus.declareQueue(
-            "ex-%s" % session.id,
+            "ex-%s" % session.id.hex,
             lambda *args: session.queueBind(self.application.bus, session)
         )
 
         logging.info("Acquired session: %s" % session.id)
 
         self.write(json.dumps({
-            "s" :   session.id
+            "s" :   session.id.hex
         }))
 
 class ActionHandler(RequestHandler):
@@ -87,7 +88,7 @@ class ActionHandler(RequestHandler):
     SUPPORTED_METHODS = ("POST",)
 
     def post(self, *args, **kwargs):
-        self.token = self.get_argument("s")
+        self.token = uuid.UUID(hex=self.get_argument("s"))
         session = meta.Session().query(Session).get(self.token)
 
         payload = self.get_argument("p")
@@ -120,7 +121,7 @@ class EventsHandler(RequestHandler):
             return
 
         if not self.clean:
-            self.application.bus.send("inter.user.%s" % user.id, PacketLogout(msg="Connection closed"))
+            user.sendInter(self.application.bus, PacketLogout(msg="Connection closed"))
 
     def finish(self, chunk=None):
         super(EventsHandler, self).finish(chunk)

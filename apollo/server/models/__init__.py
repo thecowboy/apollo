@@ -28,37 +28,48 @@ import uuid
 
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Unicode, TypeDecorator
+from sqlalchemy.types import TypeDecorator, String
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import func
 
 class UUIDType(TypeDecorator):
-    impl = Unicode(32)
+    impl = String(16)
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == 'postgresql':
+            return dialect.type_descriptor(UUID())
+        else:
+            return dialect.type_descriptor(String(16))
 
     def process_bind_param(self, value, dialect):
-        # coerce to unicode
         if value is not None:
-            return value.decode("utf-8")
+            if dialect.name == "postgresql":
+                return str(value)
+            else:
+                return value.bytes
 
     def process_result_value(self, value, dialect):
-        # coerce to str
         if value is not None:
-            return value.encode("utf-8")
+            if dialect.name == "postgresql":
+                return uuid.UUID(hex=value)
+            else:
+                return uuid.UUID(bytes=value)
 
 class PrimaryKeyed(object):
-    id = Column("id", UUIDType, primary_key=True, default=lambda: uuid.uuid4().hex, nullable=False)
+    id = Column("id", UUIDType, primary_key=True, default=uuid.uuid4, nullable=False)
 
 class MessagableMixin(object):
     def sendEx(self, bus, packet):
-        bus.send("ex.%s.%s" % (self.__class__.__name__.lower(), self.id), packet)
+        bus.send("ex.%s.%s" % (self.__class__.__name__.lower(), self.id.hex), packet)
 
     def sendInter(self, bus, packet):
-        bus.send("inter.%s.%s" % (self.__class__.__name__.lower(), self.id), packet)
+        bus.send("inter.%s.%s" % (self.__class__.__name__.lower(), self.id.hex), packet)
 
     def queueBind(self, bus, session, callback=None):
-        bus.bindQueue("ex-%s" % session.id, "ex.%s.%s" % (self.__class__.__name__.lower(), self.id), callback)
+        bus.bindQueue("ex-%s" % session.id.hex, "ex.%s.%s" % (self.__class__.__name__.lower(), self.id.hex), callback)
 
     def queueUnbind(self, bus, session, callback=None):
-        bus.unbindQueue("ex-%s" % session.id, "ex.%s.%s" % (self.__class__.__name__.lower(), self.id), callback)
+        bus.unbindQueue("ex-%s" % session.id.hex, "ex.%s.%s" % (self.__class__.__name__.lower(), self.id.hex), callback)
 
 class CaseInsensitiveComparator(ColumnProperty.Comparator):
     def __eq__(self, other):

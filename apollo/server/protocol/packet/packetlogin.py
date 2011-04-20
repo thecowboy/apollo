@@ -76,7 +76,7 @@ class PacketLogin(Packet):
             session.sendEx(core.bus, PacketLogout(msg="Invalid username or password.")) # nope, you don't even exist
             return
 
-        if self.pwhash != sha256(self.nonce + sha256(user.pwhash + session.id).hexdigest()).hexdigest():
+        if self.pwhash != sha256(self.nonce + sha256(user.pwhash + session.id.hex).hexdigest()).hexdigest():
             session.sendEx(core.bus, PacketLogout(msg="Invalid username or password.")) # nope, your hash is incorrect
             return
 

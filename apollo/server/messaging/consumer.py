@@ -46,15 +46,17 @@ class Consumer(object):
         Begin consuming events.
         """
         sess = meta.Session()
+        token = uuid.UUID(hex=self.handler.token)
 
-        self.session = sess.query(Session).get(self.handler.token)
+        self.session = sess.query(Session).get(token)
+
         if self.session is None:
-            logging.warn("Session %s does not exist; bailing" % self.handler.token)
+            logging.warn("Session %s does not exist; bailing" % token)
             return
 
         self.channel.basic_consume(
             consumer_callback=self.on_message,
-            queue="ex-%s" % self.session.id,
+            queue="ex-%s" % self.session.id.hex,
             no_ack=False,
             consumer_tag=self.ctag
         )

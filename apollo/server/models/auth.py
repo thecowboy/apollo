@@ -25,9 +25,12 @@ import json
 
 from hashlib import sha256
 from datetime import datetime
+from sqlalchemy.exc import ProgrammingError
+
+from tornado.options import options
+
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import column_property, relationship
-
 from sqlalchemy.schema import ForeignKey, Column, Index, Table, DDL
 from sqlalchemy.types import Integer, Unicode, Boolean, UnicodeText, DateTime, String
 
@@ -195,8 +198,12 @@ class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
         if self.online:
             super(User, self).sendInter(bus, packet)
 
-# use a DDL index because functional ones are not yet available
-DDL("CREATE UNIQUE INDEX idx_name ON %(fullname)s (lower(name))").execute_at("after-create", User.__table__)
+try:
+    # use a DDL index because functional ones are not yet available
+    DDL("CREATE UNIQUE INDEX idx_name ON %(fullname)s (lower(name))").execute_at("after-create", User.__table__)
+except ProgrammingError:
+    # some databases don't support functional indexes, so just make a normal one and pray nothing bad happens
+    Index("idx_name", User.name)
 
 class Session(meta.Base, PrimaryKeyed, MessagableMixin):
     """

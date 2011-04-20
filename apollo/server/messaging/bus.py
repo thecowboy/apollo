@@ -158,20 +158,24 @@ class Bus(Component):
         packet = deserializePacket(body)
         packet._origin = ORIGIN_INTER
 
+        if prefixparts[1] == "global":
+            for user in sess.query(User):
+                packet.dispatch(self.core, FakeSession(user.id))
+            return
+
+        ident = uuid.UUID(hex=prefixparts[2])
+
         if prefixparts[1] == "user":
-            user = sess.query(User).get(prefixparts[2])
+            user = sess.query(User).get(ident)
             packet.dispatch(self.core, FakeSession(user.id))
         elif prefixparts[1] == "tile":
-            for user in sess.query(User).filter(User.location_id == prefixparts[2]):
+            for user in sess.query(User).filter(User.location_id == ident):
                 packet.dispatch(self.core, FakeSession(user.id))
         elif prefixparts[1] == "group":
-            for user in sess.query(User).filter(User.group_id == prefixparts[2]):
+            for user in sess.query(User).filter(User.group_id == ident):
                 packet.dispatch(self.core, FakeSession(user.id))
         elif prefixparts[1] == "realm":
-            for user in sess.query(User).filter(User.location_id == Tile.id).filter(Tile.chunk_id == Chunk.id).filter(Chunk.realm_id == Realm.id).filter(Realm.id == prefixparts[2]):
-                packet.dispatch(self.core, FakeSession(user.id))
-        elif prefixparts[1] == "global":
-            for user in sess.query(User):
+            for user in sess.query(User).filter(User.location_id == Tile.id).filter(Tile.chunk_id == Chunk.id).filter(Chunk.realm_id == Realm.id).filter(Realm.id == ident):
                 packet.dispatch(self.core, FakeSession(user.id))
 
     def broadcastEx(self, packet):
@@ -181,7 +185,7 @@ class Bus(Component):
         self.send("inter.global", packet)
 
     def globalBind(self, session, callback=None):
-        self.bindQueue("ex-%s" % session.id, "ex.global", callback)
+        self.bindQueue("ex-%s" % session.id.hex, "ex.global", callback)
 
     def globalUnbind(self, session, callback=None):
-        self.unbindQueue("ex-%s" % session.id, "ex.global", callback)
+        self.unbindQueue("ex-%s" % session.id.hex, "ex.global", callback)
