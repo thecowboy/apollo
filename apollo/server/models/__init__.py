@@ -28,7 +28,7 @@ import uuid
 
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.schema import Column
-from sqlalchemy.types import TypeDecorator, String
+from sqlalchemy.types import TypeDecorator, String, BINARY
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import func
 

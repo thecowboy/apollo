@@ -25,14 +25,11 @@ import json
 
 from hashlib import sha256
 from datetime import datetime
-from sqlalchemy.exc import ProgrammingError
-
-from tornado.options import options
 
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.schema import ForeignKey, Column, Index, Table, DDL
-from sqlalchemy.types import Integer, Unicode, Boolean, UnicodeText, DateTime, String
+from sqlalchemy.types import Integer, Unicode, Boolean, UnicodeText, DateTime
 
 from apollo.server.models import meta, MessagableMixin, PrimaryKeyed, UUIDType, CaseInsensitiveComparator
 
@@ -136,7 +133,7 @@ class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
     The username of the user.
     """
 
-    pwhash = Column("pwhash", String(64), nullable=False)
+    pwhash = Column("pwhash", Unicode(64), nullable=False)
     """
     The password hash of the user (see ``_set_password`` for how this is
     calculated).
@@ -150,7 +147,7 @@ class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
              * ``value``
                Plaintext password to encode.
         """
-        self.pwhash = sha256("%s:%s" % (self.name.lower(), value)).hexdigest()
+        self.pwhash = sha256("%s:%s" % (self.name.lower(), value)).hexdigest().decode("utf-8")
 
     password = property(fset=_set_password)
     """
@@ -198,12 +195,13 @@ class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
         if self.online:
             super(User, self).sendInter(bus, packet)
 
-try:
-    # use a DDL index because functional ones are not yet available
-    DDL("CREATE UNIQUE INDEX idx_name ON %(fullname)s (lower(name))").execute_at("after-create", User.__table__)
-except ProgrammingError:
-    # some databases don't support functional indexes, so just make a normal one and pray nothing bad happens
-    Index("idx_name", User.name)
+#try:
+#    # use a DDL index because functional ones are not yet available
+#    DDL("CREATE UNIQUE INDEX idx_name ON %(fullname)s (lower(name))").execute_at("after-create", User.__table__)
+#except ProgrammingError:
+
+# some databases don't support functional indexes (MySQL in particular), so just make a normal one and pray nothing bad happens
+Index("idx_name", User.name)
 
 class Session(meta.Base, PrimaryKeyed, MessagableMixin):
     """

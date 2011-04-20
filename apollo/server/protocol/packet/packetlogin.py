@@ -22,13 +22,13 @@
 
 from hashlib import sha256
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
-from apollo.server.models.geography import Tile, Chunk, Realm
 
-from apollo.server.protocol.packet import Packet, ORIGIN_EX, ORIGIN_INTER
+from apollo.server.protocol.packet import Packet
 
 from apollo.server.models import meta
-from apollo.server.models.auth import User, Group
+from apollo.server.models.auth import User
 from apollo.server.protocol.packet.packetinfo import PacketInfo
+from apollo.server.protocol.packet.packetuser import PacketUser
 
 from apollo.server.protocol.packet.packetlogout import PacketLogout
 
@@ -61,6 +61,7 @@ class PacketLogin(Packet):
 
         # send this everywhere
         user.location.sendInter(core.bus, PacketInfo())
+        user.location.sendInter(core.bus, PacketUser())
 
         user.online = True
 
@@ -71,7 +72,7 @@ class PacketLogin(Packet):
         sess = meta.Session()
 
         try:
-            user = sess.query(User).filter(User.name==self.username).one()
+            user = sess.query(User).filter(User.name == self.username).one()
         except (NoResultFound, MultipleResultsFound):
             session.sendEx(core.bus, PacketLogout(msg="Invalid username or password.")) # nope, you don't even exist
             return

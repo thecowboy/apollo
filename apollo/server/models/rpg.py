@@ -33,7 +33,7 @@ class Profession(meta.Base, PrimaryKeyed):
     """
     __tablename__ = "professions"
 
-    name = Column("name", Unicode, nullable=False)
+    name = Column("name", Unicode(255), nullable=False)
     """
     Name of the profession.
     """
@@ -53,7 +53,7 @@ class Profession(meta.Base, PrimaryKeyed):
 class ItemType(meta.Base, PrimaryKeyed):
     __tablename__ = "item_types"
 
-    name = Column("name", Unicode, nullable=False)
+    name = Column("name", Unicode(255), nullable=False)
     """
     Name of the item type.
     """
@@ -71,7 +71,7 @@ class Item(meta.Base, PrimaryKeyed):
     """
     __tablename__ = "items"
 
-    name = Column("name", Unicode, nullable=False)
+    name = Column("name", Unicode(255), nullable=False)
     """
     Name of the item.
     """
