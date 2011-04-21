@@ -29,18 +29,18 @@ import uuid
 
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.schema import Column
-from sqlalchemy.types import TypeDecorator, String, UnicodeText
+from sqlalchemy.types import TypeDecorator, UnicodeText, VARBINARY
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import func
 
 class UUIDType(TypeDecorator):
-    impl = String(16)
+    impl = VARBINARY(16)
 
     def load_dialect_impl(self, dialect):
         if dialect.name == 'postgresql':
             return dialect.type_descriptor(UUID())
         else:
-            return dialect.type_descriptor(String(16))
+            return dialect.type_descriptor(VARBINARY(16))
 
     def process_bind_param(self, value, dialect):
         if value is not None:
