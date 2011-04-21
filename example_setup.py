@@ -10,7 +10,7 @@ from apollo.server.render.supervisor import RendererSupervisor
 from apollo.server.models import meta
 
 from apollo.server.models.auth import User, Group
-from apollo.server.models.rpg import Profession
+from apollo.server.models.rpg import Profession, ProfessionBaseStat, Skill
 
 from apollo.server.models.geography import Terrain, Realm, Chunk, CHUNK_STRIDE, Tile
 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
                         spawntile = tile
             sess.commit()
 
-    print "Generated tiles: %d/%d, flushing to database..." % (num_tiles, num_tiles)
+    print "Generated tiles: %d/%d" % (num_tiles, num_tiles)
 
     print "Rendering chunks..."
 
@@ -105,8 +105,18 @@ if __name__ == "__main__":
         spawnpoint_id=spawntile.id
     )
     sess.add(tester)
+    sess.commit()
 
-# create groups
+    # create skills and base stats
+    attack_skill = Skill(name=u"Attack")
+    sess.add(attack_skill)
+    sess.commit()
+
+    tester_base_attack = ProfessionBaseStat(skill_id=attack_skill.id, profession_id=tester.id, value=10)
+    sess.add(tester_base_attack)
+    sess.commit()
+
+    # create groups
     players = Group(
         name=u"Players",
         permissions=unicode(json.dumps([]))
@@ -135,6 +145,10 @@ if __name__ == "__main__":
     )
     user.password = "iscool"
     sess.add(user)
+    sess.commit()
+    user.initializeStats()
+    sess.merge(user)
+    sess.commit()
 
     user = User(
         name=u"rlew",
@@ -148,6 +162,11 @@ if __name__ == "__main__":
     )
     user.password = "stinx"
     sess.add(user)
+    sess.commit()
+    user.initializeStats()
+    sess.merge(user)
+    sess.commit()
+
 
     user = User(
         name=u"noshi",
@@ -157,7 +176,9 @@ if __name__ == "__main__":
     )
     user.password = "isgat"
     sess.add(user)
-
+    sess.commit()
+    user.initializeStats()
+    sess.merge(user)
     sess.commit()
 
     print "Example setup completed."

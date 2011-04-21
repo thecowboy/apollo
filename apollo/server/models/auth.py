@@ -31,14 +31,9 @@ from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.schema import ForeignKey, Column, Index, Table, DDL
 from sqlalchemy.types import Integer, Unicode, Boolean, UnicodeText, DateTime
 
-from apollo.server.models import meta, MessagableMixin, PrimaryKeyed, UUIDType, CaseInsensitiveComparator
+from apollo.server.models import meta, MessagableMixin, PrimaryKeyed, UUIDType, CaseInsensitiveComparator, JSONSerializedType
 
 from apollo.server.util.importlib import import_class
-
-user_inventory = Table("user_inventory", meta.Base.metadata,
-   Column("user_id", UUIDType, ForeignKey("users.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False),
-   Column("item_id", UUIDType, ForeignKey("items.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
-)
 
 class RPGUserPartial(object):
     """
@@ -63,14 +58,18 @@ class RPGUserPartial(object):
         """
         return Column("location_id", UUIDType, ForeignKey("tiles.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
+    @declared_attr
+    def inventory(cls):
+        return relationship("Item", "user_inventory")
+
+    @declared_attr
+    def stats(cls):
+        return relationship("UserStat")
+
     hp = Column("hp", Integer, nullable=False, default=0)
     """
     User's HP.
     """
-
-    @declared_attr
-    def inventory(cls):
-        return relationship("Item", user_inventory)
 
     @property
     def hpmax(self):
@@ -103,6 +102,12 @@ class RPGUserPartial(object):
         """
         return import_class(self.profession.assoc_class)(self).xpCurve()
 
+    def initializeStats(self):
+        sess = meta.Session()
+        for base_stat in self.profession.base_stats:
+            user_stat = UserStat(user_id=self.id, skill_id=base_stat.skill_id, value=base_stat.value)
+            sess.add(user_stat)
+        sess.commit()
 
 class Group(meta.Base, PrimaryKeyed, MessagableMixin):
     """
@@ -115,7 +120,7 @@ class Group(meta.Base, PrimaryKeyed, MessagableMixin):
     Name of the group, e.g. `Administrator`.
     """
 
-    permissions = Column("permissions", UnicodeText, nullable=False)
+    permissions = Column("permissions", JSONSerializedType, nullable=False)
     """
     List of permissions the group has. The wildcard character ``*`` is allowed.
     """
@@ -179,7 +184,7 @@ class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
              * ``permission``
                Permission to check for.
         """
-        for perm in json.loads(self.group.permissions):
+        for perm in self.group.permissions:
             if re.match(re.escape(perm).replace("\\*", ".+"), permission):
                 return True
 
@@ -220,3 +225,4 @@ class Session(meta.Base, PrimaryKeyed, MessagableMixin):
     """
 
 from apollo.server.models.geography import Tile
+from apollo.server.models.rpg import UserStat

@@ -23,12 +23,13 @@
 """
 Models that represent database items and provide convenience methods.
 """
+import json
 
 import uuid
 
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.schema import Column
-from sqlalchemy.types import TypeDecorator, String, BINARY
+from sqlalchemy.types import TypeDecorator, String, UnicodeText
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import func
 
@@ -54,6 +55,17 @@ class UUIDType(TypeDecorator):
                 return uuid.UUID(hex=value)
             else:
                 return uuid.UUID(bytes=value)
+
+class JSONSerializedType(TypeDecorator):
+    impl = UnicodeText
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            return json.dumps(value).decode("utf-8")
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            return json.loads(value)
 
 class PrimaryKeyed(object):
     id = Column("id", UUIDType, primary_key=True, default=uuid.uuid4, nullable=False)

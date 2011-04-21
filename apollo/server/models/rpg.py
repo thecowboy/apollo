@@ -23,9 +23,14 @@
 from sqlalchemy import Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import ForeignKey, Column
-from sqlalchemy.types import Integer, Unicode, Boolean, UnicodeText, DateTime
+from sqlalchemy.types import Integer, Unicode, Boolean, UnicodeText
 
 from apollo.server.models import meta, PrimaryKeyed, UUIDType
+
+user_inventory = Table("user_inventory", meta.Base.metadata,
+   Column("user_id", UUIDType, ForeignKey("users.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False),
+   Column("item_id", UUIDType, ForeignKey("items.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+)
 
 class Profession(meta.Base, PrimaryKeyed):
     """
@@ -49,6 +54,30 @@ class Profession(meta.Base, PrimaryKeyed):
     """
 
     users = relationship("User", backref="profession")
+
+    base_stats = relationship("ProfessionBaseStat")
+
+class UserStat(meta.Base, PrimaryKeyed):
+    __tablename__ = "user_stats"
+
+    user_id = Column("user_id", ForeignKey("users.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    skill_id = Column("skill_id", ForeignKey("skills.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    value = Column("value", Integer, nullable=False)
+
+class ProfessionBaseStat(meta.Base, PrimaryKeyed):
+    __tablename__ = "profession_base_stats"
+
+    profession_id = Column("profession_id", ForeignKey("professions.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    skill_id = Column("skill_id", ForeignKey("skills.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    value = Column("value", Integer, nullable=False)
+
+class Skill(meta.Base, PrimaryKeyed):
+    """
+    A skill, e.g. attack, defense, etc.
+    """
+    __tablename__ = "skills"
+
+    name = Column("name", Unicode(255), nullable=False)
 
 class ItemType(meta.Base, PrimaryKeyed):
     __tablename__ = "item_types"
