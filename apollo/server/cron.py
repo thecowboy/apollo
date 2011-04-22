@@ -54,6 +54,8 @@ class CronScheduler(Component):
         num_rows = cursor.count()
 
         for session in cursor:
+            if session.user_id is None:
+                continue
             user = sess.query(User).get(session.user_id)
             if user is not None:
                 if user.online:
