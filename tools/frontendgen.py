@@ -31,4 +31,5 @@ from tornado.template import Loader
 dist_root = os.path.join(os.path.dirname(__file__), "..")
 loader = Loader(os.path.join(dist_root, "template"))
 
-print loader.load("frontend.html").generate()
+if __name__ == "__main__":
+    print loader.load("frontend.html").generate()

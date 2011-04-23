@@ -35,7 +35,7 @@ from apollo.server.models.meta import bindSession
 from tornado.options import define, options, parse_config_file, parse_command_line
 from tornado.options import Error as OptionsError
 
-def skeletonSetup():
+def skeletonSetup(configpath="apollod.conf"):
     try:
         setupOptions()
     except OptionsError:
@@ -44,7 +44,7 @@ def skeletonSetup():
         #
         # TODO: i don't know the exact cause of this yet. investigate
         pass
-    parse_config_file("apollod.conf")
+    parse_config_file(configpath)
     parse_command_line()
     setupDBSession()
 
