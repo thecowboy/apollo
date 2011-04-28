@@ -9,7 +9,7 @@ from apollo.server.render.supervisor import RendererSupervisor
 
 from apollo.server.models import meta
 
-from apollo.server.models.auth import User, Group
+from apollo.server.models.auth import User, Group, SecurityDomain
 from apollo.server.models.rpg import Profession, ProfessionBaseStat, Skill
 
 from apollo.server.models.geography import Terrain, Realm, Chunk, CHUNK_STRIDE, Tile
@@ -116,17 +116,38 @@ if __name__ == "__main__":
     sess.add(tester_base_attack)
     sess.commit()
 
+    # setup security domains
+    print "Setting up security domains..."
+    root_domain = SecurityDomain(name=u"apollo")
+    sess.add(root_domain)
+    sess.commit()
+
+    admin_domain = SecurityDomain(name=u"admin", parent_id=root_domain.id)
+    sess.add(admin_domain)
+    sess.commit()
+
+    admin_clobber_domain = SecurityDomain(name=u"clobber", parent_id=admin_domain.id)
+    sess.add(admin_clobber_domain)
+    sess.commit()
+
+    moderator_domain = SecurityDomain(name=u"moderator", parent_id=root_domain.id)
+    sess.add(moderator_domain)
+    sess.commit()
+
+    moderator_kick_domain = SecurityDomain(name=u"kick", parent_id=moderator_domain.id)
+    sess.add(moderator_kick_domain)
+    sess.commit()
+
     # create groups
     players = Group(
-        name=u"Players",
-        permissions=unicode(json.dumps([]))
+        name=u"Players"
     )
     sess.add(players)
 
     admins = Group(
-        name=u"Administrators",
-        permissions=unicode(json.dumps([ "*" ]))
+        name=u"Administrators"
     )
+    admins.security_domains.append(root_domain)
     sess.add(admins)
     sess.commit()
 

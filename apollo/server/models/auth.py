@@ -22,18 +22,24 @@
 
 import re
 import json
+import uuid
 
 from hashlib import sha256
 from datetime import datetime
 
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import column_property, relationship
+from sqlalchemy.orm import column_property, relationship, aliased, backref
 from sqlalchemy.schema import ForeignKey, Column, Index, Table, DDL
 from sqlalchemy.types import Integer, Unicode, Boolean, UnicodeText, DateTime
 
 from apollo.server.models import meta, MessagableMixin, PrimaryKeyed, UUIDType, CaseInsensitiveComparator, JSONSerializedType
 
 from apollo.server.util.importlib import import_class
+
+group_security_domains = Table("group_security_domains", meta.Base.metadata,
+   Column("group_id", UUIDType, ForeignKey("groups.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False),
+   Column("security_domain_id", UUIDType, ForeignKey("security_domains.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+)
 
 class RPGUserPartial(object):
     """
@@ -120,12 +126,61 @@ class Group(meta.Base, PrimaryKeyed, MessagableMixin):
     Name of the group, e.g. `Administrator`.
     """
 
-    permissions = Column("permissions", JSONSerializedType, nullable=False)
+    security_domains = relationship("SecurityDomain", "group_security_domains")
     """
-    List of permissions the group has. The wildcard character ``*`` is allowed.
+    The security domains belonging to the group.
     """
 
     users = relationship("User", backref="group")
+    """
+    The users belonging to the group.
+    """
+
+class SecurityDomain(meta.Base, PrimaryKeyed):
+    """
+    A security domain.
+    """
+    __tablename__ = "security_domains"
+
+    id = Column("id", UUIDType, primary_key=True, default=uuid.uuid4, nullable=False)
+    """
+    This is required for the relationship.
+    """
+
+    name = Column("name", Unicode(255), nullable=False)
+    """
+    Name of the security domain.
+    """
+
+    parent_id = Column("parent_id", UUIDType, ForeignKey("security_domains.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
+    """
+    The parent ID of the security domain.
+    """
+
+    parent = relationship("SecurityDomain", backref=backref("children", uselist=True), remote_side=[id], uselist=False)
+    """
+    The parent of the security domain.
+    """
+
+    @classmethod
+    def byPath(cls, path):
+        """
+        Get a security domain by path.
+
+        :Parameters:
+          * ``path``
+            Path to use, e.g. ``apollo.admin.clobber``.
+        """
+        query = meta.Session().query(cls)
+
+        path_parts = path.split(".")
+        query = query.filter(cls.name == path_parts[-1])
+
+        for part in path_parts[:-1:-1]:
+            part_alias = aliased(cls)
+            query = query.join((part_alias, cls.parent)).filter(part_alias.name == part)
+
+        return query.one()
 
 class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
     """
@@ -148,7 +203,7 @@ class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
         """
         Setter function for the user's password hash.
 
-        :Paramater:
+        :Parameters:
              * ``value``
                Plaintext password to encode.
         """
@@ -176,14 +231,25 @@ class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
 
     sessions = relationship("Session", backref="user")
 
-    def hasPermission(self, permission):
+    def inDomain(self, domain):
         """
-        Check if the user has the specified permission.
+        Check if the user is part of a security domain specified.
 
         :Parameters:
-             * ``permission``
-               Permission to check for.
+             * ``domain``
+               Domain to check.
         """
+        sess = meta.Session()
+
+        # TODO: horrible, terrible!
+        domains = [domain]
+
+        while domains[-1].parent_id is not None:
+            domains.append(sess.query(SecurityDomain).get(domains[-1].parent_id))
+
+        for user_domain in self.group.security_domains:
+            query = sess.query(SecurityDomain).filter()
+
         for perm in self.group.permissions:
             if re.match(re.escape(perm).replace("\\*", ".+"), permission):
                 return True

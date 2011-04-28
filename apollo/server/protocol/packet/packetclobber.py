@@ -29,7 +29,7 @@ from apollo.server.models.geography import Chunk, Tile, Realm
 from apollo.server.protocol.packet import Packet
 from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
 
-from apollo.server.util.auth import requireAuthentication, requirePermission
+from apollo.server.util.auth import requireAuthentication, requireAuthorization
 
 class PacketClobber(Packet):
     """
@@ -54,7 +54,7 @@ class PacketClobber(Packet):
             cy=chunk.cy
         ))
 
-    @requirePermission("admin.clobber")
+    @requireAuthorization("apolloadmin.clobber")
     @requireAuthentication
     def dispatch(self, core, session):
         user = session.user

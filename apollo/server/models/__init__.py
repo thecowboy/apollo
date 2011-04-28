@@ -27,6 +27,7 @@ import json
 
 import uuid
 
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.schema import Column
 from sqlalchemy.types import TypeDecorator, UnicodeText, VARBINARY
@@ -68,7 +69,9 @@ class JSONSerializedType(TypeDecorator):
             return json.loads(value)
 
 class PrimaryKeyed(object):
-    id = Column("id", UUIDType, primary_key=True, default=uuid.uuid4, nullable=False)
+    @declared_attr
+    def id(cls):
+        return Column("id", UUIDType, primary_key=True, default=uuid.uuid4, nullable=False)
 
 class MessagableMixin(object):
     def sendEx(self, bus, packet):

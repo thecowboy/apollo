@@ -29,7 +29,7 @@ from apollo.server.protocol.packet import Packet
 from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
 from apollo.server.protocol.packet.packetlogout import PacketLogout
 
-from apollo.server.util.auth import requirePermission, requireAuthentication
+from apollo.server.util.auth import requireAuthentication, requireAuthorization
 
 class PacketKick(Packet):
     """
@@ -47,7 +47,7 @@ class PacketKick(Packet):
     """
     name = "kick"
 
-    @requirePermission("moderator.kick")
+    @requireAuthorization("apollo.moderator.kick")
     @requireAuthentication
     def dispatch(self, core, session):
         user = session.user

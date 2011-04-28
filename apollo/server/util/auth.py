@@ -26,21 +26,25 @@ Apollo server authorization and authentication decorators.
 
 from functools import wraps
 
+from apollo.server.models.auth import SecurityDomain
 from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
 
-def requirePermission(permission):
+def requireAuthorization(domain_path):
     """
-    Dispatch the packet only if a specific permission is present.
+    Dispatch the packet only if the user is part of a security domain.
 
     :Parameters:
-        * ``permission``
-          Permission required.
+        * ``domain_path``
+          Path to the domain.
     """
     def _decorator(fn):
         @wraps(fn)
         def _closure(self, core, session):
+            if not hasattr(fn, "apollo_securityDomain"):
+                fn.apollo_securityDomain = SecurityDomain.byPath(domain_path)
+
             user = session.user
-            if user.hasPermission(permission):
+            if user.inDomain(fn.apollo_securityDomain):
                 fn(self, core, session)
             else:
                 user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="Not permitted to perform action."))
