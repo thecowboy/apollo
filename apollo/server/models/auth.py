@@ -20,8 +20,6 @@
 # THE SOFTWARE.
 #
 
-import re
-import json
 import uuid
 
 from hashlib import sha256
@@ -29,10 +27,10 @@ from datetime import datetime
 
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import column_property, relationship, aliased, backref
-from sqlalchemy.schema import ForeignKey, Column, Index, Table, DDL
-from sqlalchemy.types import Integer, Unicode, Boolean, UnicodeText, DateTime
+from sqlalchemy.schema import ForeignKey, Column, Index, Table
+from sqlalchemy.types import Integer, Unicode, Boolean, DateTime
 
-from apollo.server.models import meta, MessagableMixin, PrimaryKeyed, UUIDType, CaseInsensitiveComparator, JSONSerializedType
+from apollo.server.models import meta, MessagableMixin, PrimaryKeyed, UUIDType, CaseInsensitiveComparator
 
 from apollo.server.util.importlib import import_class
 
@@ -40,6 +38,9 @@ group_security_domains = Table("group_security_domains", meta.Base.metadata,
    Column("group_id", UUIDType, ForeignKey("groups.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False),
    Column("security_domain_id", UUIDType, ForeignKey("security_domains.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 )
+
+DIRECTLY_IN_DOMAIN = 1
+INDIRECTLY_IN_DOMAIN = 2
 
 class RPGUserPartial(object):
     """
@@ -136,6 +137,26 @@ class Group(meta.Base, PrimaryKeyed, MessagableMixin):
     The users belonging to the group.
     """
 
+    def inDomain(self, domain):
+        sess = meta.Session()
+
+        if domain in self.security_domains:
+            return DIRECTLY_IN_DOMAIN
+
+        # TODO: horrible, terrible! fix this with a PROPER query!
+        target_path = domain.getPath() + "."
+
+        domain_paths = []
+        for domain in self.security_domains:
+            domain_paths.append(domain.getPath() + ".")
+
+        if any(target_path.startswith(path) for path in domain_paths):
+            return INDIRECTLY_IN_DOMAIN
+
+        return False
+
+Index("idx_name", Group.name, unique=True)
+
 class SecurityDomain(meta.Base, PrimaryKeyed):
     """
     A security domain.
@@ -181,6 +202,15 @@ class SecurityDomain(meta.Base, PrimaryKeyed):
             query = query.join((part_alias, cls.parent)).filter(part_alias.name == part)
 
         return query.one()
+
+    def getPath(self):
+        # TODO: somewhat horrible, fix this with a better query
+        current_domain = self
+        path = [self.name]
+        while current_domain.parent is not None:
+            current_domain = current_domain.parent
+            path.append(current_domain.name)
+        return ".".join(path[::-1])
 
 class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
     """
@@ -239,22 +269,7 @@ class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
              * ``domain``
                Domain to check.
         """
-        sess = meta.Session()
-
-        # TODO: horrible, terrible!
-        domains = [domain]
-
-        while domains[-1].parent_id is not None:
-            domains.append(sess.query(SecurityDomain).get(domains[-1].parent_id))
-
-        for user_domain in self.group.security_domains:
-            query = sess.query(SecurityDomain).filter()
-
-        for perm in self.group.permissions:
-            if re.match(re.escape(perm).replace("\\*", ".+"), permission):
-                return True
-
-        return False
+        return self.group.inDomain(domain)
 
     # a few overrides to avoid sending packets to offline people who can't
     # actually process them
@@ -266,13 +281,7 @@ class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
         if self.online:
             super(User, self).sendInter(bus, packet)
 
-#try:
-#    # use a DDL index because functional ones are not yet available
-#    DDL("CREATE UNIQUE INDEX idx_name ON %(fullname)s (lower(name))").execute_at("after-create", User.__table__)
-#except ProgrammingError:
-
-# some databases don't support functional indexes (MySQL in particular), so just make a normal one and pray nothing bad happens
-Index("idx_name", User.name)
+Index("idx_name", User.name, unique=True)
 
 class Session(meta.Base, PrimaryKeyed, MessagableMixin):
     """

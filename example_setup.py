@@ -122,7 +122,11 @@ if __name__ == "__main__":
     sess.add(root_domain)
     sess.commit()
 
-    admin_domain = SecurityDomain(name=u"admin", parent_id=root_domain.id)
+    server_domain = SecurityDomain(name=u"server", parent_id=root_domain.id)
+    sess.add(server_domain)
+    sess.commit()
+
+    admin_domain = SecurityDomain(name=u"admin", parent_id=server_domain.id)
     sess.add(admin_domain)
     sess.commit()
 
@@ -130,7 +134,7 @@ if __name__ == "__main__":
     sess.add(admin_clobber_domain)
     sess.commit()
 
-    moderator_domain = SecurityDomain(name=u"moderator", parent_id=root_domain.id)
+    moderator_domain = SecurityDomain(name=u"moderator", parent_id=server_domain.id)
     sess.add(moderator_domain)
     sess.commit()
 

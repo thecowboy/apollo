@@ -47,7 +47,7 @@ class PacketKick(Packet):
     """
     name = "kick"
 
-    @requireAuthorization("apollo.moderator.kick")
+    @requireAuthorization("apollo.server.moderator.kick")
     @requireAuthentication
     def dispatch(self, core, session):
         user = session.user

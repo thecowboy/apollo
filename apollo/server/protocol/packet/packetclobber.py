@@ -54,7 +54,7 @@ class PacketClobber(Packet):
             cy=chunk.cy
         ))
 
-    @requireAuthorization("apolloadmin.clobber")
+    @requireAuthorization("apollo.server.admin.clobber")
     @requireAuthentication
     def dispatch(self, core, session):
         user = session.user

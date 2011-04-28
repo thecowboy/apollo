@@ -40,11 +40,8 @@ def requireAuthorization(domain_path):
     def _decorator(fn):
         @wraps(fn)
         def _closure(self, core, session):
-            if not hasattr(fn, "apollo_securityDomain"):
-                fn.apollo_securityDomain = SecurityDomain.byPath(domain_path)
-
             user = session.user
-            if user.inDomain(fn.apollo_securityDomain):
+            if user.inDomain(SecurityDomain.byPath(domain_path)):
                 fn(self, core, session)
             else:
                 user.sendEx(core.bus, PacketError(severity=SEVERITY_WARN, msg="Not permitted to perform action."))
