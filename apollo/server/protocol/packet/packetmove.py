@@ -34,7 +34,7 @@ from apollo.server.util.mathhelper import absolve
 from apollo.server.protocol.packet.packeterror import PacketError, SEVERITY_WARN
 from apollo.server.protocol.packet.packetinfo import PacketInfo
 
-from apollo.system import PredicateNotMatchedError
+from apollo.framework import PredicateNotMatchedError
 
 class PacketMove(Packet):
     """
