@@ -20,7 +20,7 @@
 # THE SOFTWARE.
 #
 
-from apollo.system.profession import Profession
+from apollo.framework.profession import Profession
 
 class Tester(Profession):
     def hpCurve(self):

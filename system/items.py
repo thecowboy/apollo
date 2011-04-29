@@ -20,8 +20,8 @@
 # THE SOFTWARE.
 #
 
-from apollo.system import predicated
-from apollo.system.inventory import Item
+from apollo.framework import predicated
+from apollo.framework.inventory import Item
 
 class HPPotion(Item):
     @predicated

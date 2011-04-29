@@ -20,7 +20,7 @@
 # THE SOFTWARE.
 #
 
-from apollo.system import predicated
+from apollo.framework import predicated
 
 class Item(object):
     def __init__(self, params):
