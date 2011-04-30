@@ -56,12 +56,12 @@ class Consumer(object):
 
         self.channel.basic_consume(
             consumer_callback=self.on_message,
-            queue="ex-%s" % self.session.id.hex,
+            queue="ex:%s" % self.session.id,
             no_ack=False,
             consumer_tag=self.ctag
         )
 
-        logging.debug("Created subscriber for %s" % self.session.id)
+        logging.debug("Created consumer for %s" % self.session.id)
 
     def shutdown(self):
         """

@@ -151,10 +151,6 @@ class Bus(Component):
 
         prefixparts = method.routing_key.split(".")
 
-        if prefixparts[0] != "inter":
-            # this is not an inter frame
-            return
-
         packet = deserializePacket(body)
         packet._origin = ORIGIN_INTER
 
@@ -165,16 +161,16 @@ class Bus(Component):
 
         ident = uuid.UUID(hex=prefixparts[2])
 
-        if prefixparts[1] == "user":
+        if prefixparts[1] == "User":
             user = sess.query(User).get(ident)
             packet.dispatch(self.core, FakeSession(user.id))
-        elif prefixparts[1] == "tile":
+        elif prefixparts[1] == "Tile":
             for user in sess.query(User).filter(User.location_id == ident):
                 packet.dispatch(self.core, FakeSession(user.id))
-        elif prefixparts[1] == "group":
+        elif prefixparts[1] == "Group":
             for user in sess.query(User).filter(User.group_id == ident):
                 packet.dispatch(self.core, FakeSession(user.id))
-        elif prefixparts[1] == "realm":
+        elif prefixparts[1] == "Realm":
             for user in sess.query(User).filter(User.location_id == Tile.id).filter(Tile.chunk_id == Chunk.id).filter(Chunk.realm_id == Realm.id).filter(Realm.id == ident):
                 packet.dispatch(self.core, FakeSession(user.id))
 
@@ -185,7 +181,7 @@ class Bus(Component):
         self.send("inter.global", packet)
 
     def globalBind(self, session, callback=None):
-        self.bindQueue("ex-%s" % session.id.hex, "ex.global", callback)
+        self.bindQueue("ex:%s" % session.id, "ex.global", callback)
 
     def globalUnbind(self, session, callback=None):
-        self.unbindQueue("ex-%s" % session.id.hex, "ex.global", callback)
+        self.unbindQueue("ex:%s" % session.id, "ex.global", callback)

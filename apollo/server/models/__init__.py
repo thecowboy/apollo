@@ -75,16 +75,16 @@ class PrimaryKeyed(object):
 
 class MessagableMixin(object):
     def sendEx(self, bus, packet):
-        bus.send("ex.%s.%s" % (self.__class__.__name__.lower(), self.id.hex), packet)
+        bus.send("ex.%s.%s" % (self.__class__.__name__, self.id), packet)
 
     def sendInter(self, bus, packet):
-        bus.send("inter.%s.%s" % (self.__class__.__name__.lower(), self.id.hex), packet)
+        bus.send("inter.%s.%s" % (self.__class__.__name__, self.id), packet)
 
     def queueBind(self, bus, session, callback=None):
-        bus.bindQueue("ex-%s" % session.id.hex, "ex.%s.%s" % (self.__class__.__name__.lower(), self.id.hex), callback)
+        bus.bindQueue("ex:%s" % session.id, "ex.%s.%s" % (self.__class__.__name__, self.id), callback)
 
     def queueUnbind(self, bus, session, callback=None):
-        bus.unbindQueue("ex-%s" % session.id.hex, "ex.%s.%s" % (self.__class__.__name__.lower(), self.id.hex), callback)
+        bus.unbindQueue("ex:%s" % session.id, "ex.%s.%s" % (self.__class__.__name__, self.id), callback)
 
 class CaseInsensitiveComparator(ColumnProperty.Comparator):
     def __eq__(self, other):

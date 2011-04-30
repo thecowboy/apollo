@@ -25,14 +25,12 @@ import uuid
 from hashlib import sha256
 from datetime import datetime
 
-from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import column_property, relationship, aliased, backref
 from sqlalchemy.schema import ForeignKey, Column, Index, Table
 from sqlalchemy.types import Integer, Unicode, Boolean, DateTime
 
 from apollo.server.models import meta, MessagableMixin, PrimaryKeyed, UUIDType, CaseInsensitiveComparator
-
-from apollo.server.util.importlib import import_class
+from apollo.server.models.rpg import RPGUserMixin
 
 group_security_domains = Table("group_security_domains", meta.Base.metadata,
    Column("group_id", UUIDType, ForeignKey("groups.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False),
@@ -41,80 +39,6 @@ group_security_domains = Table("group_security_domains", meta.Base.metadata,
 
 DIRECTLY_IN_DOMAIN = 1
 INDIRECTLY_IN_DOMAIN = 2
-
-class RPGUserPartial(object):
-    """
-    Partial class for the RPG elements of a user.
-    """
-    level = Column("level", Integer, nullable=False, default=1)
-    """
-    User's level.
-    """
-
-    @declared_attr
-    def profession_id(cls):
-        """
-        ID of the profession the user belongs to.
-        """
-        return Column("profession_id", UUIDType, ForeignKey("professions.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
-
-    @declared_attr
-    def location_id(cls):
-        """
-        ID of the tile the user is currrently at.
-        """
-        return Column("location_id", UUIDType, ForeignKey("tiles.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
-
-    @declared_attr
-    def inventory(cls):
-        return relationship("Item", "user_inventory")
-
-    @declared_attr
-    def stats(cls):
-        return relationship("UserStat")
-
-    hp = Column("hp", Integer, nullable=False, default=0)
-    """
-    User's HP.
-    """
-
-    @property
-    def hpmax(self):
-        """
-        User's max HP, according to their ``profession.hpcurve``.
-        """
-        return import_class(self.profession.assoc_class)(self).hpCurve()
-
-    ap = Column("ap", Integer, nullable=False, default=0)
-    """
-    User's AP.
-    """
-
-    @property
-    def apmax(self):
-        """
-        User's max AP, according to their ``profession.apcurve``.
-        """
-        return import_class(self.profession.assoc_class)(self).apCurve()
-
-    xp = Column("xp", Integer, nullable=False, default=0)
-    """
-    User's XP.
-    """
-
-    @property
-    def xpmax(self):
-        """
-        User's max XP, according to their ``profession.xpcurve``.
-        """
-        return import_class(self.profession.assoc_class)(self).xpCurve()
-
-    def initializeStats(self):
-        sess = meta.Session()
-        for base_stat in self.profession.base_stats:
-            user_stat = UserStat(user_id=self.id, skill_id=base_stat.skill_id, value=base_stat.value)
-            sess.add(user_stat)
-        sess.commit()
 
 class Group(meta.Base, PrimaryKeyed, MessagableMixin):
     """
@@ -138,8 +62,6 @@ class Group(meta.Base, PrimaryKeyed, MessagableMixin):
     """
 
     def inDomain(self, domain):
-        sess = meta.Session()
-
         if domain in self.security_domains:
             return DIRECTLY_IN_DOMAIN
 
@@ -155,7 +77,7 @@ class Group(meta.Base, PrimaryKeyed, MessagableMixin):
 
         return False
 
-Index("idx_name", Group.name, unique=True)
+Index("idx_group_name", Group.name, unique=True)
 
 class SecurityDomain(meta.Base, PrimaryKeyed):
     """
@@ -212,7 +134,7 @@ class SecurityDomain(meta.Base, PrimaryKeyed):
             path.append(current_domain.name)
         return ".".join(path[::-1])
 
-class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
+class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserMixin):
     """
     A user.
     """
@@ -281,7 +203,7 @@ class User(meta.Base, PrimaryKeyed, MessagableMixin, RPGUserPartial):
         if self.online:
             super(User, self).sendInter(bus, packet)
 
-Index("idx_name", User.name, unique=True)
+Index("idx_user_name", User.name, unique=True)
 
 class Session(meta.Base, PrimaryKeyed, MessagableMixin):
     """

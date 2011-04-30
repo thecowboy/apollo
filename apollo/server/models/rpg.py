@@ -24,8 +24,10 @@ from sqlalchemy import Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import ForeignKey, Column
 from sqlalchemy.types import Integer, Unicode, Boolean, UnicodeText
+from sqlalchemy.ext.declarative import declared_attr
 
 from apollo.server.models import meta, PrimaryKeyed, UUIDType
+from apollo.server.util.importlib import import_class
 
 user_inventory = Table("user_inventory", meta.Base.metadata,
    Column("user_id", UUIDType, ForeignKey("users.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False),
@@ -115,5 +117,76 @@ class Item(meta.Base, PrimaryKeyed):
     Parameters for the associated class.
     """
 
-from apollo.server.models.auth import User
-from apollo.server.models.geography import Tile
+class RPGUserMixin(object):
+    """
+    Mixin class for the RPG elements of a user.
+    """
+    level = Column("level", Integer, nullable=False, default=1)
+    """
+    User's level.
+    """
+
+    @declared_attr
+    def profession_id(cls):
+        """
+        ID of the profession the user belongs to.
+        """
+        return Column("profession_id", UUIDType, ForeignKey("professions.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+
+    @declared_attr
+    def location_id(cls):
+        """
+        ID of the tile the user is currrently at.
+        """
+        return Column("location_id", UUIDType, ForeignKey("tiles.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+
+    @declared_attr
+    def inventory(cls):
+        return relationship("Item", "user_inventory")
+
+    @declared_attr
+    def stats(cls):
+        return relationship("UserStat")
+
+    hp = Column("hp", Integer, nullable=False, default=0)
+    """
+    User's HP.
+    """
+
+    @property
+    def hpmax(self):
+        """
+        User's max HP, according to their ``profession.hpcurve``.
+        """
+        return import_class(self.profession.assoc_class)(self).hpCurve()
+
+    ap = Column("ap", Integer, nullable=False, default=0)
+    """
+    User's AP.
+    """
+
+    @property
+    def apmax(self):
+        """
+        User's max AP, according to their ``profession.apcurve``.
+        """
+        return import_class(self.profession.assoc_class)(self).apCurve()
+
+    xp = Column("xp", Integer, nullable=False, default=0)
+    """
+    User's XP.
+    """
+
+    @property
+    def xpmax(self):
+        """
+        User's max XP, according to their ``profession.xpcurve``.
+        """
+        return import_class(self.profession.assoc_class)(self).xpCurve()
+
+    def initializeStats(self):
+        sess = meta.Session()
+        for base_stat in self.profession.base_stats:
+            user_stat = UserStat(user_id=self.id, skill_id=base_stat.skill_id, value=base_stat.value)
+            sess.add(user_stat)
+        sess.commit()

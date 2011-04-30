@@ -71,7 +71,7 @@ class PacketLogout(Packet):
 
             # delete all sessions and queues associated
             for session in user.sessions:
-                core.bus.deleteQueue("ex-%s" % session.id.hex)
+                core.bus.deleteQueue("ex:%s" % session.id)
 
             sess.query(Session).filter(Session.user_id == user.id).delete()
 

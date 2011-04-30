@@ -70,7 +70,7 @@ class SessionHandler(RequestHandler):
 
         # declare queue
         self.application.bus.declareQueue(
-            "ex-%s" % session.id.hex,
+            "ex:%s" % session.id,
             lambda *args: session.queueBind(self.application.bus, session)
         )
 
@@ -97,7 +97,7 @@ class ActionHandler(RequestHandler):
             packet = deserializePacket(payload)
             packet._origin = ORIGIN_EX
         except ValueError:
-            self.application.bus.send("ex.session.%s" % session.id, PacketError(msg="bad packet payload"))
+            session.sendEx(self.application.bus, PacketError(msg="bad packet payload"))
         else:
             packet.dispatch(self.application, session)
 
